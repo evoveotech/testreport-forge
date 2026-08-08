@@ -541,3 +541,136 @@ export interface DigestOptions {
   ai?: boolean;
   format?: 'markdown' | 'text';
 }
+
+// ============================================================================
+// Leadership Test Intelligence Platform
+// Multi-tenant aggregation layer for enterprise-wide test status.
+// See: tasks/plan.md, docs/ideas/leadership-dashboard.md
+// ============================================================================
+
+/**
+ * Organization context stamped on every ingested run. Explicit, never inferred
+ * (ADR-005): inference is brittle across 10k+ clients. This is the tenancy +
+ * attribution key that lets leadership slice the estate by client, product,
+ * team, stack, run-type, and environment.
+ */
+export interface OrgContext {
+  tenantId: string;       // the enterprise customer (multi-tenant isolation key)
+  client: string;         // external client / product line (e.g. "client-1042")
+  product: string;        // product name (e.g. "payments-gateway")
+  team: string;           // owning team (e.g. "payments-qa")
+  stack: string;          // technology (e.g. "dotnet" | "playwright" | "newman")
+  runType: 'pr' | 'nightly' | 'daily' | 'scheduled' | 'manual';
+  environment: string;    // e.g. "prod" | "staging" | "dev"
+}
+
+/**
+ * A run summary persisted with its org context. Extends the existing
+ * RunSummary so the leadership layer composes on top of the per-run schema
+ * rather than replacing it (ADR-001).
+ */
+export interface IngestedRun extends RunSummary {
+  orgContext: OrgContext;
+  reportPath?: string;        // relative path to the single-run HTML drilldown
+  rawArtifactPath?: string;   // original raw result artifact (JUnit/TRX/JSON)
+  ingestedAt: string;         // ISO timestamp of ingestion
+}
+
+/**
+ * One slice of the estate rollup along a single dimension
+ * (client / product / team / stack / run-type).
+ */
+export interface RollupSlice {
+  key: string;
+  totalRuns: number;
+  passRate: number;       // 0-100
+  flakyRate: number;      // 0-100
+  deltaPct: number;       // pass-rate change vs previous period, in percentage points
+}
+
+/**
+ * Team contribution across all four metrics (ADR-006).
+ * runsExecuted / passRate / flakinessOwned come from the run store.
+ * testsAuthored / fixesLanded come from the connectors layer (git + issue tracker).
+ */
+export interface TeamContribution {
+  team: string;
+  runsExecuted: number;
+  passRate: number;       // 0-100
+  flakinessOwned: number; // count of flaky tests owned by this team in the period
+  testsAuthored: number;  // commits touching test files (from git connector)
+  fixesLanded: number;    // issues closed by the team (from issue-tracker connector)
+}
+
+/**
+ * A single point in the estate pass-rate trend series.
+ */
+export interface TrendPoint {
+  date: string;           // ISO date (YYYY-MM-DD)
+  passRate: number;       // 0-100
+  totalRuns: number;
+}
+
+/**
+ * The top-level leadership view: estate-wide health with breakdowns along
+ * every dimension leadership cares about, plus a trend series.
+ */
+export interface EstateRollup {
+  asOf: string;           // ISO timestamp the rollup was computed
+  tenantId: string;       // tenant scope (or '*' for cross-tenant admin views)
+  period: 'daily' | 'weekly' | 'monthly';
+  totalRuns: number;
+  passRate: number;       // 0-100
+  flakyRate: number;      // 0-100
+  byClient: RollupSlice[];
+  byProduct: RollupSlice[];
+  byTeam: TeamContribution[];
+  byStack: RollupSlice[];
+  byRunType: RollupSlice[];
+  trend: TrendPoint[];    // last N days of estate-wide pass rate
+}
+
+/**
+ * Payload accepted by the ingestion endpoint (POST /runs).
+ * Either `rawArtifact` (a JUnit/TRX/Newman/JSON string) + `format`, or a
+ * pre-normalized `run` (RunSummary + orgContext). The ingest service routes
+ * raw artifacts through the existing adapters/* (ADR-001).
+ */
+export interface IngestPayload {
+  orgContext: OrgContext;
+  format?: 'auto' | 'junit' | 'trx' | 'newman' | 'json' | 'playwright';
+  rawArtifact?: string;      // raw test result content (when format is set)
+  run?: RunSummary;          // pre-normalized summary (when no raw artifact)
+  reportPath?: string;       // optional: path to already-generated HTML report
+  rawArtifactPath?: string;
+}
+
+/**
+ * Result of an ingestion request.
+ */
+export interface IngestResult {
+  accepted: boolean;
+  runId: string;
+  errors?: string[];
+}
+
+/**
+ * Tenant + user + role model for RBAC (ADR-003). Row-level isolation is
+ * enforced by the store; these types describe the access-control surface.
+ */
+export type UserRole = 'viewer' | 'admin';
+
+export interface Tenant {
+  tenantId: string;
+  name: string;
+  region?: string;       // data-residency pin (ADR-003)
+  createdAt: string;
+}
+
+export interface User {
+  userId: string;
+  tenantId: string;
+  role: UserRole;
+  email: string;
+  createdAt: string;
+}

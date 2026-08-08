@@ -8,6 +8,7 @@
     "evoveo-smart-reporter-merge-history": "./dist/bin/merge-history.js",
     "evoveo-smart-reporter-view-trace": "./dist/bin/view-trace.js",
     "evoveo-smart-reporter-serve": "./dist/bin/serve.js",
+    "evoveo-smart-reporter-ingest": "./dist/bin/ingest.js",
     "evoveo-smart-reporter": "./dist/bin/cli.js"
   },
   "exports": {
@@ -26,6 +27,14 @@
     "./report-generator": {
       "types": "./dist/report-generator.d.ts",
       "default": "./dist/report-generator.js"
+    },
+    "./store": {
+      "types": "./dist/store/index.d.ts",
+      "default": "./dist/store/index.js"
+    },
+    "./ingest": {
+      "types": "./dist/ingest/index.d.ts",
+      "default": "./dist/ingest/index.js"
     }
   },
   "files": [
