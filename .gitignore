@@ -46,3 +46,10 @@ benchmark/specs/
 
 # Coverage output
 coverage/
+
+# IDE agent skill junctions (created by scripts/setup-agents.ps1)
+# These are local symlinks to .github/agents/ -- don't commit them
+.claude/skills/
+.cursor/skills/
+.codeium/windsurf/skills/
+.devin/skills/

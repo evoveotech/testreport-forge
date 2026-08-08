@@ -5,6 +5,38 @@ An intelligent Playwright HTML reporter with AI-powered failure analysis, flakin
 ![Report Overview](https://raw.githubusercontent.com/evoveotech/testreport-forge/master/images/report-overview-dark.png)
 *Dashboard with quality gates, quarantine, suite health grade, attention alerts, and failure clusters*
 
+---
+
+## QA Spec Kit -- AI-Powered QA with Loop Engineering
+
+This repo doubles as a **QA Spec Kit** -- a bundle of 72 AI agent skills +
+the Loop Engineering methodology that helps any AI IDE write better tests,
+debug faster, review code more thoroughly, and ship with confidence.
+
+**Works with:** Claude Code, GitHub Copilot, Cursor, Windsurf, Devin, and any
+IDE that reads `AGENTS.md`.
+
+### Quick setup
+
+```powershell
+# Windows -- links 72 skills into all IDE folders
+pwsh scripts/setup-agents.ps1 -Project
+```
+
+```bash
+# macOS / Linux
+bash scripts/setup-agents.sh --project
+```
+
+Then just open the repo in your AI IDE and ask a question. The agent will
+automatically analyze your repo, select the right skills, and use Loop
+Engineering (Goal -> Action -> Observation -> Adjustment -> Stop) to solve
+your problem.
+
+**Full setup guide:** [`QA-SPEC-KIT.md`](QA-SPEC-KIT.md)
+
+---
+
 ## Installation
 
 ```bash
