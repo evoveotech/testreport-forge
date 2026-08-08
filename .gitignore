@@ -1,0 +1,19 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Secrets / local
+.env
+.env.local
+*.local
+
+# Node (if tooling is added later)
+node_modules/
+dist/
+build/
+.cache/
