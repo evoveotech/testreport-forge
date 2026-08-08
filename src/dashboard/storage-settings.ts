@@ -3,31 +3,44 @@ import * as path from 'path';
 import type { IncomingMessage, ServerResponse } from 'http';
 import type { CloudStorageConfig } from '../store';
 import { buildAuthorizeUrl, exchangeCodeForTokens } from '../store';
+import type { Session } from './auth';
 
 /**
- * Manages cloud storage configuration. The admin connects their M365 or
- * Google Workspace account via OAuth; the config (with tokens) is persisted
- * to a local file so the server can use the cloud store on restart.
+ * Manages per-user cloud storage configuration. Each user (director OR team
+ * member) connects their own M365 or Google Workspace account via OAuth.
+ * Configs are persisted as `<dataDir>/cloud-storage/<userId>.json`.
  *
- * Endpoints (all require admin role -- enforced by the caller):
- *   GET  /api/storage/config           -- current storage config (tokens redacted)
+ * Flow:
+ *   1. Director (admin) connects → data stored in their cloud drive folder
+ *   2. Director shares the folder with team via M365/Google native sharing
+ *   3. Team member (viewer) connects → same shared folder path, their own tokens
+ *   4. Both view results through the dashboard UI — no one opens raw files
+ *
+ * Endpoints:
+ *   GET  /api/storage/config           -- current user's config (tokens redacted)
  *   POST /api/storage/connect          -- start OAuth flow (returns authorize URL)
- *   GET  /api/storage/oauth/callback   -- OAuth redirect target (exchanges code)
- *   POST /api/storage/disconnect       -- clear cloud storage config
+ *   GET  /api/storage/oauth/callback   -- OAuth redirect (exchanges code, uses state)
+ *   POST /api/storage/disconnect       -- clear current user's cloud config
  */
 export class StorageSettingsApi {
-  private readonly configFile: string;
+  private readonly configDir: string;
 
   constructor(dataDir: string) {
-    this.configFile = path.join(dataDir, 'cloud-storage.json');
+    this.configDir = path.join(dataDir, 'cloud-storage');
+  }
+
+  private configPath(userId: string): string {
+    // Sanitize userId to prevent path traversal.
+    const safe = userId.replace(/[^a-zA-Z0-9_-]/g, '_');
+    return path.join(this.configDir, `${safe}.json`);
   }
 
   /**
-   * Load the current cloud storage config, or null if not configured.
+   * Load cloud storage config for a specific user.
    */
-  loadConfig(): CloudStorageConfig | null {
+  loadConfigForUser(userId: string): CloudStorageConfig | null {
     try {
-      const raw = fs.readFileSync(this.configFile, 'utf-8');
+      const raw = fs.readFileSync(this.configPath(userId), 'utf-8');
       return JSON.parse(raw) as CloudStorageConfig;
     } catch {
       return null;
@@ -35,38 +48,43 @@ export class StorageSettingsApi {
   }
 
   /**
-   * Save cloud storage config to disk.
+   * Save cloud storage config for a specific user.
    */
-  saveConfig(config: CloudStorageConfig): void {
-    fs.writeFileSync(this.configFile, JSON.stringify(config, null, 2), 'utf-8');
+  saveConfigForUser(userId: string, config: CloudStorageConfig): void {
+    fs.mkdirSync(this.configDir, { recursive: true });
+    fs.writeFileSync(this.configPath(userId), JSON.stringify(config, null, 2), 'utf-8');
   }
 
   /**
-   * Clear cloud storage config (disconnect).
+   * Clear cloud storage config for a specific user.
    */
-  clearConfig(): void {
-    try { fs.unlinkSync(this.configFile); } catch { /* not configured */ }
+  clearConfigForUser(userId: string): void {
+    try { fs.unlinkSync(this.configPath(userId)); } catch { /* not configured */ }
   }
 
-  async handle(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
+  /**
+   * Handle storage settings API requests. Requires a session (the user
+   * connecting/disconnecting their OWN storage). Both admin and viewer
+   * roles can manage their own cloud storage connection.
+   */
+  async handle(req: IncomingMessage, res: ServerResponse, session: Session): Promise<boolean> {
     const url = req.url ?? '';
     const method = req.method ?? 'GET';
 
     // The OAuth callback is public (the browser redirects here after consent).
+    // The userId is passed via the state parameter.
     if (url.startsWith('/api/storage/oauth/callback') && method === 'GET') {
       await this.handleOAuthCallback(url, res);
       return true;
     }
 
-    // All other storage endpoints require admin role (enforced by caller).
     if (url === '/api/storage/config' && method === 'GET') {
-      const config = this.loadConfig();
+      const config = this.loadConfigForUser(session.userId);
       if (!config) {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ configured: false }));
         return true;
       }
-      // Redact tokens in the response.
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
         configured: true,
@@ -90,13 +108,15 @@ export class StorageSettingsApi {
         res.end(JSON.stringify({ error: 'missing required fields' }));
         return true;
       }
+      // Pass userId as the OAuth state so the callback knows which user to save for.
+      const state = encodeURIComponent(session.userId);
       const authorizeUrl = buildAuthorizeUrl({
         provider: params.provider,
         clientId: params.clientId,
         redirectUri: params.redirectUri,
-      });
-      // Save partial config (without tokens yet) so the callback knows the params.
-      this.saveConfig({
+      }) + `&state=${state}`;
+      // Save partial config (without tokens yet) so the callback can complete it.
+      this.saveConfigForUser(session.userId, {
         provider: params.provider,
         accessToken: '',
         refreshToken: '',
@@ -113,7 +133,7 @@ export class StorageSettingsApi {
     }
 
     if (url === '/api/storage/disconnect' && method === 'POST') {
-      this.clearConfig();
+      this.clearConfigForUser(session.userId);
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ disconnected: true }));
       return true;
@@ -125,6 +145,7 @@ export class StorageSettingsApi {
   private async handleOAuthCallback(url: string, res: ServerResponse): Promise<void> {
     const qs = new URLSearchParams(url.split('?')[1] ?? '');
     const code = qs.get('code');
+    const state = qs.get('state');
     const error = qs.get('error');
     if (error) {
       res.writeHead(400, { 'Content-Type': 'text/html' });
@@ -136,15 +157,21 @@ export class StorageSettingsApi {
       res.end('<html><body><h2>Missing authorization code</h2></body></html>');
       return;
     }
-    const config = this.loadConfig();
+    if (!state) {
+      res.writeHead(400, { 'Content-Type': 'text/html' });
+      res.end('<html><body><h2>Missing state parameter</h2></body></html>');
+      return;
+    }
+    const userId = decodeURIComponent(state);
+    const config = this.loadConfigForUser(userId);
     if (!config) {
       res.writeHead(400, { 'Content-Type': 'text/html' });
-      res.end('<html><body><h2>No pending connection. Start from the dashboard Settings.</h2></body></html>');
+      res.end('<html><body><h2>No pending connection for this user. Start from the dashboard Settings.</h2></body></html>');
       return;
     }
     try {
       const tokens = await exchangeCodeForTokens(config, code);
-      this.saveConfig({
+      this.saveConfigForUser(userId, {
         ...config,
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,

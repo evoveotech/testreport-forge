@@ -6,3 +6,5 @@ export { requireRole } from './rbac';
 export { UsageMeter, FileUsageMeter, NullUsageMeter } from './usage-meter';
 export type { MeterEvent } from './usage-meter';
 export { StorageSettingsApi } from './storage-settings';
+export { StoreResolver } from './store-resolver';
+export { ConnectorSettingsApi } from './connector-settings';

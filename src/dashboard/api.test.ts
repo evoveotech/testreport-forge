@@ -5,9 +5,10 @@ import * as path from 'path';
 import * as os from 'os';
 import type { AddressInfo } from 'net';
 import { FileStore } from '../store';
-import { Aggregator } from '../aggregator';
 import { DashboardApi } from './api';
 import { DevAuthProvider } from './auth';
+import { StorageSettingsApi } from './storage-settings';
+import { StoreResolver } from './store-resolver';
 import type { IngestedRun, OrgContext } from '../types';
 
 function tmpDir(): string {
@@ -30,9 +31,10 @@ function run(tenantId: string, runId: string, passRate: number, daysAgo: number,
   };
 }
 
-function startServer(store: FileStore, auth = new DevAuthProvider()): { server: http.Server; api: DashboardApi } {
-  const agg = new Aggregator(store);
-  const api = new DashboardApi(store, agg, auth);
+function startServer(store: FileStore, dataDir: string, auth = new DevAuthProvider()): { server: http.Server; api: DashboardApi } {
+  const storageSettings = new StorageSettingsApi(dataDir);
+  const resolver = new StoreResolver(store, storageSettings);
+  const api = new DashboardApi(resolver, auth);
   const server = http.createServer((req, res) => api.handle(req, res).catch(e => { res.writeHead(500); res.end(JSON.stringify({ error: String(e) })); }));
   server.listen(0);
   return { server, api };
@@ -63,7 +65,7 @@ describe('DashboardApi', () => {
     dir = tmpDir();
     store = new FileStore(dir);
     await store.open();
-    ({ server } = startServer(store));
+    ({ server } = startServer(store, dir));
   });
 
   afterEach(async () => {

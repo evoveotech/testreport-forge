@@ -604,6 +604,19 @@ export interface TeamContribution {
 }
 
 /**
+ * Connector data keyed by team name. Populated by the ConnectorService from
+ * GitHub/GitLab (testsAuthored) and Jira/Linear (fixesLanded). Passed to the
+ * aggregator's estateRollup to fill in the team contribution metrics that
+ * can't be derived from test runs alone.
+ */
+export interface ConnectorData {
+  [team: string]: {
+    testsAuthored: number;
+    fixesLanded: number;
+  };
+}
+
+/**
  * A single point in the estate pass-rate trend series.
  */
 export interface TrendPoint {
@@ -628,6 +641,7 @@ export interface EstateRollup {
   byTeam: TeamContribution[];
   byStack: RollupSlice[];
   byRunType: RollupSlice[];
+  byEnvironment: RollupSlice[];
   trend: TrendPoint[];    // last N days of estate-wide pass rate
 }
 

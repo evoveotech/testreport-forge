@@ -4,6 +4,7 @@ import type {
   RollupSlice,
   TeamContribution,
   TrendPoint,
+  ConnectorData,
 } from '../types';
 import type { Store, RunQuery } from '../store';
 
@@ -22,6 +23,7 @@ export class Aggregator {
   async estateRollup(
     tenantId: string,
     period: EstateRollup['period'] = 'weekly',
+    connectorData?: ConnectorData,
   ): Promise<EstateRollup> {
     const now = Date.now();
     const periodMs = PERIOD_MS[period];
@@ -47,7 +49,8 @@ export class Aggregator {
       byProduct: this.sliceBy(current, previous, r => r.orgContext.product),
       byStack: this.sliceBy(current, previous, r => r.orgContext.stack),
       byRunType: this.sliceBy(current, previous, r => r.orgContext.runType),
-      byTeam: this.teamContribution(current, previous),
+      byEnvironment: this.sliceBy(current, previous, r => r.orgContext.environment),
+      byTeam: this.teamContribution(current, previous, connectorData),
       trend: this.trend(current, periodMs),
     };
   }
@@ -82,7 +85,7 @@ export class Aggregator {
    * fixesLanded come from the connectors layer (Task 7b); until connectors
    * are configured they are 0.
    */
-  private teamContribution(current: IngestedRun[], _previous: IngestedRun[]): TeamContribution[] {
+  private teamContribution(current: IngestedRun[], _previous: IngestedRun[], connectorData?: ConnectorData): TeamContribution[] {
     const groups = groupBy(current, r => r.orgContext.team);
     return [...groups.entries()]
       .map(([team, runs]) => ({
@@ -90,8 +93,8 @@ export class Aggregator {
         runsExecuted: runs.length,
         passRate: avgPassRate(runs),
         flakinessOwned: runs.reduce((sum, r) => sum + r.flaky, 0),
-        testsAuthored: 0, // populated by connectors layer (Task 7b)
-        fixesLanded: 0,   // populated by connectors layer (Task 7b)
+        testsAuthored: connectorData?.[team]?.testsAuthored ?? 0,
+        fixesLanded: connectorData?.[team]?.fixesLanded ?? 0,
       }))
       .sort((a, b) => b.runsExecuted - a.runsExecuted);
   }

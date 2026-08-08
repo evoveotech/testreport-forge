@@ -1,10 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { IncomingMessage, ServerResponse } from 'http';
-import type { Store, RunQuery } from '../store';
+import type { RunQuery } from '../store';
 import { Aggregator } from '../aggregator';
 import type { IngestedRun, EstateRollup } from '../types';
 import type { AuthProvider, Session } from './auth';
+import type { StoreResolver } from './store-resolver';
+import type { ConnectorService } from '../connectors';
 
 /**
  * The dashboard REST API. Every route is tenant-scoped from the authenticated
@@ -12,23 +14,22 @@ import type { AuthProvider, Session } from './auth';
  * store enforces isolation, ADR-003; the API never passes a different
  * tenantId than the session's).
  *
+ * The store is resolved per-request via StoreResolver, so each user can
+ * have their own cloud storage backend (OneDrive/Google Drive) pointing
+ * to a shared folder.
+ *
  * Routes:
  *   GET  /api/estate?period=weekly        estate rollup
  *   GET  /api/runs?client=&product=...    filtered run list (tenant-scoped)
  *   GET  /api/runs/:runId                 single run detail
  *   GET  /api/runs/:runId/report          single-run HTML report (ADR-004)
  *   GET  /api/me                          current session
- *   POST /api/ingest                      mount the ingest endpoint under auth
- *
- * The ingest POST is optionally mounted under /api/ingest so that runs
- * submitted through the dashboard are authenticated. The standalone ingest
- * bin (Task 4) is for behind-the-mesh use.
  */
 export class DashboardApi {
   constructor(
-    private readonly store: Store,
-    private readonly aggregator: Aggregator,
+    private readonly storeResolver: StoreResolver,
     private readonly auth: AuthProvider,
+    private readonly connectorService?: ConnectorService,
   ) {}
 
   async handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
@@ -61,9 +62,22 @@ export class DashboardApi {
       return;
     }
 
+    // Resolve the store for this user (cloud or local).
+    const store = await this.storeResolver.resolve(session);
+    const aggregator = new Aggregator(store);
+
     if (url.startsWith('/api/estate') && method === 'GET') {
       const period = parsePeriod(url);
-      const rollup: EstateRollup = await this.aggregator.estateRollup(session.tenantId, period);
+      // Fetch connector data (testsAuthored/fixesLanded) if connectors are configured.
+      // Uses a 5-minute cache so external APIs aren't hit on every request.
+      const now = Date.now();
+      const periodMs = period === 'daily' ? 86400000 : period === 'monthly' ? 30 * 86400000 : 7 * 86400000;
+      const from = new Date(now - periodMs).toISOString();
+      const to = new Date(now).toISOString();
+      const connectorData = this.connectorService
+        ? await this.connectorService.fetchConnectorData(from, to)
+        : undefined;
+      const rollup: EstateRollup = await aggregator.estateRollup(session.tenantId, period, connectorData);
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(rollup));
       return;
@@ -72,10 +86,10 @@ export class DashboardApi {
     if (url.startsWith('/api/runs/') && method === 'GET') {
       const runId = decodeURIComponent(url.split('/api/runs/')[1].split('?')[0]);
       if (runId.endsWith('/report')) {
-        await this.serveReport(session, runId.replace('/report', ''), res);
+        await this.serveReport(store, session, runId.replace('/report', ''), res);
         return;
       }
-      const run = await this.store.getRun(session.tenantId, runId);
+      const run = await store.getRun(session.tenantId, runId);
       if (!run) { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); return; }
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(run));
@@ -84,7 +98,7 @@ export class DashboardApi {
 
     if (url.startsWith('/api/runs') && method === 'GET') {
       const query = this.parseRunQuery(session, url);
-      const runs: IngestedRun[] = await this.store.queryRuns(query);
+      const runs: IngestedRun[] = await store.queryRuns(query);
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(runs));
       return;
@@ -114,8 +128,8 @@ export class DashboardApi {
     return q;
   }
 
-  private async serveReport(session: Session, runId: string, res: ServerResponse): Promise<void> {
-    const run = await this.store.getRun(session.tenantId, runId);
+  private async serveReport(store: { getRun(tenantId: string, runId: string): Promise<IngestedRun | null> }, session: Session, runId: string, res: ServerResponse): Promise<void> {
+    const run = await store.getRun(session.tenantId, runId);
     if (!run?.reportPath) {
       res.writeHead(404, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'no report attached to this run' }));

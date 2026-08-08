@@ -125,6 +125,7 @@
     html += sliceTable('By Product', r.byProduct);
     html += sliceTable('By Stack', r.byStack);
     html += sliceTable('By Run Type', r.byRunType);
+    html += sliceTable('By Environment', r.byEnvironment);
     document.getElementById('content').innerHTML = html;
   }
 
@@ -178,11 +179,16 @@
       '<button id="connect-btn" style="padding:10px 20px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer">Connect</button></div>';
     html += '<div class="card"><h2>How Sharing Works</h2>' +
       '<p style="font-size:13px;color:var(--muted);line-height:1.6">' +
-      '1. The Director/VP connects their cloud drive here (admin role required).<br>' +
-      '2. Data is stored in the configured folder in their OneDrive/Google Drive.<br>' +
-      '3. The Director shares that folder with their team via M365/Google sharing.<br>' +
-      '4. Team members run the dashboard and connect to the same shared folder.<br>' +
-      '5. Everyone views results through this dashboard UI — no one opens raw files.<br>' +
+      '<strong>For Directors / VPs (admin):</strong><br>' +
+      '1. Connect your cloud drive above (OneDrive or Google Drive).<br>' +
+      '2. Data is stored in the configured folder in YOUR cloud drive.<br>' +
+      '3. Share that folder with your team via M365/Google native sharing.<br>' +
+      '<br><strong>For Team Members (viewer):</strong><br>' +
+      '1. Open this dashboard on your machine.<br>' +
+      '2. Go to Settings → Connect Cloud Storage.<br>' +
+      '3. Choose the SAME provider and enter the SAME folder path your director shared.<br>' +
+      '4. Authenticate with your own cloud account (the one your director shared with).<br>' +
+      '5. View results in the dashboard — you never open the raw files.<br>' +
       '<br><strong>No Docker, no Postgres needed.</strong> The cloud drive is the shared database.</p></div>';
     document.getElementById('content').innerHTML = html;
     loadStorageStatus();

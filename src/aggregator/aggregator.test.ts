@@ -70,14 +70,15 @@ describe('Aggregator', () => {
     expect(r.passRate).toBe(85); // (90+80)/2
   });
 
-  it('slices by client, product, stack, and runType', async () => {
-    await store.insertRun(run('acme', 'r1', 90, 0, 1, { client: 'c1', product: 'p1', stack: 'playwright', runType: 'pr' }));
-    await store.insertRun(run('acme', 'r2', 70, 0, 1, { client: 'c2', product: 'p2', stack: 'dotnet', runType: 'nightly' }));
+  it('slices by client, product, stack, runType, and environment', async () => {
+    await store.insertRun(run('acme', 'r1', 90, 0, 1, { client: 'c1', product: 'p1', stack: 'playwright', runType: 'pr', environment: 'dev' }));
+    await store.insertRun(run('acme', 'r2', 70, 0, 1, { client: 'c2', product: 'p2', stack: 'dotnet', runType: 'nightly', environment: 'prod' }));
     const r = await agg.estateRollup('acme', 'weekly');
     expect(r.byClient.map(s => s.key).sort()).toEqual(['c1', 'c2']);
     expect(r.byProduct.map(s => s.key).sort()).toEqual(['p1', 'p2']);
     expect(r.byStack.map(s => s.key).sort()).toEqual(['dotnet', 'playwright']);
     expect(r.byRunType.map(s => s.key).sort()).toEqual(['nightly', 'pr']);
+    expect(r.byEnvironment.map(s => s.key).sort()).toEqual(['dev', 'prod']);
   });
 
   it('computes deltaPct vs the previous period', async () => {
@@ -138,5 +139,43 @@ describe('Aggregator', () => {
     expect(acme.passRate).toBe(90);
     expect(globex.totalRuns).toBe(1);
     expect(globex.passRate).toBe(50);
+  });
+
+  it('uses connector data for testsAuthored and fixesLanded when provided', async () => {
+    await store.insertRun(run('acme', 'r1', 90, 0, 1, { team: 'qa-a' }));
+    await store.insertRun(run('acme', 'r2', 80, 0, 1, { team: 'qa-b' }));
+    const connectorData = {
+      'qa-a': { testsAuthored: 12, fixesLanded: 5 },
+      'qa-b': { testsAuthored: 3, fixesLanded: 8 },
+    };
+    const r = await agg.estateRollup('acme', 'weekly', connectorData);
+    const a = r.byTeam.find(t => t.team === 'qa-a')!;
+    const b = r.byTeam.find(t => t.team === 'qa-b')!;
+    expect(a.testsAuthored).toBe(12);
+    expect(a.fixesLanded).toBe(5);
+    expect(b.testsAuthored).toBe(3);
+    expect(b.fixesLanded).toBe(8);
+  });
+
+  it('defaults testsAuthored/fixesLanded to 0 when connector data is not provided', async () => {
+    await store.insertRun(run('acme', 'r1', 90, 0, 1, { team: 'qa-a' }));
+    const r = await agg.estateRollup('acme', 'weekly');
+    const a = r.byTeam.find(t => t.team === 'qa-a')!;
+    expect(a.testsAuthored).toBe(0);
+    expect(a.fixesLanded).toBe(0);
+  });
+
+  it('defaults to 0 for teams not in connector data', async () => {
+    await store.insertRun(run('acme', 'r1', 90, 0, 1, { team: 'qa-a' }));
+    await store.insertRun(run('acme', 'r2', 80, 0, 1, { team: 'qa-b' }));
+    // Only qa-a has connector data; qa-b should default to 0.
+    const connectorData = { 'qa-a': { testsAuthored: 5, fixesLanded: 2 } };
+    const r = await agg.estateRollup('acme', 'weekly', connectorData);
+    const a = r.byTeam.find(t => t.team === 'qa-a')!;
+    const b = r.byTeam.find(t => t.team === 'qa-b')!;
+    expect(a.testsAuthored).toBe(5);
+    expect(a.fixesLanded).toBe(2);
+    expect(b.testsAuthored).toBe(0);
+    expect(b.fixesLanded).toBe(0);
   });
 });

@@ -35,6 +35,10 @@ export interface RunQuery {
  * for production (ADR-002, ADR-003).
  */
 export interface Store {
+  // Lifecycle ------------------------------------------------------------
+  /** Open the store (load data, connect to backend). Called before use. */
+  open(): Promise<void>;
+
   // Runs ----------------------------------------------------------------
   insertRun(run: IngestedRun): Promise<IngestedRun>;
   getRun(tenantId: string, runId: string): Promise<IngestedRun | null>;

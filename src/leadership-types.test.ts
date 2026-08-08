@@ -91,7 +91,7 @@ describe('Leadership platform types', () => {
       const rollup: EstateRollup = {
         asOf: '2026-08-09T10:00:00Z', tenantId: 'acme', period: 'weekly',
         totalRuns: 500, passRate: 92, flakyRate: 4,
-        byClient: [], byProduct: [], byTeam: [], byStack: [], byRunType: [],
+        byClient: [], byProduct: [], byTeam: [], byStack: [], byRunType: [], byEnvironment: [],
         trend: [{ date: '2026-08-08', passRate: 91, totalRuns: 70 }],
       };
       expect(rollup.totalRuns).toBe(500);
