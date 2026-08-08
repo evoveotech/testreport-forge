@@ -45,6 +45,35 @@ export class GoogleDriveStore implements Store {
     await this.loadRuns();
   }
 
+  /**
+   * Validate that the user's Google Drive is accessible with the given tokens.
+   * Google Drive doesn't have path-based folders, so we verify token validity
+   * by listing files. Returns null if OK, or an error message.
+   */
+  static async validateFolderAccess(config: CloudStorageConfig): Promise<string | null> {
+    const { token } = await ensureValidToken(config);
+    return new Promise(resolve => {
+      https.get('https://www.googleapis.com/drive/v3/files?pageSize=1&fields=files(id)', {
+        headers: { Authorization: `Bearer ${token}` },
+      }, res => {
+        if (res.statusCode === 200) {
+          res.resume();
+          resolve(null);
+          return;
+        }
+        let body = '';
+        res.on('data', c => (body += c));
+        res.on('end', () => {
+          if (res.statusCode === 401 || res.statusCode === 403) {
+            resolve(`Access denied to Google Drive. Your director must share the folder with you via Google Workspace.`);
+          } else {
+            resolve(`Cloud validation failed: ${res.statusCode} ${body}`);
+          }
+        });
+      }).on('error', e => resolve(`Network error: ${e.message}`));
+    });
+  }
+
   private async driveGet(path: string): Promise<Buffer | null> {
     const { token, config } = await ensureValidToken(this.config);
     this.config = config;

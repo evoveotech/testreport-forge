@@ -47,6 +47,38 @@ export class OneDriveStore implements Store {
     await this.loadRuns();
   }
 
+  /**
+   * Validate that the configured folder is accessible with the given tokens.
+   * Called after OAuth to give the user a friendly error early instead of
+   * silent failures on first read. Returns null if OK, or an error message.
+   */
+  static async validateFolderAccess(config: CloudStorageConfig): Promise<string | null> {
+    const { token, config: updated } = await ensureValidToken(config);
+    const url = `https://graph.microsoft.com/v1.0/me/drive/root:/${config.folderPath}`;
+    return new Promise(resolve => {
+      https.get(url, { headers: { Authorization: `Bearer ${token}` } }, res => {
+        if (res.statusCode === 200) {
+          res.resume();
+          resolve(null);
+          return;
+        }
+        let body = '';
+        res.on('data', c => (body += c));
+        res.on('end', () => {
+          if (res.statusCode === 404) {
+            resolve(`Folder "${config.folderPath}" not found in your OneDrive. Ask your director to share the correct folder path.`);
+          } else if (res.statusCode === 403 || res.statusCode === 401) {
+            resolve(`Access denied to folder "${config.folderPath}". Your director must share this folder with you via M365.`);
+          } else {
+            resolve(`Cloud validation failed: ${res.statusCode} ${body}`);
+          }
+        });
+      }).on('error', e => resolve(`Network error: ${e.message}`));
+      // Suppress unused-variable warning.
+      void updated;
+    });
+  }
+
   private graphPath(file: string): string {
     return `/me/drive/root:/${this.config.folderPath}/${file}`;
   }

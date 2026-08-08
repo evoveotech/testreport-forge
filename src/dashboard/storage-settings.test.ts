@@ -233,6 +233,101 @@ describe('StorageSettingsApi (per-user)', () => {
     expect(res.body).toContain('No pending connection');
     server.close();
   });
+
+  it('listTeamConfigs returns all configured users with provider and folderPath (no tokens)', () => {
+    api.saveConfigForUser('director', {
+      provider: 'onedrive', accessToken: 'dir-tok', refreshToken: 'r',
+      tokenExpiresAt: Date.now() + 3600000, folderPath: 'TIP/acme',
+      clientId: 'c', clientSecret: 's', redirectUri: 'u',
+    });
+    api.saveConfigForUser('viewer', {
+      provider: 'googledrive', accessToken: 'view-tok', refreshToken: 'r2',
+      tokenExpiresAt: Date.now() + 3600000, folderPath: 'TIP/acme',
+      clientId: 'c2', clientSecret: 's2', redirectUri: 'u2',
+    });
+    // User with no token (partial config) should be excluded.
+    api.saveConfigForUser('partial', {
+      provider: 'onedrive', accessToken: '', refreshToken: '',
+      tokenExpiresAt: 0, folderPath: 'TIP/acme',
+      clientId: 'c', clientSecret: 's', redirectUri: 'u',
+    });
+    const configs = api.listTeamConfigs();
+    expect(configs.length).toBe(2);
+    const dir = configs.find(c => c.userId === 'director');
+    expect(dir?.provider).toBe('onedrive');
+    expect(dir?.folderPath).toBe('TIP/acme');
+    const view = configs.find(c => c.userId === 'viewer');
+    expect(view?.provider).toBe('googledrive');
+    // No tokens in the output.
+    expect(JSON.stringify(configs)).not.toContain('dir-tok');
+    expect(JSON.stringify(configs)).not.toContain('view-tok');
+  });
+
+  it('listTeamConfigs returns empty array when no configs exist', () => {
+    expect(api.listTeamConfigs()).toEqual([]);
+  });
+
+  it('GET /api/storage/team-configs returns team configs', async () => {
+    api.saveConfigForUser('director', {
+      provider: 'onedrive', accessToken: 'tok', refreshToken: 'r',
+      tokenExpiresAt: Date.now() + 3600000, folderPath: 'TIP/acme',
+      clientId: 'c', clientSecret: 's', redirectUri: 'u',
+    });
+    const { server, port } = startServer(api, VIEWER_SESSION);
+    const res = await get(port, '/api/storage/team-configs');
+    expect(res.status).toBe(200);
+    const json = JSON.parse(res.body);
+    expect(json.configs.length).toBe(1);
+    expect(json.configs[0].userId).toBe('director');
+    expect(json.configs[0].provider).toBe('onedrive');
+    expect(json.configs[0].folderPath).toBe('TIP/acme');
+    server.close();
+  });
+
+  it('POST /api/storage/connect returns cross-provider warning on mismatch', async () => {
+    // Director already configured with OneDrive.
+    api.saveConfigForUser('director', {
+      provider: 'onedrive', accessToken: 'tok', refreshToken: 'r',
+      tokenExpiresAt: Date.now() + 3600000, folderPath: 'TIP/acme',
+      clientId: 'c', clientSecret: 's', redirectUri: 'u',
+    });
+    // Viewer tries to connect with Google Drive for the same folder path.
+    const { server, port } = startServer(api, VIEWER_SESSION);
+    const res = await post(port, '/api/storage/connect', {
+      provider: 'googledrive',
+      clientId: 'viewer-id',
+      clientSecret: 'viewer-secret',
+      redirectUri: 'http://localhost:3000/callback',
+      folderPath: 'TIP/acme',
+    });
+    expect(res.status).toBe(200);
+    const json = JSON.parse(res.body);
+    expect(json.authorizeUrl).toBeDefined();
+    expect(json.warning).toContain('director');
+    expect(json.warning).toContain('onedrive');
+    server.close();
+  });
+
+  it('POST /api/storage/connect returns no warning when providers match', async () => {
+    api.saveConfigForUser('director', {
+      provider: 'onedrive', accessToken: 'tok', refreshToken: 'r',
+      tokenExpiresAt: Date.now() + 3600000, folderPath: 'TIP/acme',
+      clientId: 'c', clientSecret: 's', redirectUri: 'u',
+    });
+    const { server, port } = startServer(api, VIEWER_SESSION);
+    const res = await post(port, '/api/storage/connect', {
+      provider: 'onedrive',
+      clientId: 'viewer-id',
+      clientSecret: 'viewer-secret',
+      redirectUri: 'http://localhost:3000/callback',
+      folderPath: 'TIP/acme',
+    });
+    expect(res.status).toBe(200);
+    const json = JSON.parse(res.body);
+    expect(json.authorizeUrl).toBeDefined();
+    expect(json.warning).toBeUndefined();
+    server.close();
+  });
 });
 
 describe('StoreResolver', () => {

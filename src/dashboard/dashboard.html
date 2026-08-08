@@ -177,6 +177,7 @@
       '<input id="redirect-uri" placeholder="Redirect URI (e.g. http://localhost:3000/api/storage/oauth/callback)" style="width:100%;padding:10px;margin-bottom:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text)" value="' + window.location.origin + '/api/storage/oauth/callback">' +
       '<input id="folder-path" placeholder="Folder path (e.g. TestIntelligencePlatform/acme)" style="width:100%;padding:10px;margin-bottom:12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text)">' +
       '<button id="connect-btn" style="padding:10px 20px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer">Connect</button></div>';
+    html += '<div class="card" id="team-configs" style="display:block"></div>';
     html += '<div class="card"><h2>How Sharing Works</h2>' +
       '<p style="font-size:13px;color:var(--muted);line-height:1.6">' +
       '<strong>For Directors / VPs (admin):</strong><br>' +
@@ -207,9 +208,29 @@
           '<button id="disconnect-btn" style="margin-top:8px;padding:8px 16px;background:var(--red);color:white;border:none;border-radius:4px;cursor:pointer">Disconnect</button>';
         document.getElementById('disconnect-btn').onclick = disconnectStorage;
       }
+      // Load team configs to help the user pick the right provider/folder.
+      loadTeamConfigs();
     }).catch(function() {
       document.getElementById('storage-status').innerHTML = '<p style="color:var(--red)">Failed to load storage status</p>';
     });
+  }
+
+  function loadTeamConfigs() {
+    api('/storage/team-configs').then(function(data) {
+      var configs = data.configs || [];
+      if (configs.length === 0) return;
+      var el = document.getElementById('team-configs');
+      if (!el) return;
+      var html = '<p style="font-size:13px;color:var(--muted);margin-bottom:8px">Other users in this deployment have configured:</p>';
+      html += '<ul style="font-size:13px;list-style:none;padding:0">';
+      for (var i = 0; i < configs.length; i++) {
+        var c = configs[i];
+        html += '<li style="padding:4px 0;border-bottom:1px solid var(--border)">' +
+          '<strong>' + esc(c.userId) + '</strong>: ' + esc(c.provider) + ' — ' + esc(c.folderPath) + '</li>';
+      }
+      html += '</ul><p style="font-size:12px;color:var(--muted)">Use the same provider and folder path to see shared data.</p>';
+      el.innerHTML = html;
+    }).catch(function() { /* ignore — team configs are optional */ });
   }
 
   function connectStorage() {
@@ -225,6 +246,9 @@
       headers: Object.assign({}, getAuthHeaders(), { 'Content-Type': 'application/json' }),
       body: JSON.stringify(body)
     }).then(function(r) { return r.json(); }).then(function(data) {
+      if (data.warning) {
+        alert(data.warning);
+      }
       if (data.authorizeUrl) {
         window.location.href = data.authorizeUrl;
       } else {

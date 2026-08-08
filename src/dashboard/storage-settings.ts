@@ -3,6 +3,7 @@ import * as path from 'path';
 import type { IncomingMessage, ServerResponse } from 'http';
 import type { CloudStorageConfig } from '../store';
 import { buildAuthorizeUrl, exchangeCodeForTokens } from '../store';
+import { OneDriveStore, GoogleDriveStore } from '../store';
 import type { Session } from './auth';
 
 /**
@@ -63,6 +64,30 @@ export class StorageSettingsApi {
   }
 
   /**
+   * List all configured users' provider + folderPath (tokens redacted).
+   * Used by the UI to show team members what their director configured,
+   * so they pick the same provider and folder path. Returns only
+   * non-sensitive fields.
+   */
+  listTeamConfigs(): Array<{ userId: string; provider: string; folderPath: string }> {
+    try {
+      const files = fs.readdirSync(this.configDir);
+      const result: Array<{ userId: string; provider: string; folderPath: string }> = [];
+      for (const file of files) {
+        if (!file.endsWith('.json')) continue;
+        const userId = file.replace(/\.json$/, '');
+        const config = this.loadConfigForUser(userId);
+        if (config && config.accessToken) {
+          result.push({ userId, provider: config.provider, folderPath: config.folderPath });
+        }
+      }
+      return result;
+    } catch {
+      return [];
+    }
+  }
+
+  /**
    * Handle storage settings API requests. Requires a session (the user
    * connecting/disconnecting their OWN storage). Both admin and viewer
    * roles can manage their own cloud storage connection.
@@ -92,6 +117,15 @@ export class StorageSettingsApi {
         folderPath: config.folderPath,
         tokenExpiresAt: config.tokenExpiresAt,
       }));
+      return true;
+    }
+
+    if (url === '/api/storage/team-configs' && method === 'GET') {
+      // Returns what other users configured (provider + folderPath, no tokens)
+      // so team members can pick the same provider as their director.
+      const configs = this.listTeamConfigs();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ configs }));
       return true;
     }
 
@@ -127,8 +161,18 @@ export class StorageSettingsApi {
         redirectUri: params.redirectUri,
         msTenantId: params.msTenantId,
       });
+      // Check for cross-provider mismatch with other users.
+      const teamConfigs = this.listTeamConfigs();
+      const mismatched = teamConfigs.find(c =>
+        c.userId !== session.userId && c.provider !== params.provider && c.folderPath === params.folderPath
+      );
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ authorizeUrl }));
+      res.end(JSON.stringify({
+        authorizeUrl,
+        warning: mismatched
+          ? `Warning: ${mismatched.userId} uses ${mismatched.provider} for the same folder path. Use the same provider to see shared data.`
+          : undefined,
+      }));
       return true;
     }
 
@@ -171,14 +215,27 @@ export class StorageSettingsApi {
     }
     try {
       const tokens = await exchangeCodeForTokens(config, code);
-      this.saveConfigForUser(userId, {
+      const fullConfig: CloudStorageConfig = {
         ...config,
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
         tokenExpiresAt: Date.now() + tokens.expiresIn * 1000,
-      });
+      };
+      // Validate folder access before saving — give the user a friendly
+      // error early instead of silent failures on first dashboard load.
+      const validationError = config.provider === 'onedrive'
+        ? await OneDriveStore.validateFolderAccess(fullConfig)
+        : await GoogleDriveStore.validateFolderAccess(fullConfig);
+      if (validationError) {
+        // Save the config anyway (tokens are valid) but warn the user.
+        this.saveConfigForUser(userId, fullConfig);
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(`<html><body><h2>Connected, but folder access issue</h2><p style="color:#c0392b">${validationError}</p><p>Tokens were saved. Ask your director to share the folder, then refresh the dashboard.</p><script>setTimeout(()=>window.close(),8000)</script></body></html>`);
+        return;
+      }
+      this.saveConfigForUser(userId, fullConfig);
       res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end('<html><body><h2>Cloud storage connected!</h2><p>You can close this tab and return to the dashboard.</p><script>setTimeout(()=>window.close(),3000)</script></body></html>');
+      res.end('<html><body><h2>Cloud storage connected!</h2><p>Folder access verified. You can close this tab and return to the dashboard.</p><script>setTimeout(()=>window.close(),3000)</script></body></html>');
     } catch (e) {
       res.writeHead(500, { 'Content-Type': 'text/html' });
       res.end(`<html><body><h2>Token exchange failed</h2><p>${(e as Error).message}</p></body></html>`);
