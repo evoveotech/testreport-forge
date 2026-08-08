@@ -57,3 +57,6 @@ coverage/
 .cursor/skills/
 .codeium/windsurf/skills/
 .devin/skills/
+
+data/
+
