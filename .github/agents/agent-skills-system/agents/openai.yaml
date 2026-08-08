@@ -1,0 +1,7 @@
+interface:
+  display_name: "Agent Skills System"
+  short_description: "Route tasks through one verifiable execution mode"
+  default_prompt: "Use $agent-skills-system to route this task, apply only the needed operational guidance, and verify the result."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,499 @@
+[
+  {
+    "name": "accessibility-design",
+    "description": "Build accessibility into design decisions instead of treating it as late-stage options work.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/accessibility-design"
+  },
+  {
+    "name": "agent-skills-system",
+    "description": "Route and operate software, product, research, and agent tasks through one phase-appropriate execution mode. Use when choosing how an agent should approach a task, resolving speed-versus-quality tradeoffs, planning mode transitions, designing agent workflows, or improving an agent harness. Do not use for a routine task whose execution approach is already explicit and unambiguous.",
+    "hasSkillMd": true,
+    "referenceFiles": 9,
+    "path": ".github/agents/agent-skills-system"
+  },
+  {
+    "name": "api-and-interface-design",
+    "description": "Guides stable API and interface design. Use when designing APIs, module boundaries, or any public interface. Use when creating REST or GraphQL endpoints, defining type contracts between modules, or establishing boundaries between frontend and backend.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/api-and-interface-design"
+  },
+  {
+    "name": "autoresearch",
+    "description": "Autonomous iteration loop: modify, verify, keep/discard against any metric",
+    "hasSkillMd": true,
+    "referenceFiles": 17,
+    "path": ".github/agents/autoresearch"
+  },
+  {
+    "name": "browser-testing-with-devtools",
+    "description": "Tests in real browsers via Chrome DevTools MCP. Use when building or debugging anything that runs in a browser. Use when you need to inspect the DOM, capture console errors, analyze network requests, profile performance, or verify visual output with real runtime data. Requires the chrome-devtools MCP server to be configured.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/browser-testing-with-devtools"
+  },
+  {
+    "name": "brutal-honest",
+    "description": "Use when user wants honest, evidence-backed code review. Every finding requires file:line proof. Covers security, architecture, performance, UI/UX for 33+ tech stacks.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/brutal-honest"
+  },
+  {
+    "name": "bug-triage",
+    "description": "Classify bugs by player impact, reproducibility, severity, and milestone risk so the team fixes the right things first.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/bug-triage"
+  },
+  {
+    "name": "build-pipeline-patterns",
+    "description": "Structure build and CI pipelines so builds are reproducible, diagnosable, and release-friendly.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/build-pipeline-patterns"
+  },
+  {
+    "name": "ci-cd-and-automation",
+    "description": "Automates CI/CD pipeline setup. Use when setting up or modifying build and deployment pipelines. Use when you need to automate quality gates, configure test runners in CI, or establish deployment strategies.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/ci-cd-and-automation"
+  },
+  {
+    "name": "code-review-and-quality",
+    "description": "Conducts multi-axis code review. Use before merging any change. Use when reviewing code written by yourself, another agent, or a human. Use when you need to assess code quality across multiple dimensions before it enters the main branch.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/code-review-and-quality"
+  },
+  {
+    "name": "code-simplification",
+    "description": "Simplifies code for clarity. Use when refactoring code for clarity without changing behavior. Use when code works but is harder to read, maintain, or extend than it should be. Use when reviewing code that has accumulated unnecessary complexity.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/code-simplification"
+  },
+  {
+    "name": "compliance-checklists",
+    "description": "Create operational checklists for legal, accessibility, privacy, platform, and product compliance obligations.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/compliance-checklists"
+  },
+  {
+    "name": "console-certification",
+    "description": "Prepare the project for console platform requirements, TRCs/TCRs/XRs, and first-party submission expectations.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/console-certification"
+  },
+  {
+    "name": "context-engineering",
+    "description": "Optimizes agent context setup. Use when starting a new session, when agent output quality degrades, when switching between tasks, or when you need to configure rules files and context for a project.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/context-engineering"
+  },
+  {
+    "name": "continuous-learning",
+    "description": "Capture lessons learned from implementation, production, QA, and release so the project improves over time.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/continuous-learning"
+  },
+  {
+    "name": "crash-triage",
+    "description": "Handle crashes as high-severity defects with reproducibility, symbol quality, clustering, and release impact in mind.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/crash-triage"
+  },
+  {
+    "name": "csharp",
+    "description": "Apply these opinionated C# conventions when writing C#/.NET 8+ code: modern C# 12 (records, primary constructors, pattern matching), ASP.NET Core minimal and controller APIs, Blazor, Entity Framework Core, async patterns, CQRS with MediatR.",
+    "hasSkillMd": true,
+    "referenceFiles": 5,
+    "path": ".github/agents/csharp"
+  },
+  {
+    "name": "debugging-and-error-recovery",
+    "description": "Guides systematic root-cause debugging. Use when tests fail, builds break, behavior doesn't match expectations, or you encounter any unexpected error. Use when you need a systematic approach to finding and fixing the root cause rather than guessing.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/debugging-and-error-recovery"
+  },
+  {
+    "name": "deprecation-and-migration",
+    "description": "Manages deprecation and migration. Use when removing old systems, APIs, or features. Use when migrating users from one implementation to another. Use when deciding whether to maintain or sunset existing code.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/deprecation-and-migration"
+  },
+  {
+    "name": "documentation",
+    "description": "ALWAYS invoke for any task involving docstrings, JSDoc/TSDoc, OpenAPI/Swagger specs, or documentation portals — even when the request seems handleable without it. Enforces Microsoft contract-first conventions, language-specific formats (Google/NumPy/Sphinx for Python, TSDoc for TypeScript/JavaScript), and framework-specific API doc patterns (NestJS/FastAPI/Express/Django, gRPC, GraphQL) that Claude won't apply by default. Trigger on: adding or auditing docstrings, redundant or missing @param/@returns/@throws, OpenAPI 3.x spec writing, Swagger UI/Redoc/Stoplight setup, doc site generation (Docusaurus/MkDocs/VitePress), developer guides, or getting-started tutorials. Do not skip for documentation tasks — consistent conventions are the whole point.",
+    "hasSkillMd": true,
+    "referenceFiles": 8,
+    "path": ".github/agents/documentation"
+  },
+  {
+    "name": "documentation-and-adrs",
+    "description": "Records decisions and documentation. Use when making architectural decisions, changing public APIs, shipping features, or when you need to record context that future engineers and agents will need to understand the codebase.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/documentation-and-adrs"
+  },
+  {
+    "name": "dotnet-core",
+    "description": "Apply these opinionated .NET 8 architecture recipes for backend services: clean architecture layering, CQRS with MediatR, minimal APIs, Entity Framework Core, JWT authentication, AOT compilation, cloud-native patterns.",
+    "hasSkillMd": true,
+    "referenceFiles": 5,
+    "path": ".github/agents/dotnet-core"
+  },
+  {
+    "name": "doubt-driven-development",
+    "description": "Subjects every non-trivial decision to a fresh-context adversarial review before it stands. Use when correctness matters more than speed, when working in unfamiliar code, when stakes are high (production, security-sensitive logic, irreversible operations), or any time a confident output would be cheaper to verify now than to debug later.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/doubt-driven-development"
+  },
+  {
+    "name": "find-skills",
+    "description": "Helps users discover and install agent skills when they ask questions like \"how do I do X\", \"find a skill for X\", \"is there a skill that can...\", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/find-skills"
+  },
+  {
+    "name": "flutter",
+    "description": "Apply these opinionated Flutter conventions when building Flutter apps: project structure, core rules, feature rules, presentation patterns, performance, testing, and tech stack configuration.",
+    "hasSkillMd": true,
+    "referenceFiles": 9,
+    "path": ".github/agents/flutter"
+  },
+  {
+    "name": "frontend-ui-engineering",
+    "description": "Builds production-quality, accessible, responsive user-facing UIs. Use when building or modifying interfaces and pages, creating components, implementing layouts, meeting WCAG accessibility requirements, managing state, or when the output needs to look and feel production-quality rather than AI-generated.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/frontend-ui-engineering"
+  },
+  {
+    "name": "git-workflow-and-versioning",
+    "description": "Structures git workflow practices. Use when making any code change. Use when committing, branching, resolving conflicts, or when you need to organize work across multiple parallel streams. Use when cutting a release, choosing a semantic version bump, tagging, or writing a changelog.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/git-workflow-and-versioning"
+  },
+  {
+    "name": "godot-build-release",
+    "description": "Run Godot export, CI, and release packaging with reproducible presets and platform-aware checks.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/godot-build-release"
+  },
+  {
+    "name": "godot-performance",
+    "description": "Profile Godot runtime, scene, rendering, and resource behavior based on representative builds and content.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/godot-performance"
+  },
+  {
+    "name": "godot-testing",
+    "description": "Choose effective automated and manual test layers for Godot features without overcomplicating the project.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/godot-testing"
+  },
+  {
+    "name": "incremental-implementation",
+    "description": "Delivers changes incrementally. Use when implementing any feature or change that touches more than one file. Use when you're about to write a large amount of code at once, or when a task feels too big to land in one step.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/incremental-implementation"
+  },
+  {
+    "name": "javascript",
+    "description": "Apply these opinionated JavaScript conventions when writing JS or Node in this codebase: ES2023+ features, async and Promise patterns, ESM/CJS modules, Web Workers, browser APIs, performance optimization, Node.js patterns.",
+    "hasSkillMd": true,
+    "referenceFiles": 5,
+    "path": ".github/agents/javascript"
+  },
+  {
+    "name": "legacy-modernization",
+    "description": "Apply this opinionated workflow when modernizing legacy systems: strangler fig pattern, branch by abstraction, characterization tests, incremental monolith decomposition, framework upgrades, feature-flagged migration with rollback.",
+    "hasSkillMd": true,
+    "referenceFiles": 5,
+    "path": ".github/agents/legacy-modernization"
+  },
+  {
+    "name": "loop-engineering",
+    "description": "Design agentic workflows as iterative loops that guide the Evoveo Tech Agent toward completing user-defined goals with minimal human intervention. Use when building agent loops, designing automated agent systems, or applying the Goal-Action-Observation-Adjustment cycle to any task.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/loop-engineering"
+  },
+  {
+    "name": "nestjs",
+    "description": "Apply these opinionated NestJS conventions when writing NestJS backends: module structure, dependency injection, controllers and services, DTOs with class-validator, guards/interceptors/pipes, JWT authentication, TypeORM/Prisma.",
+    "hasSkillMd": true,
+    "referenceFiles": 6,
+    "path": ".github/agents/nestjs"
+  },
+  {
+    "name": "nextjs",
+    "description": "Apply these opinionated Next.js 14+ recipes when building App Router apps: Server Components, Server Actions, data fetching/caching/revalidation, image/font/bundle optimization, Metadata API for SEO, Vercel deployment.",
+    "hasSkillMd": true,
+    "referenceFiles": 5,
+    "path": ".github/agents/nextjs"
+  },
+  {
+    "name": "observability-and-instrumentation",
+    "description": "Instruments code so production behavior is visible and diagnosable. Use when adding logging, metrics, tracing, or alerting. Use when shipping any feature that runs in production and you need evidence it works. Use when production issues are reported but you can't tell what happened from the available data.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/observability-and-instrumentation"
+  },
+  {
+    "name": "orchestration-patterns",
+    "description": "Coordinate multiple agents and disciplines so complex tasks are broken down cleanly and handed off without ambiguity.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/orchestration-patterns"
+  },
+  {
+    "name": "performance-budgeting",
+    "description": "Set and manage frame, load, memory, streaming, or bandwidth budgets before performance debt becomes structural.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/performance-budgeting"
+  },
+  {
+    "name": "performance-optimization",
+    "description": "Optimizes application performance across frontend, backend, queries, and databases. Use when performance requirements exist, when you suspect performance regressions, when Core Web Vitals or load times need improvement, when N+1 query patterns need fixing, or when profiling reveals bottlenecks.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/performance-optimization"
+  },
+  {
+    "name": "planning-and-task-breakdown",
+    "description": "Breaks work into ordered tasks. Use when you have a spec or clear requirements and need to break work into implementable tasks. Use when a task feels too large to start, when you need to estimate scope, or when parallel work is possible.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/planning-and-task-breakdown"
+  },
+  {
+    "name": "python",
+    "description": "Apply these opinionated Python 3.11+ conventions when writing Python in this codebase: type hints with mypy, async/await, pytest fixtures, dataclasses, Poetry packaging, production patterns.",
+    "hasSkillMd": true,
+    "referenceFiles": 5,
+    "path": ".github/agents/python"
+  },
+  {
+    "name": "qa-test-matrix",
+    "description": "Build a coverage matrix that shows what must be tested, on which configurations, and at what milestone confidence level.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/qa-test-matrix"
+  },
+  {
+    "name": "react",
+    "description": "Apply these opinionated React conventions when writing React 18+ or 19 components: hooks patterns, Server Components, Suspense boundaries, state management, performance memoization, React 19 features (use, form actions).",
+    "hasSkillMd": true,
+    "referenceFiles": 7,
+    "path": ".github/agents/react"
+  },
+  {
+    "name": "release-readiness",
+    "description": "Evaluate whether a build is genuinely ready for external testing, certification, store submission, or launch.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/release-readiness"
+  },
+  {
+    "name": "reviewess",
+    "description": "A brief description, shown to the model to help it understand when to use this skill",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/reviewess"
+  },
+  {
+    "name": "risk-register",
+    "description": "Identify, track, and revisit the risks most likely to derail scope, quality, budget, or release readiness.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/risk-register"
+  },
+  {
+    "name": "security-and-hardening",
+    "description": "Hardens code against vulnerabilities. Use when handling user input, authentication, data storage, or external integrations. Use when building any feature that accepts untrusted data, manages user sessions, or interacts with third-party services.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/security-and-hardening"
+  },
+  {
+    "name": "shipping-and-launch",
+    "description": "Prepares production launches. Use when preparing to deploy to production. Use when you need a pre-launch checklist, when setting up monitoring, when planning a staged rollout, or when you need a rollback strategy.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/shipping-and-launch"
+  },
+  {
+    "name": "source-driven-development",
+    "description": "Grounds every implementation decision in official documentation. Use when you want authoritative, source-cited code free from outdated patterns. Use when building with any framework or library where correctness matters.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/source-driven-development"
+  },
+  {
+    "name": "spec-driven-development",
+    "description": "Creates specs before coding. Use when starting a new project, feature, or significant change and no specification exists yet. Use when requirements are unclear, ambiguous, or only exist as a vague idea.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/spec-driven-development"
+  },
+  {
+    "name": "spec-mining",
+    "description": "Apply this opinionated workflow when reverse-engineering legacy or undocumented systems: scope, explore with Glob/Grep/Read, trace data flows, document in EARS format, flag uncertainties. For code archaeology, onboarding, and requirements extraction.",
+    "hasSkillMd": true,
+    "referenceFiles": 4,
+    "path": ".github/agents/spec-mining"
+  },
+  {
+    "name": "store-submission",
+    "description": "Prepare store-facing assets, metadata, compliance paperwork, and packaging details for submission.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/store-submission"
+  },
+  {
+    "name": "tdd-workflow",
+    "description": "Apply test-driven development or test-first thinking to gameplay, tooling, and high-risk technical work.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/tdd-workflow"
+  },
+  {
+    "name": "technical-design-document",
+    "description": "Turn feature intent into a Technical Design Document that is implementable, reviewable, and testable.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/technical-design-document"
+  },
+  {
+    "name": "telemetry-instrumentation",
+    "description": "Implement analytics and observability hooks that answer product questions without creating noise or privacy risk.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/telemetry-instrumentation"
+  },
+  {
+    "name": "test-driven-development",
+    "description": "Drives development with tests. Use when implementing any logic, fixing any bug, or changing any behavior. Use when you need to prove that code works, when a bug report arrives, or when you're about to modify existing functionality.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/test-driven-development"
+  },
+  {
+    "name": "testing",
+    "description": "Apply these opinionated testing conventions when writing tests or test strategies: three modes (functional, performance, security), unit/integration/E2E patterns, coverage analysis, automation frameworks, defect tracking, accessibility and usability.",
+    "hasSkillMd": true,
+    "referenceFiles": 13,
+    "path": ".github/agents/testing"
+  },
+  {
+    "name": "typescript",
+    "description": "Apply these opinionated TypeScript conventions when writing TS in this codebase: branded types, advanced generics, conditional and utility types, type guards, discriminated unions, strict tsconfig, tRPC, monorepo setup.",
+    "hasSkillMd": true,
+    "referenceFiles": 5,
+    "path": ".github/agents/typescript"
+  },
+  {
+    "name": "unity-build-release",
+    "description": "Run Unity builds, CI, and release packaging with reproducible configuration and platform-aware checks.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/unity-build-release"
+  },
+  {
+    "name": "unity-performance",
+    "description": "Profile and optimize Unity projects based on player-build evidence, not editor intuition.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/unity-performance"
+  },
+  {
+    "name": "unity-testing",
+    "description": "Choose the right mix of plain C#, edit mode, play mode, and smoke testing for Unity features.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/unity-testing"
+  },
+  {
+    "name": "unreal-build-release",
+    "description": "Run Unreal builds, packaging, CI, and release packaging with reproducible configuration and platform-aware checks.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/unreal-build-release"
+  },
+  {
+    "name": "unreal-performance",
+    "description": "Profile packaged Unreal builds on target hardware and connect fixes to the real bottleneck domain.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/unreal-performance"
+  },
+  {
+    "name": "unreal-testing",
+    "description": "Choose effective Unreal automation and integration test layers without over-relying on brittle map-level tests.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/unreal-testing"
+  },
+  {
+    "name": "using-agent-skills",
+    "description": "Discovers and invokes agent skills. Use when starting a session or when you need to discover which skill applies to the current task. This is the meta-skill that governs how all other skills are discovered and invoked.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/using-agent-skills"
+  },
+  {
+    "name": "using-superpowers",
+    "description": "Use when starting any conversation - establishes how to find and use skills, requiring skill invocation before ANY response including clarifying questions",
+    "hasSkillMd": true,
+    "referenceFiles": 3,
+    "path": ".github/agents/using-superpowers"
+  },
+  {
+    "name": "verification-loop",
+    "description": "Run a structured verification pass that checks behavior, edge cases, quality bars, and documentation alignment.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/verification-loop"
+  },
+  {
+    "name": "web-build-release",
+    "description": "Configure build tooling and ship browser game builds to static hosts with repeatable release hygiene.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/web-build-release"
+  },
+  {
+    "name": "web-performance",
+    "description": "Keep a browser game inside its frame budget through allocation discipline, pooling, and devtools-driven profiling.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/web-performance"
+  },
+  {
+    "name": "web-testing",
+    "description": "Test browser games with fast unit tests for pure logic, headless smoke tests, and a deliberate browser matrix.",
+    "hasSkillMd": true,
+    "referenceFiles": 0,
+    "path": ".github/agents/web-testing"
+  }
+]

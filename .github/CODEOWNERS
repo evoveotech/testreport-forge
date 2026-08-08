@@ -1,0 +1,30 @@
+# CODEOWNERS
+# These users will be automatically requested to review PRs that touch
+# the files matching the patterns below.
+#
+# See https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything not covered below
+*           @evoveotech
+
+# Core source code -- reporter implementation
+/src/       @evoveotech
+
+# Tests -- QA-critical paths
+/tests/     @evoveotech
+
+# CI/CD pipelines -- build and release safety
+/.github/workflows/  @evoveotech
+
+# Agent skills -- QA Spec Kit
+/.github/agents/     @evoveotech
+
+# Security policy
+/SECURITY.md         @evoveotech
+/.github/SECURITY.md @evoveotech
+
+# Documentation
+/README.md           @evoveotech
+/AGENTS.md           @evoveotech
+/QA-SPEC-KIT.md      @evoveotech
+/CONTRIBUTING.md     @evoveotech
