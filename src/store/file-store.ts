@@ -136,6 +136,30 @@ export class FileStore implements Store {
     return results.slice(0, limit);
   }
 
+  async archiveRun(tenantId: string, runId: string): Promise<void> {
+    const bucket = this.runsByTenant.get(tenantId);
+    if (!bucket) return;
+    const run = bucket.get(runId);
+    if (!run) return;
+    run.archived = true;
+    this.rewriteRunsLog();
+  }
+
+  async deleteRun(tenantId: string, runId: string): Promise<void> {
+    const bucket = this.runsByTenant.get(tenantId);
+    if (!bucket) return;
+    bucket.delete(runId);
+    this.rewriteRunsLog();
+  }
+
+  private rewriteRunsLog(): void {
+    const all: IngestedRun[] = [];
+    for (const bucket of this.runsByTenant.values()) {
+      for (const run of bucket.values()) all.push(run);
+    }
+    fs.writeFileSync(this.runsFile, all.map(r => JSON.stringify(r)).join('\n') + '\n', 'utf-8');
+  }
+
   // -- Tenants -----------------------------------------------------------
 
   async insertTenant(tenant: Tenant): Promise<Tenant> {
@@ -146,6 +170,14 @@ export class FileStore implements Store {
 
   async getTenant(tenantId: string): Promise<Tenant | null> {
     return this.tenants.get(tenantId) ?? null;
+  }
+
+  async listTenants(): Promise<string[]> {
+    // Include tenants from the tenant index AND any tenant that has runs
+    // (runs may arrive before a tenant record is created).
+    const ids = new Set<string>(this.tenants.keys());
+    for (const id of this.runsByTenant.keys()) ids.add(id);
+    return [...ids];
   }
 
   // -- Users -------------------------------------------------------------

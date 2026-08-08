@@ -574,6 +574,7 @@ export interface IngestedRun extends RunSummary {
   reportPath?: string;        // relative path to the single-run HTML drilldown
   rawArtifactPath?: string;   // original raw result artifact (JUnit/TRX/JSON)
   ingestedAt: string;         // ISO timestamp of ingestion
+  archived?: boolean;         // true after retention job moves to cold tier
 }
 
 /**

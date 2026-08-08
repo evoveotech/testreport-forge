@@ -39,10 +39,16 @@ export interface Store {
   insertRun(run: IngestedRun): Promise<IngestedRun>;
   getRun(tenantId: string, runId: string): Promise<IngestedRun | null>;
   queryRuns(query: RunQuery): Promise<IngestedRun[]>;
+  /** Mark a run as archived (moved to cold storage). */
+  archiveRun(tenantId: string, runId: string): Promise<void>;
+  /** Permanently delete a run. */
+  deleteRun(tenantId: string, runId: string): Promise<void>;
 
   // Tenants --------------------------------------------------------------
   insertTenant(tenant: Tenant): Promise<Tenant>;
   getTenant(tenantId: string): Promise<Tenant | null>;
+  /** List all tenant IDs (for retention job iteration). */
+  listTenants(): Promise<string[]>
 
   // Users ----------------------------------------------------------------
   insertUser(user: User): Promise<User>;
