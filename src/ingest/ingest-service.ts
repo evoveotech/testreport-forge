@@ -10,6 +10,7 @@ import type {
 import type { Store } from '../store';
 import { getAdapter, detectAdapter } from '../adapters';
 import type { AdapterContext } from '../adapters';
+import type { UsageMeter } from '../dashboard/usage-meter';
 
 /**
  * Required OrgContext fields. Every one must be a non-empty string (and
@@ -28,7 +29,10 @@ const VALID_RUN_TYPES: OrgContext['runType'][] = ['pr', 'nightly', 'daily', 'sch
  * OrgContext, and persists the run to the store.
  */
 export class IngestService {
-  constructor(private readonly store: Store) {}
+  constructor(
+    private readonly store: Store,
+    private readonly meter?: UsageMeter,
+  ) {}
 
   /**
    * Ingest a single run payload. Returns an IngestResult indicating
@@ -75,6 +79,12 @@ export class IngestService {
     };
 
     await this.store.insertRun(run);
+    this.meter?.record({
+      type: 'run_ingested',
+      tenantId: run.orgContext.tenantId,
+      timestamp: ingestedAt,
+      runId,
+    });
     return { accepted: true, runId };
   }
 
