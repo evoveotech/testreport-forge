@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test Intelligence Platform</title>
+<style>
+  :root { --bg: #0f172a; --card: #1e293b; --border: #334155; --text: #e2e8f0; --muted: #94a3b8; --accent: #3b82f6; --green: #22c55e; --red: #ef4444; --yellow: #eab308; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
+  .header { background: var(--card); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header .user-info { font-size: 13px; color: var(--muted); }
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .kpi { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .kpi .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .kpi .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+  .kpi .delta { font-size: 12px; margin-top: 4px; }
+  .delta.up { color: var(--green); } .delta.down { color: var(--red); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 24px; }
+  .card h2 { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--muted); font-weight: 500; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: rgba(59,130,246,0.05); cursor: pointer; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .badge.green { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge.red { background: rgba(239,68,68,0.15); color: var(--red); }
+  .badge.yellow { background: rgba(234,179,8,0.15); color: var(--yellow); }
+  .tabs { display: flex; gap: 4px; margin-bottom: 24px; }
+  .tab { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--muted); }
+  .tab.active { background: var(--accent); color: white; }
+  .login { max-width: 360px; margin: 80px auto; }
+  .login input { width: 100%; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 14px; margin-bottom: 12px; }
+  .login button { width: 100%; padding: 10px; background: var(--accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+  .login button:hover { opacity: 0.9; }
+  .chart { width: 100%; height: 120px; position: relative; }
+  .empty { text-align: center; padding: 40px; color: var(--muted); }
+  .period-select { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); padding: 4px 8px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function() {
+  'use strict';
+  var state = { session: null, rollup: null, runs: [], tab: 'estate', period: 'weekly' };
+
+  // -- Auth helpers (dev mode: headers) --------------------------------
+  function getAuthHeaders() {
+    var s = state.session;
+    if (!s) return {};
+    return { 'X-Tenant-Id': s.tenantId, 'X-User-Id': s.userId, 'X-User-Role': s.role };
+  }
+  function api(path, opts) {
+    opts = opts || {};
+    opts.headers = Object.assign({}, getAuthHeaders(), opts.headers || {});
+    return fetch('/api' + path, opts).then(function(r) {
+      if (r.status === 401) { state.session = null; render(); throw new Error('unauthorized'); }
+      if (!r.ok) throw new Error('API ' + r.status);
+      return r.json();
+    });
+  }
+
+  // -- Login view -------------------------------------------------------
+  function renderLogin() {
+    var app = document.getElementById('app');
+    app.innerHTML = '<div class="login"><h2 style="margin-bottom:16px">Test Intelligence Platform</h2>' +
+      '<input id="tenant" placeholder="Tenant ID" value="acme">' +
+      '<input id="user" placeholder="User ID" value="u1">' +
+      '<select id="role" class="period-select" style="width:100%;margin-bottom:12px;padding:10px"><option value="viewer">Viewer</option><option value="admin">Admin</option></select>' +
+      '<button id="login-btn">Sign In</button>' +
+      '<p style="margin-top:12px;font-size:12px;color:var(--muted)">Dev mode: enter any tenant/user. Production uses OIDC/SAML SSO.</p></div>';
+    document.getElementById('login-btn').onclick = function() {
+      state.session = {
+        tenantId: document.getElementById('tenant').value,
+        userId: document.getElementById('user').value,
+        role: document.getElementById('role').value
+      };
+      loadEstate();
+    };
+  }
+
+  // -- Main dashboard ---------------------------------------------------
+  function renderDashboard() {
+    var s = state.session;
+    var app = document.getElementById('app');
+    app.innerHTML =
+      '<div class="header"><h1>Test Intelligence Platform</h1>' +
+      '<div class="user-info">' + s.userId + ' @ ' + s.tenantId + ' (' + s.role + ') ' +
+      '<a href="#" id="logout" style="margin-left:12px;color:var(--accent)">Sign Out</a></div></div>' +
+      '<div class="container">' +
+      '<div class="tabs">' +
+        '<div class="tab ' + (state.tab === 'estate' ? 'active' : '') + '" data-tab="estate">Estate Rollup</div>' +
+        '<div class="tab ' + (state.tab === 'teams' ? 'active' : '') + '" data-tab="teams">Team Contribution</div>' +
+        '<div class="tab ' + (state.tab === 'runs' ? 'active' : '') + '" data-tab="runs">Recent Runs</div>' +
+      '</div>' +
+      '<div id="content"></div></div>';
+
+    document.getElementById('logout').onclick = function(e) { e.preventDefault(); state.session = null; render(); };
+    var tabs = app.querySelectorAll('.tab');
+    for (var i = 0; i < tabs.length; i++) {
+      tabs[i].onclick = function() { state.tab = this.dataset.tab; render(); };
+    }
+    if (state.tab === 'estate') renderEstate();
+    else if (state.tab === 'teams') renderTeams();
+    else if (state.tab === 'runs') renderRuns();
+  }
+
+  function renderEstate() {
+    var r = state.rollup;
+    if (!r) { document.getElementById('content').innerHTML = '<div class="empty">Loading...</div>'; return; }
+    var passColor = r.passRate >= 90 ? 'green' : r.passRate >= 70 ? 'yellow' : 'red';
+    var html = '<div class="kpi-row">' +
+      kpi('Total Runs', r.totalRuns) +
+      kpiBadge('Pass Rate', r.passRate + '%', passColor) +
+      kpiBadge('Flaky Rate', r.flakyRate + '%', r.flakyRate < 5 ? 'green' : r.flakyRate < 15 ? 'yellow' : 'red') +
+      kpi('Period', r.period) +
+      '</div>';
+    html += '<div class="card"><h2>Pass Rate Trend</h2><div class="chart">' + trendChart(r.trend) + '</div></div>';
+    html += sliceTable('By Client', r.byClient);
+    html += sliceTable('By Product', r.byProduct);
+    html += sliceTable('By Stack', r.byStack);
+    html += sliceTable('By Run Type', r.byRunType);
+    document.getElementById('content').innerHTML = html;
+  }
+
+  function renderTeams() {
+    var r = state.rollup;
+    if (!r || !r.byTeam.length) { document.getElementById('content').innerHTML = '<div class="empty">No team data</div>'; return; }
+    var html = '<div class="card"><h2>Team Contribution</h2><table>' +
+      '<tr><th>Team</th><th>Runs</th><th>Pass Rate</th><th>Flakiness</th><th>Tests Authored</th><th>Fixes Landed</th></tr>';
+    for (var i = 0; i < r.byTeam.length; i++) {
+      var t = r.byTeam[i];
+      html += '<tr><td>' + esc(t.team) + '</td><td>' + t.runsExecuted + '</td>' +
+        '<td><span class="badge ' + rateColor(t.passRate) + '">' + t.passRate + '%</span></td>' +
+        '<td>' + t.flakinessOwned + '</td><td>' + t.testsAuthored + '</td><td>' + t.fixesLanded + '</td></tr>';
+    }
+    html += '</table></div>';
+    document.getElementById('content').innerHTML = html;
+  }
+
+  function renderRuns() {
+    var runs = state.runs;
+    if (!runs.length) { document.getElementById('content').innerHTML = '<div class="empty">No runs yet. POST to /api/ingest or use the ingest bin.</div>'; return; }
+    var html = '<div class="card"><h2>Recent Runs</h2><table>' +
+      '<tr><th>Run ID</th><th>Client</th><th>Product</th><th>Team</th><th>Stack</th><th>Type</th><th>Pass Rate</th><th>Total</th><th>When</th></tr>';
+    for (var i = 0; i < runs.length; i++) {
+      var r = runs[i];
+      var when = new Date(r.timestamp).toLocaleString();
+      html += '<tr onclick="window.open(\'/api/runs/' + encodeURIComponent(r.runId) + '/report\', \'_blank\')">' +
+        '<td>' + esc(r.runId.slice(0, 12)) + '</td><td>' + esc(r.orgContext.client) + '</td>' +
+        '<td>' + esc(r.orgContext.product) + '</td><td>' + esc(r.orgContext.team) + '</td>' +
+        '<td>' + esc(r.orgContext.stack) + '</td><td>' + esc(r.orgContext.runType) + '</td>' +
+        '<td><span class="badge ' + rateColor(r.passRate) + '">' + r.passRate + '%</span></td>' +
+        '<td>' + r.total + '</td><td>' + when + '</td></tr>';
+    }
+    html += '</table></div>';
+    document.getElementById('content').innerHTML = html;
+  }
+
+  // -- Helpers ----------------------------------------------------------
+  function kpi(label, value) {
+    return '<div class="kpi"><div class="label">' + label + '</div><div class="value">' + value + '</div></div>';
+  }
+  function kpiBadge(label, value, color) {
+    return '<div class="kpi"><div class="label">' + label + '</div><div class="value"><span class="badge ' + color + '">' + value + '</span></div></div>';
+  }
+  function rateColor(rate) { return rate >= 90 ? 'green' : rate >= 70 ? 'yellow' : 'red'; }
+  function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+  function sliceTable(title, slices) {
+    if (!slices || !slices.length) return '';
+    var html = '<div class="card"><h2>' + title + '</h2><table><tr><th>Name</th><th>Runs</th><th>Pass Rate</th><th>Flaky</th><th>Delta</th></tr>';
+    for (var i = 0; i < slices.length; i++) {
+      var s = slices[i];
+      var deltaCls = s.deltaPct > 0 ? 'up' : s.deltaPct < 0 ? 'down' : '';
+      var deltaSign = s.deltaPct > 0 ? '+' : '';
+      html += '<tr><td>' + esc(s.key) + '</td><td>' + s.totalRuns + '</td>' +
+        '<td><span class="badge ' + rateColor(s.passRate) + '">' + s.passRate + '%</span></td>' +
+        '<td>' + s.flakyRate + '%</td><td class="delta ' + deltaCls + '">' + deltaSign + s.deltaPct + '</td></tr>';
+    }
+    return html + '</table></div>';
+  }
+
+  function trendChart(trend) {
+    if (!trend || !trend.length) return '<div class="empty">No trend data</div>';
+    var w = 100, h = 100;
+    var maxRate = 100, minRate = 0;
+    var points = trend.map(function(p, i) {
+      var x = (i / (trend.length - 1 || 1)) * w;
+      var y = h - ((p.passRate - minRate) / (maxRate - minRate)) * h;
+      return x.toFixed(1) + ',' + y.toFixed(1);
+    });
+    var bars = trend.map(function(p, i) {
+      var x = (i / (trend.length - 1 || 1)) * w;
+      var barH = (p.totalRuns / Math.max.apply(null, trend.map(function(t) { return t.totalRuns; }))) * h;
+      return '<rect x="' + x.toFixed(1) + '" y="' + (h - barH).toFixed(1) + '" width="1" height="' + barH.toFixed(1) + '" fill="#334155 opacity="0.5"/>';
+    }).join('');
+    return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" style="width:100%;height:100%">' +
+      bars +
+      '<polyline points="' + points.join(' ') + '" fill="none" stroke="#3b82f6" stroke-width="0.8"/>' +
+      '</svg>';
+  }
+
+  // -- Data loading -----------------------------------------------------
+  function loadEstate() {
+    api('/estate?period=' + state.period).then(function(r) { state.rollup = r; render(); }).catch(function() {});
+    api('/runs?limit=50').then(function(r) { state.runs = r; }).catch(function() {});
+  }
+
+  // -- Main render ------------------------------------------------------
+  function render() {
+    if (!state.session) { renderLogin(); return; }
+    renderDashboard();
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

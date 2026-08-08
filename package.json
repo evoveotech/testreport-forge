@@ -9,6 +9,7 @@
     "evoveo-smart-reporter-view-trace": "./dist/bin/view-trace.js",
     "evoveo-smart-reporter-serve": "./dist/bin/serve.js",
     "evoveo-smart-reporter-ingest": "./dist/bin/ingest.js",
+    "evoveo-smart-reporter-dashboard": "./dist/bin/dashboard.js",
     "evoveo-smart-reporter": "./dist/bin/cli.js"
   },
   "exports": {
@@ -44,7 +45,7 @@
     "!dist/**/*.test.js.map"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node -e \"require('fs').copyFileSync('src/dashboard/dashboard.html','dist/dashboard/dashboard.html')\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
