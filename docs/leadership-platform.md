@@ -83,6 +83,32 @@ open http://localhost:3000
 | OIDC | `--auth oidc --oidc-url <url>` | Enterprise SSO (Keycloak, Okta, Google) |
 | SAML | `--auth saml` | SAML gateway (mod_auth_mellon, Shibboleth) |
 
+## Storage Backends
+
+| Backend | When to use | Setup |
+|---------|-------------|-------|
+| **FileStore** (local) | Local dev, small teams, single machine | Default — just `--data-dir ./data` |
+| **OneDriveStore** (M365) | Enterprise with Microsoft 365, no Docker/Postgres | Director connects via Settings → OAuth → share folder |
+| **GoogleDriveStore** (Google Workspace) | Enterprise with Google Workspace, no Docker/Postgres | Director connects via Settings → OAuth → share folder |
+| **Postgres** (future) | Large estates (10k+ runs), production scale | ADR-002 — not yet implemented |
+
+### Cloud Storage Flow (No Docker, No Postgres)
+
+```
+1. Director opens dashboard → Settings tab → "Connect Cloud Storage"
+2. Chooses OneDrive (M365) or Google Drive (Google Workspace)
+3. Enters OAuth client ID/secret (from Azure AD / Google Cloud Console)
+4. OAuth redirect → consent → tokens saved
+5. Data stored as JSONL in the Director's cloud drive folder
+6. Director shares the folder with their team via M365/Google sharing
+7. Team members: run dashboard → Settings → connect to same shared folder
+8. Everyone views results through the dashboard UI — no one opens raw files
+```
+
+The cloud drive IS the shared database. No Docker, no Postgres, no
+infrastructure to deploy. Every enterprise already has M365 or Google
+Workspace.
+
 ## ADRs
 
 See `docs/adr/` for architecture decision records:
@@ -93,6 +119,7 @@ See `docs/adr/` for architecture decision records:
 - ADR-005: Org context stamped at ingest, never inferred
 - ADR-006: All four team-contribution metrics ship in v1
 - ADR-007: Legacy stacks use file-drop only, no custom parsers
+- ADR-008: Cloud drive as shared storage for no-Docker enterprises
 
 ## Benchmark
 
@@ -100,8 +127,9 @@ See `docs/adr/` for architecture decision records:
 
 ## Test Suite
 
-98 tests covering types, store (incl. 4 security-critical tenant isolation
+112 tests covering types, store (incl. 4 security-critical tenant isolation
 tests), ingest (incl. real JUnit XML end-to-end), HTTP handler, aggregator,
 dashboard API (incl. auth denial + cross-tenant 404), auth providers
 (OIDC/SAML/RBAC/metering), connectors (glob matching + team attribution),
-and retention.
+retention, and cloud storage settings (OAuth URL generation, config
+round-trip, token redaction, connect/disconnect flows).

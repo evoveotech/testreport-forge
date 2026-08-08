@@ -5,3 +5,4 @@ export type { OidcProviderConfig, SamlProviderConfig, OidcClaimMapping } from '.
 export { requireRole } from './rbac';
 export { UsageMeter, FileUsageMeter, NullUsageMeter } from './usage-meter';
 export type { MeterEvent } from './usage-meter';
+export { StorageSettingsApi } from './storage-settings';

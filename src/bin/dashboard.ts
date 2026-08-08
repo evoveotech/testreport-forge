@@ -3,14 +3,17 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as http from 'http';
-import { FileStore } from '../store';
+import { FileStore, OneDriveStore, GoogleDriveStore } from '../store';
+import type { CloudStorageConfig } from '../store';
 import { Aggregator } from '../aggregator';
-import { DashboardApi, DevAuthProvider } from '../dashboard';
+import { DashboardApi, DevAuthProvider, StorageSettingsApi } from '../dashboard';
 import type { AuthProvider } from '../dashboard';
 import { OidcAuthProvider, SamlAuthProvider, FileUsageMeter, NullUsageMeter } from '../dashboard';
+import { requireRole } from '../dashboard';
 import { IngestService } from '../ingest';
 import { handleIngestRequest } from '../ingest';
 import type { UsageMeter } from '../dashboard';
+import type { Store } from '../store';
 
 interface DashboardOptions {
   dataDir: string;
@@ -89,10 +92,37 @@ function createAuthProvider(opts: DashboardOptions): AuthProvider {
   }
 }
 
+async function createStore(dataDir: string): Promise<Store> {
+  // Check if cloud storage is configured. If so, use the cloud store.
+  // Otherwise, fall back to the local FileStore.
+  const storageSettings = new StorageSettingsApi(dataDir);
+  const cloudConfig = storageSettings.loadConfig();
+  if (cloudConfig && cloudConfig.accessToken) {
+    // Tokens are present -- cloud storage is connected.
+    const configUpdater = (updated: CloudStorageConfig) => storageSettings.saveConfig(updated);
+    if (cloudConfig.provider === 'onedrive') {
+      console.log('Using OneDrive/SharePoint cloud storage');
+      const store = new OneDriveStore(cloudConfig, configUpdater);
+      await store.open();
+      return store;
+    } else if (cloudConfig.provider === 'googledrive') {
+      console.log('Using Google Drive cloud storage');
+      const store = new GoogleDriveStore(cloudConfig, configUpdater);
+      await store.open();
+      return store;
+    }
+  }
+  // Fallback: local file store.
+  console.log('Using local file storage (no cloud storage configured)');
+  const store = new FileStore(dataDir);
+  await store.open();
+  return store;
+}
+
 async function main(): Promise<void> {
   const opts = parseArgs(process.argv);
-  const store = new FileStore(opts.dataDir);
-  await store.open();
+  const storageSettings = new StorageSettingsApi(opts.dataDir);
+  const store = await createStore(opts.dataDir);
   const aggregator = new Aggregator(store);
   const authProvider = createAuthProvider(opts);
   const meter: UsageMeter = opts.meteringDir ? new FileUsageMeter(opts.meteringDir) : new NullUsageMeter();
@@ -120,6 +150,21 @@ async function main(): Promise<void> {
     }
     // API routes
     if (url.startsWith('/api/')) {
+      // Storage settings (OAuth callback is public; other endpoints need admin)
+      if (url.startsWith('/api/storage/')) {
+        // OAuth callback is public (browser redirect target)
+        if (url.startsWith('/api/storage/oauth/callback')) {
+          await storageSettings.handle(req, res);
+          return;
+        }
+        // Other storage endpoints require admin role
+        const session = await authProvider.resolveSession(req);
+        if (!session) { res.writeHead(401); res.end(JSON.stringify({ error: 'unauthorized' })); return; }
+        if (!requireRole(session, ['admin'], res)) return;
+        const handled = await storageSettings.handle(req, res);
+        if (handled) return;
+      }
+
       // Ingest is mounted under /api/ingest for authenticated ingestion
       if (url === '/api/ingest' && req.method === 'POST') {
         const session = await authProvider.resolveSession(req);

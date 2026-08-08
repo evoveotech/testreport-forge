@@ -95,6 +95,7 @@
         '<div class="tab ' + (state.tab === 'estate' ? 'active' : '') + '" data-tab="estate">Estate Rollup</div>' +
         '<div class="tab ' + (state.tab === 'teams' ? 'active' : '') + '" data-tab="teams">Team Contribution</div>' +
         '<div class="tab ' + (state.tab === 'runs' ? 'active' : '') + '" data-tab="runs">Recent Runs</div>' +
+        '<div class="tab ' + (state.tab === 'settings' ? 'active' : '') + '" data-tab="settings">Settings</div>' +
       '</div>' +
       '<div id="content"></div></div>';
 
@@ -106,6 +107,7 @@
     if (state.tab === 'estate') renderEstate();
     else if (state.tab === 'teams') renderTeams();
     else if (state.tab === 'runs') renderRuns();
+    else if (state.tab === 'settings') renderSettings();
   }
 
   function renderEstate() {
@@ -158,6 +160,79 @@
     }
     html += '</table></div>';
     document.getElementById('content').innerHTML = html;
+  }
+
+  function renderSettings() {
+    var html = '<div class="card"><h2>Cloud Storage</h2><div id="storage-status">Loading...</div></div>';
+    html += '<div class="card" id="connect-form" style="display:none"><h2>Connect Cloud Storage</h2>' +
+      '<p style="font-size:13px;color:var(--muted);margin-bottom:12px">Connect your Microsoft 365 OneDrive or Google Workspace Drive as shared storage. ' +
+      'Data is stored as files in your cloud drive. Share the folder with your team via your platform\'s native sharing. ' +
+      'Team members view results through this dashboard — they never open the raw files.</p>' +
+      '<select id="provider" class="period-select" style="width:100%;margin-bottom:12px;padding:10px">' +
+      '<option value="onedrive">Microsoft 365 (OneDrive / SharePoint)</option>' +
+      '<option value="googledrive">Google Workspace (Google Drive)</option></select>' +
+      '<input id="client-id" placeholder="OAuth Client ID (from app registration)" style="width:100%;padding:10px;margin-bottom:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text)">' +
+      '<input id="client-secret" placeholder="OAuth Client Secret" style="width:100%;padding:10px;margin-bottom:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text)">' +
+      '<input id="redirect-uri" placeholder="Redirect URI (e.g. http://localhost:3000/api/storage/oauth/callback)" style="width:100%;padding:10px;margin-bottom:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text)" value="' + window.location.origin + '/api/storage/oauth/callback">' +
+      '<input id="folder-path" placeholder="Folder path (e.g. TestIntelligencePlatform/acme)" style="width:100%;padding:10px;margin-bottom:12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text)">' +
+      '<button id="connect-btn" style="padding:10px 20px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer">Connect</button></div>';
+    html += '<div class="card"><h2>How Sharing Works</h2>' +
+      '<p style="font-size:13px;color:var(--muted);line-height:1.6">' +
+      '1. The Director/VP connects their cloud drive here (admin role required).<br>' +
+      '2. Data is stored in the configured folder in their OneDrive/Google Drive.<br>' +
+      '3. The Director shares that folder with their team via M365/Google sharing.<br>' +
+      '4. Team members run the dashboard and connect to the same shared folder.<br>' +
+      '5. Everyone views results through this dashboard UI — no one opens raw files.<br>' +
+      '<br><strong>No Docker, no Postgres needed.</strong> The cloud drive is the shared database.</p></div>';
+    document.getElementById('content').innerHTML = html;
+    loadStorageStatus();
+    document.getElementById('connect-btn').onclick = connectStorage;
+  }
+
+  function loadStorageStatus() {
+    api('/storage/config').then(function(cfg) {
+      var el = document.getElementById('storage-status');
+      if (!cfg.configured) {
+        el.innerHTML = '<p style="font-size:13px;color:var(--muted)">No cloud storage connected. Using local file storage. ' +
+          'Connect below to use OneDrive or Google Drive as shared storage.</p>';
+        document.getElementById('connect-form').style.display = 'block';
+      } else {
+        el.innerHTML = '<p style="font-size:13px"><span class="badge green">Connected</span> ' + cfg.provider + ' — ' + esc(cfg.folderPath) + '</p>' +
+          '<button id="disconnect-btn" style="margin-top:8px;padding:8px 16px;background:var(--red);color:white;border:none;border-radius:4px;cursor:pointer">Disconnect</button>';
+        document.getElementById('disconnect-btn').onclick = disconnectStorage;
+      }
+    }).catch(function() {
+      document.getElementById('storage-status').innerHTML = '<p style="color:var(--red)">Failed to load storage status</p>';
+    });
+  }
+
+  function connectStorage() {
+    var body = {
+      provider: document.getElementById('provider').value,
+      clientId: document.getElementById('client-id').value,
+      clientSecret: document.getElementById('client-secret').value,
+      redirectUri: document.getElementById('redirect-uri').value,
+      folderPath: document.getElementById('folder-path').value,
+    };
+    fetch('/api/storage/connect', {
+      method: 'POST',
+      headers: Object.assign({}, getAuthHeaders(), { 'Content-Type': 'application/json' }),
+      body: JSON.stringify(body)
+    }).then(function(r) { return r.json(); }).then(function(data) {
+      if (data.authorizeUrl) {
+        window.location.href = data.authorizeUrl;
+      } else {
+        alert('Error: ' + (data.error || 'unknown'));
+      }
+    }).catch(function(e) { alert('Error: ' + e.message); });
+  }
+
+  function disconnectStorage() {
+    if (!confirm('Disconnect cloud storage? Data will remain in your cloud drive.')) return;
+    fetch('/api/storage/disconnect', {
+      method: 'POST',
+      headers: getAuthHeaders()
+    }).then(function() { loadStorageStatus(); });
   }
 
   // -- Helpers ----------------------------------------------------------
