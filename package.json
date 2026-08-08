@@ -1,7 +1,7 @@
 {
   "name": "evoveo-smart-reporter",
   "version": "2.1.0",
-  "description": "An intelligent Playwright HTML reporter with AI-powered failure analysis, flakiness detection, and performance regression alerts",
+  "description": "An intelligent test reporter with AI-powered failure analysis, flakiness detection, and performance regression alerts. Works with Playwright, Cypress, Selenium, Jest, Vitest, Pytest, MSTest/TRX, Postman/Newman, SoapUI, and more.",
   "main": "dist/smart-reporter.js",
   "types": "dist/smart-reporter.d.ts",
   "bin": {
@@ -18,6 +18,14 @@
     "./quarantine": {
       "types": "./dist/quarantine/quarantine-helper.d.ts",
       "default": "./dist/quarantine/quarantine-helper.js"
+    },
+    "./adapters": {
+      "types": "./dist/adapters/index.d.ts",
+      "default": "./dist/adapters/index.js"
+    },
+    "./report-generator": {
+      "types": "./dist/report-generator.d.ts",
+      "default": "./dist/report-generator.js"
     }
   },
   "files": [
@@ -31,6 +39,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "examples": "node scripts/generate-examples.js",
     "test:demo": "playwright test --config=example/playwright.config.ts",
     "test:merge-local": "rm -rf blob-reports && mkdir -p blob-reports/all && PLAYWRIGHT_BLOB_OUTPUT_DIR=blob-reports/run1 playwright test example/parallel/test1.spec.ts --config=example/playwright-blob.config.ts; PLAYWRIGHT_BLOB_OUTPUT_DIR=blob-reports/run2 playwright test example/parallel/test2.spec.ts --config=example/playwright-blob.config.ts; cp blob-reports/run1/*.zip blob-reports/run2/*.zip blob-reports/all/; node ./dist/merge-history.js blob-reports/run1/test-history.json blob-reports/run2/test-history.json -o blob-reports/all/test-history.json; npx playwright merge-reports --reporter=./dist/smart-reporter.js blob-reports/all"
   },
@@ -50,7 +59,19 @@
     "quality-gates",
     "pdf-export",
     "test-quarantine",
-    "ci-cd"
+    "ci-cd",
+    "junit",
+    "trx",
+    "mstest",
+    "cypress",
+    "selenium",
+    "newman",
+    "postman",
+    "soapui",
+    "jest",
+    "vitest",
+    "pytest",
+    "restsharp"
   ],
   "author": "Evoveo Tech",
   "license": "Apache-2.0",

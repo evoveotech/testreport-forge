@@ -1,9 +1,19 @@
 # Evoveo Smart Reporter
 
-An intelligent Playwright HTML reporter with AI-powered failure analysis, flakiness detection, performance regression alerts, and a modern interactive dashboard. Free and open source (Apache-2.0) — every feature included.
+An intelligent test reporter with AI-powered failure analysis, flakiness detection, performance regression alerts, and a modern interactive dashboard. Free and open source (Apache-2.0) — every feature included.
+
+**Works with any automation technology** — Playwright (native), plus JUnit XML, TRX, and Postman/Newman results via the `generate` CLI. One report format for your entire test estate.
 
 ![Report Overview](https://raw.githubusercontent.com/evoveotech/testreport-forge/master/images/report-overview-dark.png)
 *Dashboard with quality gates, quarantine, suite health grade, attention alerts, and failure clusters*
+
+### One reporter, every framework
+
+| Playwright | Cypress | .NET (TRX) | Postman | Selenium | SoapUI |
+|------------|---------|------------|---------|----------|--------|
+| ![Playwright](https://raw.githubusercontent.com/evoveotech/testreport-forge/master/images/report-overview-dark.png) | ![Cypress](https://raw.githubusercontent.com/evoveotech/testreport-forge/master/images/multi-framework/cypress-report.png) | ![TRX](https://raw.githubusercontent.com/evoveotech/testreport-forge/master/images/multi-framework/dotnet-trx-report.png) | ![Newman](https://raw.githubusercontent.com/evoveotech/testreport-forge/master/images/multi-framework/newman-report.png) | ![Selenium](https://raw.githubusercontent.com/evoveotech/testreport-forge/master/images/multi-framework/selenium-report.png) | ![SoapUI](https://raw.githubusercontent.com/evoveotech/testreport-forge/master/images/multi-framework/soapui-report.png) |
+
+*The same rich dashboard for every framework — stability grades, failure clustering, trend analytics, and AI-powered root cause analysis.*
 
 ---
 
@@ -62,6 +72,141 @@ export default defineConfig({
 ```
 
 Run your tests and open the generated `smart-report.html`.
+
+## Multi-Framework Support (CLI)
+
+Beyond the native Playwright reporter, the `generate` CLI command produces the
+same rich report from **any** automation technology's result file. The input
+format is auto-detected; you can also specify it explicitly.
+
+```bash
+npx evoveo-smart-reporter generate --input <results-file> [options]
+```
+
+### Supported input formats
+
+| Format | Flag | Covers |
+|--------|------|--------|
+| JUnit XML | `--format junit` | Cypress, Selenium, Jest (jest-junit), Vitest (vitest-junit), Pytest, Go (go-junit-report), Maven Surefire, Gradle, TestNG, SoapUI, Newman (junit reporter), WebdriverIO |
+| TRX | `--format trx` | Microsoft MSTest / VSTest (`dotnet test --logger trx`), xUnit (TRX), NUnit (TRX adapter) — covers .NET and RestSharp integration runs |
+| Newman JSON | `--format newman` | Postman / Newman API collections (`newman run -r json`) |
+| Generic JSON | `--format json` | Any framework — convert your results to the `smart-report-data.json` schema (or a bare array of test objects) and feed it in |
+| Auto-detect | `--format auto` (default) | Detects from file content and extension |
+
+### Examples
+
+The repo ships with ready-to-run example files for every supported format in
+[`examples/multi-framework/`](examples/multi-framework/). Generate all reports
+and screenshots with one command:
+
+```bash
+npm run build
+node scripts/generate-examples.js
+```
+
+Or generate individual reports:
+
+```bash
+# Cypress (emits JUnit XML via cypress-junit-reporter)
+npx evoveo-smart-reporter generate --input cypress-results.xml --framework "Cypress"
+
+# .NET / RestSharp (MSTest TRX)
+npx evoveo-smart-reporter generate --input TestResults.trx --framework "RestSharp Integration" --export-pdf
+
+# Postman / Newman
+npx evoveo-smart-reporter generate --input newman-report.json --format newman
+
+# SoapUI (JUnit XML export)
+npx evoveo-smart-reporter generate --input soapui-junit.xml --framework "SoapUI" --title "API Regression"
+
+# Selenium (generic JSON — convert your results to the schema)
+npx evoveo-smart-reporter generate --input selenium-results.json --format json --framework "Selenium"
+
+# Any framework — convert to the generic JSON schema
+npx evoveo-smart-reporter generate --input my-results.json --format json --framework "Custom Runner"
+```
+
+### Report screenshots by framework
+
+The same rich dashboard — stability grades, failure clustering, trend analytics,
+quality gates — works for every input format. The framework badge in the header
+shows which automation tool produced the results.
+
+#### Cypress (JUnit XML)
+
+![Cypress report](images/multi-framework/cypress-report.png)
+*Cypress E2E test results with 12 tests across Auth, Cart, and API suites*
+
+Example file: [`examples/multi-framework/cypress-junit.xml`](examples/multi-framework/cypress-junit.xml)
+
+#### .NET / MSTest (TRX)
+
+![TRX report](images/multi-framework/dotnet-trx-report.png)
+*.NET test results via `dotnet test --logger trx` — covers MSTest, xUnit, NUnit, and RestSharp integration tests*
+
+Example file: [`examples/multi-framework/dotnet-trx.trx`](examples/multi-framework/dotnet-trx.trx)
+
+#### Postman / Newman (JSON)
+
+![Newman report](images/multi-framework/newman-report.png)
+*Postman/Newman API collection results — 6 requests with assertion-level pass/fail*
+
+Example file: [`examples/multi-framework/postman-newman.json`](examples/multi-framework/postman-newman.json)
+
+#### Selenium (Generic JSON)
+
+![Selenium report](images/multi-framework/selenium-report.png)
+*Selenium WebDriver test results — 8 tests across Login, Navigation, Search, Cart, and Checkout suites*
+
+Example file: [`examples/multi-framework/selenium-generic.json`](examples/multi-framework/selenium-generic.json)
+
+#### SoapUI (JUnit XML)
+
+![SoapUI report](images/multi-framework/soapui-report.png)
+*SoapUI service test results — 9 tests across SOAP, REST, and Security suites*
+
+Example file: [`examples/multi-framework/soapui-junit.xml`](examples/multi-framework/soapui-junit.xml)
+
+### CLI options for `generate`
+
+| Option | Description |
+|--------|-------------|
+| `--input <path>` | Path to the test result file (required) |
+| `--format <format>` | Input format: `auto`, `junit`, `trx`, `newman`, `json` (default: `auto`) |
+| `--output <path>` | Output HTML report path (default: `smart-report.html`) |
+| `--history <path>` | History file path (default: `test-history.json`) |
+| `--framework <name>` | Override the framework label shown in the report header |
+| `--project <name>` | Project name (separates history per project) |
+| `--export-json` | Also write `smart-report-data.json` |
+| `--export-junit` | Also write JUnit XML |
+| `--export-pdf` | Also generate PDF executive summaries |
+| `--theme <preset>` | Theme preset (`default`, `dark`, `light`, `high-contrast`, ...) |
+| `--title <title>` | Report title (branding) |
+
+The detected (or overridden) framework is shown as a badge in the report header
+and in the page metadata, so it's always clear which automation tool produced
+the results.
+
+### Programmatic API
+
+You can also ingest results from any framework in code:
+
+```typescript
+import { detectAdapter, getAdapter } from 'evoveo-smart-reporter/adapters';
+import { ReportGenerator } from 'evoveo-smart-reporter/report-generator';
+import * as fs from 'fs';
+
+const content = fs.readFileSync('results.xml', 'utf-8');
+const adapter = detectAdapter(content, 'results.xml'); // or getAdapter('junit')
+const ingested = adapter!.ingest({ content, outputDir: '.', options: {} });
+
+const generator = new ReportGenerator({
+  options: { outputFile: 'report.html' },
+  outputDir: '.',
+});
+generator.ingest(ingested);
+await generator.generate();
+```
 
 ## At a Glance
 

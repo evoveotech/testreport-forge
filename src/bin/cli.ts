@@ -11,6 +11,8 @@ function printUsage(): void {
 Usage: evoveo-smart-reporter <command> [options]
 
 Commands:
+  generate  Generate a smart report from any test result file
+            (JUnit XML, TRX, Newman/Postman JSON, generic JSON)
   gate      Evaluate quality gates against a JSON export
   digest    Generate a test health digest from history
 
@@ -162,8 +164,136 @@ Options:
   }
 }
 
+async function runGenerate(): Promise<void> {
+  if (hasFlag('--help') || hasFlag('-h')) {
+    const { supportedFormats } = await import('../adapters');
+    console.log(`
+Usage: evoveo-smart-reporter generate [options]
+
+Generate a smart report from any test result file. Supports multiple
+automation technologies via adapters:
+
+  ${supportedFormats()}
+
+Options:
+  --input <path>       Path to the test result file (required)
+  --format <format>    Input format: auto, junit, trx, newman, json (default: auto)
+  --output <path>      Output HTML report path (default: smart-report.html)
+  --history <path>     History file path (default: test-history.json)
+  --framework <name>   Override the framework label shown in the report
+  --project <name>     Project name (separates history per project)
+  --export-json        Also write smart-report-data.json
+  --export-junit       Also write JUnit XML
+  --export-pdf         Also generate PDF executive summaries
+  --theme <preset>     Theme preset (default, dark, light, high-contrast, ...)
+  --title <title>      Report title (branding)
+  --help, -h           Show this help
+
+Examples:
+  evoveo-smart-reporter generate --input results.xml
+  evoveo-smart-reporter generate --input results.trx --format trx --framework "MSTest"
+  evoveo-smart-reporter generate --input newman.json --format newman --export-pdf
+  evoveo-smart-reporter generate --input cypress-junit.xml --framework "Cypress" --title "Cypress Run"
+`);
+    return;
+  }
+
+  const inputPath = parseFlag('--input');
+  if (!inputPath) {
+    console.error('Error: --input is required. Provide a path to a test result file.');
+    console.error('Example: evoveo-smart-reporter generate --input results.xml');
+    process.exitCode = 1;
+    return;
+  }
+
+  const resolvedInput = path.resolve(inputPath);
+  if (!fs.existsSync(resolvedInput)) {
+    console.error(`Error: Input file not found: ${resolvedInput}`);
+    process.exitCode = 1;
+    return;
+  }
+
+  const format = (parseFlag('--format') ?? 'auto') as 'auto' | 'junit' | 'trx' | 'newman' | 'json';
+  const outputPath = parseFlag('--output') ?? 'smart-report.html';
+  const historyFile = parseFlag('--history') ?? 'test-history.json';
+  const frameworkOverride = parseFlag('--framework');
+  const projectName = parseFlag('--project');
+  const title = parseFlag('--title');
+  const themePreset = parseFlag('--theme');
+
+  const content = fs.readFileSync(resolvedInput, 'utf-8');
+  const outputDir = path.dirname(path.resolve(outputPath));
+
+  const { detectAdapter, getAdapter } = await import('../adapters');
+  const { ReportGenerator } = await import('../report-generator');
+
+  // Resolve adapter: explicit format or auto-detect
+  let adapter;
+  if (format !== 'auto') {
+    adapter = getAdapter(format);
+    if (!adapter) {
+      console.error(`Error: Unknown format "${format}". Use auto, junit, trx, newman, or json.`);
+      process.exitCode = 1;
+      return;
+    }
+  } else {
+    adapter = detectAdapter(content, resolvedInput);
+    if (!adapter) {
+      console.error(`Error: Could not auto-detect input format for ${resolvedInput}.`);
+      console.error('Specify it explicitly with --format <junit|trx|newman|json>.');
+      process.exitCode = 1;
+      return;
+    }
+    console.log(`   Detected format: ${adapter.name} (${adapter.format})`);
+  }
+
+  // Parse the input
+  const ingested = adapter.ingest({
+    content,
+    inputPath: resolvedInput,
+    outputDir,
+    options: {
+      outputFile: path.basename(outputPath),
+      historyFile,
+      framework: frameworkOverride,
+      projectName,
+      exportJson: hasFlag('--export-json'),
+      exportJunit: hasFlag('--export-junit'),
+      exportPdf: hasFlag('--export-pdf'),
+      theme: themePreset ? { preset: themePreset as any } : undefined,
+      branding: title ? { title } : undefined,
+    },
+  });
+
+  console.log(`   Ingested ${ingested.results.length} test result(s) from ${ingested.framework.label}`);
+
+  // Generate the report
+  const generator = new ReportGenerator({
+    options: {
+      outputFile: path.basename(outputPath),
+      historyFile,
+      framework: frameworkOverride,
+      projectName,
+      exportJson: hasFlag('--export-json'),
+      exportJunit: hasFlag('--export-junit'),
+      exportPdf: hasFlag('--export-pdf'),
+      theme: themePreset ? { preset: themePreset as any } : undefined,
+      branding: title ? { title } : undefined,
+    },
+    outputDir,
+    framework: ingested.framework,
+    ciInfo: ingested.ciInfo,
+    startTime: ingested.startTime,
+  });
+  generator.ingest(ingested);
+  await generator.generate();
+}
+
 async function main(): Promise<void> {
   switch (command) {
+    case 'generate':
+      await runGenerate();
+      break;
     case 'gate':
       await runGate();
       break;

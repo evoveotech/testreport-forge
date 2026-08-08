@@ -1,5 +1,3 @@
-import type { TestCase, TestResult } from '@playwright/test/reporter';
-
 // ============================================================================
 // Report Customisation
 // ============================================================================
@@ -70,6 +68,14 @@ export interface SmartReporterOptions {
   performanceThreshold?: number;
   slackWebhook?: string;
   teamsWebhook?: string;
+
+  /**
+   * Source automation framework label shown in the report header.
+   * When omitted, the framework is auto-detected from the data source
+   * (Playwright runtime, JUnit XML, TRX, Newman JSON, etc.).
+   * Set explicitly to override auto-detection, e.g. 'Cypress', 'SoapUI'.
+   */
+  framework?: string;
 
   // NEW: Feature flags (all default to true)
   enableRetryAnalysis?: boolean;

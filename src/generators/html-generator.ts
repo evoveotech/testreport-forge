@@ -36,6 +36,8 @@ export interface HtmlGeneratorData {
   quarantineEntries?: QuarantineEntry[];
   quarantineThreshold?: number;
   aiSuiteHealthSummary?: string;
+  /** Source automation framework label (e.g. 'Playwright', 'Cypress', 'MSTest (TRX)'). */
+  framework?: string;
 }
 
 /**
@@ -683,6 +685,7 @@ export function generateHtml(data: HtmlGeneratorData): GeneratedReport {
   const branding = options.branding;
   const reportTitle = branding?.title ?? 'Evoveo Smart Reporter';
   const reportSubtitle = branding?.title ? '' : 'Intelligent test reporting.';
+  const frameworkLabel = data.framework ?? options.framework ?? 'Playwright';
   const enableTraceViewer = options.enableTraceViewer !== false;
   const showTraceSection = enableTraceViewer;
   const enableHistoryDrilldown = options.enableHistoryDrilldown === true;
@@ -775,9 +778,9 @@ export function generateHtml(data: HtmlGeneratorData): GeneratedReport {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(reportTitle)} — Smart Test Report</title>
-  <meta name="description" content="Interactive Playwright test report with stability grades, flakiness detection, trend analytics, and AI-powered failure analysis.">
+  <meta name="description" content="Interactive ${escapeHtml(frameworkLabel)} test report with stability grades, flakiness detection, trend analytics, and AI-powered failure analysis.">
   <meta property="og:title" content="${escapeHtml(reportTitle)} — Smart Test Report">
-  <meta property="og:description" content="Interactive Playwright test report with stability grades, flakiness detection, trend analytics, and AI-powered failure analysis.">
+  <meta property="og:description" content="Interactive ${escapeHtml(frameworkLabel)} test report with stability grades, flakiness detection, trend analytics, and AI-powered failure analysis.">
   <meta property="og:type" content="website">${cspSafe ? '' : fontLinks}
 ${headStyles}
 </head>
@@ -798,6 +801,7 @@ ${branding?.logo ? `          <img class="logo-image" src="${escapeHtml(branding
           <div class="logo-text">
             <span class="logo-title">${escapeHtml(reportTitle)}</span>
 ${reportSubtitle ? `            <span class="logo-subtitle">${escapeHtml(reportSubtitle)}</span>` : ''}
+            <span class="logo-framework" title="Source automation framework">${escapeHtml(frameworkLabel)}</span>
           </div>
         </div>
         <nav class="breadcrumbs" aria-label="Breadcrumb">
@@ -2425,6 +2429,20 @@ ${highContrastOverride}${customOverrides}
       font-size: 0.65rem;
       color: var(--text-muted);
       font-family: ${monoFont};
+    }
+
+    .logo-framework {
+      display: inline-block;
+      margin-left: 0.5rem;
+      padding: 0.05rem 0.4rem;
+      font-size: 0.6rem;
+      font-family: ${monoFont};
+      color: var(--accent-blue, #3b82f6);
+      background: var(--surface-2, rgba(255,255,255,0.06));
+      border: 1px solid var(--border, rgba(255,255,255,0.1));
+      border-radius: 4px;
+      vertical-align: middle;
+      white-space: nowrap;
     }
 
     .breadcrumbs {

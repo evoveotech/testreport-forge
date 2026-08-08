@@ -9,8 +9,8 @@ import { sanitizeFilename } from '../utils/sanitizers';
  */
 export class HistoryCollector {
   private history: TestHistory = { runs: [], tests: {}, summaries: [] };
-  private options: Required<Omit<SmartReporterOptions, 'slackWebhook' | 'teamsWebhook' | 'baselineRunId' | 'networkLogFilter' | 'projectName' | 'thresholds' | 'maxEmbeddedSize' | 'runId' | 'exportJson' | 'exportPdf' | 'exportJunit' | 'exportPdfFull' | 'theme' | 'notifications' | 'branding' | 'qualityGates' | 'quarantine' | 'live'>> &
-                   Pick<SmartReporterOptions, 'slackWebhook' | 'teamsWebhook' | 'baselineRunId' | 'networkLogFilter' | 'projectName' | 'thresholds' | 'maxEmbeddedSize' | 'runId' | 'exportJson' | 'exportPdf' | 'exportJunit' | 'exportPdfFull' | 'theme' | 'notifications' | 'branding' | 'qualityGates' | 'quarantine' | 'live'>;
+  private options: Required<Omit<SmartReporterOptions, 'slackWebhook' | 'teamsWebhook' | 'baselineRunId' | 'networkLogFilter' | 'projectName' | 'thresholds' | 'maxEmbeddedSize' | 'runId' | 'exportJson' | 'exportPdf' | 'exportJunit' | 'exportPdfFull' | 'theme' | 'notifications' | 'branding' | 'qualityGates' | 'quarantine' | 'live' | 'framework'>> &
+                   Pick<SmartReporterOptions, 'slackWebhook' | 'teamsWebhook' | 'baselineRunId' | 'networkLogFilter' | 'projectName' | 'thresholds' | 'maxEmbeddedSize' | 'runId' | 'exportJson' | 'exportPdf' | 'exportJunit' | 'exportPdfFull' | 'theme' | 'notifications' | 'branding' | 'qualityGates' | 'quarantine' | 'live' | 'framework'>;
   private outputDir: string;
   private currentRun: RunMetadata;
   private startTime: number;

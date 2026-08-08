@@ -1,0 +1,116 @@
+{
+  "metadata": {
+    "generatedAt": "2026-08-08T10:45:00.000Z",
+    "reporterVersion": "2.1.0",
+    "projectName": "Selenium Web Automation",
+    "framework": "Selenium"
+  },
+  "summary": {
+    "total": 8,
+    "passed": 6,
+    "failed": 1,
+    "skipped": 1,
+    "flaky": 0,
+    "duration": 45230,
+    "passRate": 75,
+    "stabilityGrade": "B"
+  },
+  "tests": [
+    {
+      "testId": "LoginTests::should_login_with_valid_credentials",
+      "title": "should login with valid credentials",
+      "file": "tests/LoginTests.java",
+      "status": "passed",
+      "duration": 3200,
+      "retry": 0,
+      "outcome": "expected",
+      "suite": "LoginTests",
+      "tags": ["@smoke", "@critical"],
+      "browser": "chrome"
+    },
+    {
+      "testId": "LoginTests::should_reject_invalid_credentials",
+      "title": "should reject invalid credentials",
+      "file": "tests/LoginTests.java",
+      "status": "passed",
+      "duration": 2800,
+      "retry": 0,
+      "outcome": "expected",
+      "suite": "LoginTests",
+      "tags": ["@regression"],
+      "browser": "chrome"
+    },
+    {
+      "testId": "NavigationTests::should_navigate_to_all_main_pages",
+      "title": "should navigate to all main pages",
+      "file": "tests/NavigationTests.java",
+      "status": "passed",
+      "duration": 5400,
+      "retry": 0,
+      "outcome": "expected",
+      "suite": "NavigationTests",
+      "tags": ["@smoke"],
+      "browser": "chrome"
+    },
+    {
+      "testId": "SearchTests::should_search_by_keyword",
+      "title": "should search by keyword",
+      "file": "tests/SearchTests.java",
+      "status": "passed",
+      "duration": 2100,
+      "retry": 0,
+      "outcome": "expected",
+      "suite": "SearchTests",
+      "browser": "chrome"
+    },
+    {
+      "testId": "SearchTests::should_filter_results_by_category",
+      "title": "should filter results by category",
+      "file": "tests/SearchTests.java",
+      "status": "failed",
+      "duration": 4300,
+      "retry": 0,
+      "outcome": "unexpected",
+      "error": "org.openqa.selenium.TimeoutException: Expected condition failed: element not visible within 4000ms\n  at SearchTests.should_filter_results_by_category(SearchTests.java:87)\n  at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)",
+      "suite": "SearchTests",
+      "tags": ["@regression"],
+      "browser": "chrome"
+    },
+    {
+      "testId": "CartTests::should_add_item_to_cart",
+      "title": "should add item to cart",
+      "file": "tests/CartTests.java",
+      "status": "passed",
+      "duration": 6700,
+      "retry": 0,
+      "outcome": "expected",
+      "suite": "CartTests",
+      "tags": ["@smoke", "@critical"],
+      "browser": "chrome"
+    },
+    {
+      "testId": "CartTests::should_update_quantity_in_cart",
+      "title": "should update quantity in cart",
+      "file": "tests/CartTests.java",
+      "status": "skipped",
+      "duration": 0,
+      "retry": 0,
+      "outcome": "skipped",
+      "suite": "CartTests",
+      "tags": ["@regression"],
+      "browser": "chrome"
+    },
+    {
+      "testId": "CheckoutTests::should_complete_checkout_flow",
+      "title": "should complete checkout flow",
+      "file": "tests/CheckoutTests.java",
+      "status": "passed",
+      "duration": 18730,
+      "retry": 0,
+      "outcome": "expected",
+      "suite": "CheckoutTests",
+      "tags": ["@smoke", "@critical", "@slow"],
+      "browser": "chrome"
+    }
+  ]
+}

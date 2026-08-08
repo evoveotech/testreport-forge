@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Example JUnit XML output from SoapUI (via its JUnit report export).
+
+  SoapUI test suites map to JUnit <testsuite> elements, with test steps
+  as <testcase> entries. This demonstrates SOAP and REST service testing
+  with failure details.
+-->
+<testsuites>
+  <testsuite name="SOAP Services" tests="3" failures="0" skipped="0" time="4.523" timestamp="2026-08-08T11:00:00Z">
+    <properties>
+      <property name="framework" value="SoapUI"/>
+      <property name="framework.version" value="5.7.0"/>
+      <property name="endpoint" value="https://soap.example.com/services"/>
+    </properties>
+    <testcase classname="CustomerService.GetCustomer" name="GetCustomerById - valid ID returns customer" time="1.234"/>
+    <testcase classname="CustomerService.GetCustomer" name="GetCustomerById - invalid ID returns SOAP fault" time="0.892"/>
+    <testcase classname="CustomerService.CreateCustomer" name="CreateCustomer - creates new customer record" time="2.397"/>
+  </testsuite>
+
+  <testsuite name="REST API Tests" tests="4" failures="1" skipped="0" time="6.871" timestamp="2026-08-08T11:00:05Z">
+    <testcase classname="REST.Orders" name="GET /orders returns order list" time="0.567"/>
+    <testcase classname="REST.Orders" name="POST /orders creates new order" time="1.234"/>
+    <testcase classname="REST.Orders" name="PUT /orders/{id} updates order status" time="2.891">
+      <failure message="HTTP 500: Internal Server Error" type="AssertionError">AssertionError: HTTP 500: Internal Server Error
+  Response: {"error": "Database connection timeout"}
+  Expected status code 200 but got 500
+  at REST.Orders.PUT /orders/{id} updates order status (SoapUI Test Step: PUT Request)</failure>
+    </testcase>
+    <testcase classname="REST.Orders" name="DELETE /orders/{id} removes order" time="2.179"/>
+  </testsuite>
+
+  <testsuite name="Security Tests" tests="2" failures="0" skipped="0" time="3.214" timestamp="2026-08-08T11:00:12Z">
+    <testcase classname="Security.Auth" name="Valid token grants access" time="1.567"/>
+    <testcase classname="Security.Auth" name="Expired token returns 401" time="1.647"/>
+  </testsuite>
+</testsuites>

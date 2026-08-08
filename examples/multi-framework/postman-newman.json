@@ -1,0 +1,158 @@
+{
+  "collection": {
+    "info": {
+      "name": "E-Commerce API Regression",
+      "_postman_id": "collection-001",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    }
+  },
+  "environment": {
+    "name": "Staging",
+    "values": [
+      { "key": "baseUrl", "value": "https://api.staging.example.com" }
+    ]
+  },
+  "run": {
+    "stats": {
+      "iterations": { "total": 1, "pending": 0, "failed": 0 },
+      "items": { "total": 6, "pending": 0, "failed": 0 },
+      "scripts": { "total": 12, "pending": 0, "failed": 0 },
+      "prerequests": { "total": 6, "pending": 0, "failed": 0 },
+      "requests": { "total": 6, "pending": 0, "failed": 0 },
+      "tests": { "total": 12, "pending": 0, "failed": 2 },
+      "assertions": { "total": 14, "pending": 0, "failed": 2 }
+    },
+    "timings": { "completed": 8432, "responseAverage": 1405 },
+    "executions": [
+      {
+        "id": "e1",
+        "item": {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "https://api.staging.example.com/health" }
+          }
+        },
+        "response": {
+          "status": "OK",
+          "code": 200,
+          "responseTime": 89
+        },
+        "assertions": [
+          { "assertion": "Status code is 200" },
+          { "assertion": "Response time is less than 500ms" }
+        ]
+      },
+      {
+        "id": "e2",
+        "item": {
+          "name": "POST /auth/login",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "https://api.staging.example.com/auth/login" }
+          }
+        },
+        "response": {
+          "status": "OK",
+          "code": 200,
+          "responseTime": 234
+        },
+        "assertions": [
+          { "assertion": "Status code is 200" },
+          { "assertion": "Response has access_token" },
+          { "assertion": "Token is JWT format" }
+        ]
+      },
+      {
+        "id": "e3",
+        "item": {
+          "name": "GET /products",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "https://api.staging.example.com/products?page=1&limit=20" }
+          }
+        },
+        "response": {
+          "status": "OK",
+          "code": 200,
+          "responseTime": 456
+        },
+        "assertions": [
+          { "assertion": "Status code is 200" },
+          { "assertion": "Response has products array" },
+          { "assertion": "Products array is not empty" }
+        ]
+      },
+      {
+        "id": "e4",
+        "item": {
+          "name": "POST /cart/add",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "https://api.staging.example.com/cart/add" }
+          }
+        },
+        "response": {
+          "status": "Internal Server Error",
+          "code": 500,
+          "responseTime": 1234
+        },
+        "assertions": [
+          { "assertion": "Status code is 201", "error": { "message": "expected response status to be 201 but got 500", "name": "AssertionError" } },
+          { "assertion": "Response has cart_id", "error": { "message": "expected response body to have property cart_id but got error response", "name": "AssertionError" } }
+        ]
+      },
+      {
+        "id": "e5",
+        "item": {
+          "name": "GET /cart",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "https://api.staging.example.com/cart" }
+          }
+        },
+        "response": {
+          "status": "OK",
+          "code": 200,
+          "responseTime": 178
+        },
+        "assertions": [
+          { "assertion": "Status code is 200" },
+          { "assertion": "Cart has items" }
+        ]
+      },
+      {
+        "id": "e6",
+        "item": {
+          "name": "POST /checkout",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "https://api.staging.example.com/checkout" }
+          }
+        },
+        "response": {
+          "status": "Created",
+          "code": 201,
+          "responseTime": 3421
+        },
+        "assertions": [
+          { "assertion": "Status code is 201" },
+          { "assertion": "Response has order_id" },
+          { "assertion": "Order total matches cart total" }
+        ]
+      }
+    ],
+    "failures": [
+      {
+        "error": { "message": "expected response status to be 201 but got 500" },
+        "at": "assertion:0 in test-script",
+        "source": { "name": "POST /cart/add" }
+      },
+      {
+        "error": { "message": "expected response body to have property cart_id but got error response" },
+        "at": "assertion:1 in test-script",
+        "source": { "name": "POST /cart/add" }
+      }
+    ]
+  }
+}

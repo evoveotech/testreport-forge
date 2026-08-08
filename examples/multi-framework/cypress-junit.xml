@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Example JUnit XML output — as emitted by Cypress (via cypress-junit-reporter),
+  Jest (jest-junit), Vitest (vitest-junit), Pytest (--junitxml), SoapUI, etc.
+
+  This file demonstrates: passed, failed, and skipped tests, nested suites,
+  failure messages with stack traces, and framework metadata in <properties>.
+-->
+<testsuites>
+  <testsuite name="Authentication" tests="4" failures="1" skipped="1" time="3.842" timestamp="2026-08-08T10:30:00Z">
+    <properties>
+      <property name="framework" value="Cypress"/>
+      <property name="framework.version" value="13.13.0"/>
+      <property name="browser" value="chromium"/>
+    </properties>
+    <testcase classname="Auth.Login" name="should log in with valid credentials" time="1.234"/>
+    <testcase classname="Auth.Login" name="should reject invalid password" time="0.892">
+      <failure message="AssertionError: expected 200 to equal 401" type="AssertionError">AssertionError: expected 200 to equal 401
+    at Context.eval (cypress/e2e/auth/login.cy.ts:28:45)
+    at LoginPage.submit (cypress/support/page-objects/login.ts:52:18)</failure>
+    </testcase>
+    <testcase classname="Auth.Login" name="should display error for locked account" time="0.534"/>
+    <testcase classname="Auth.Login" name="should handle 2FA flow" time="0">
+      <skipped message="2FA not configured in test environment"/>
+    </testcase>
+  </testsuite>
+
+  <testsuite name="Shopping Cart" tests="5" failures="1" skipped="0" time="7.231" timestamp="2026-08-08T10:30:04Z">
+    <testcase classname="Cart.Add" name="should add item to cart" time="0.845"/>
+    <testcase classname="Cart.Add" name="should update quantity" time="1.102"/>
+    <testcase classname="Cart.Checkout" name="should calculate totals correctly" time="1.567"/>
+    <testcase classname="Cart.Checkout" name="should apply discount code" time="2.134">
+      <failure message="Expected discount to be 10% but got 0%" type="AssertionError">AssertionError: Expected discount to be 10% but got 0%
+    at Context.eval (cypress/e2e/cart/checkout.cy.ts:67:31)
+    at CheckoutPage.applyDiscount (cypress/support/page-objects/checkout.ts:89:12)</failure>
+    </testcase>
+    <testcase classname="Cart.Checkout" name="should handle empty cart checkout" time="1.583"/>
+  </testsuite>
+
+  <testsuite name="API Endpoints" tests="3" failures="0" skipped="0" time="2.109" timestamp="2026-08-08T10:30:11Z">
+    <testcase classname="API.Health" name="GET /health returns 200" time="0.234"/>
+    <testcase classname="API.Users" name="GET /users returns paginated list" time="0.876"/>
+    <testcase classname="API.Users" name="POST /users creates new user" time="0.999"/>
+  </testsuite>
+</testsuites>

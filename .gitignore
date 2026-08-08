@@ -27,6 +27,10 @@ example/.smart-quarantine.json
 example/test-history-premium.json
 example/premium-report.html
 
+# Multi-framework example generated reports (input files ARE committed)
+examples/multi-framework/reports/
+examples/multi-framework/test-history.json
+
 # Pack archives
 *.tgz
 

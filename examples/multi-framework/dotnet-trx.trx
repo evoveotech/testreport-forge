@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Example TRX output — as emitted by `dotnet test --logger trx`,
+  MSTest, xUnit (with TRX reporter), and NUnit (with TRX adapter).
+
+  This file demonstrates: passed, failed, and timed-out tests, TimeSpan
+  durations, ErrorInfo with message + stack trace, and test class hierarchy.
+  Representative of .NET / RestSharp integration test runs.
+-->
+<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <TestSettings name="Local Test Run" id="test-settings-001">
+    <Execution>
+      <TestTypeSpecific />
+    </Execution>
+  </TestSettings>
+  <Results>
+    <UnitTestResult testId="t1" testName="CanAdd_PositiveNumbers" outcome="Passed" duration="00:00:00.123">
+      <Output>
+        <StdOut>Adding 2 + 3 = 5</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult testId="t2" testName="CanDivide_ByZero_ThrowsException" outcome="Failed" duration="00:00:00.045">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.ThrowsException failed. Expected exception of type System.DivideByZeroException but no exception was thrown.</Message>
+          <StackTrace>   at MathTests.CalculatorTests.CanDivide_ByZero_ThrowsException() in C:\dev\MathTests\CalculatorTests.cs:line 42
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Span`1&amp; arguments, Signature sig, Boolean constructor, Boolean wrapExceptions)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult testId="t3" testName="CanMultiply_LargeNumbers" outcome="Passed" duration="00:00:00.089"/>
+    <UnitTestResult testId="t4" testName="ApiEndpoint_ReturnsOk_WithValidToken" outcome="Passed" duration="00:00:02.345">
+      <Output>
+        <StdOut>GET /api/users returned 200 OK in 2345ms</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult testId="t5" testName="ApiEndpoint_HandlesTimeout_Gracefully" outcome="Timeout" duration="00:00:30.000">
+      <Output>
+        <ErrorInfo>
+          <Message>Test exceeded 30000ms timeout</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult testId="t6" testName="RestSharp_PostRequest_CreatesResource" outcome="Passed" duration="00:00:01.567">
+      <Output>
+        <StdOut>POST /api/resources created resource ID 12345</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest id="t1" name="CanAdd_PositiveNumbers" storage="MathTests.dll">
+      <TestMethod name="CanAdd_PositiveNumbers" className="MathTests.CalculatorTests" adapterTypeName="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestAdapter" />
+    </UnitTest>
+    <UnitTest id="t2" name="CanDivide_ByZero_ThrowsException" storage="MathTests.dll">
+      <TestMethod name="CanDivide_ByZero_ThrowsException" className="MathTests.CalculatorTests" />
+    </UnitTest>
+    <UnitTest id="t3" name="CanMultiply_LargeNumbers" storage="MathTests.dll">
+      <TestMethod name="CanMultiply_LargeNumbers" className="MathTests.CalculatorTests" />
+    </UnitTest>
+    <UnitTest id="t4" name="ApiEndpoint_ReturnsOk_WithValidToken" storage="IntegrationTests.dll">
+      <TestMethod name="ApiEndpoint_ReturnsOk_WithValidToken" className="IntegrationTests.ApiTests" />
+    </UnitTest>
+    <UnitTest id="t5" name="ApiEndpoint_HandlesTimeout_Gracefully" storage="IntegrationTests.dll">
+      <TestMethod name="ApiEndpoint_HandlesTimeout_Gracefully" className="IntegrationTests.ApiTests" />
+    </UnitTest>
+    <UnitTest id="t6" name="RestSharp_PostRequest_CreatesResource" storage="IntegrationTests.dll">
+      <TestMethod name="RestSharp_PostRequest_CreatesResource" className="IntegrationTests.RestSharpTests" />
+    </UnitTest>
+  </TestDefinitions>
+  <ResultSummary outcome="Completed">
+    <Counters total="6" executed="6" passed="4" failed="1" error="0" timeout="1" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output />
+  </ResultSummary>
+</TestRun>

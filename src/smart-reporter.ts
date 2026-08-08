@@ -673,6 +673,7 @@ class SmartReporter implements Reporter {
 	      quarantineEntries: quarantineResult?.entries,
 	      quarantineThreshold: this.options.quarantine?.threshold,
 	      aiSuiteHealthSummary,
+	      framework: this.options.framework ?? 'Playwright',
 	    };
 
     // Generate and save HTML report (with optional companion CSS/JS for CSP-safe mode)
