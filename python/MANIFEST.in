@@ -1,0 +1,3 @@
+include LICENSE
+include evoveo_smart_reporter_python/py.typed
+recursive-include evoveo_smart_reporter_python/_bundled_dist *.js
