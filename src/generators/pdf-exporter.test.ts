@@ -61,7 +61,8 @@ describe('pdf-exporter', () => {
       const htmlPath = '/tmp/test-reports/smart-report.html';
       const result = await exportPdfReport(htmlPath, {});
 
-      expect(result).toBe('/tmp/test-reports/smart-report.pdf');
+      const expectedPdfPath = path.resolve('/tmp/test-reports', 'smart-report.pdf');
+      expect(result).toBe(expectedPdfPath);
       expect(mockChromium.launch).toHaveBeenCalledWith({ headless: true });
       expect(mockPage.goto).toHaveBeenCalledWith(
         pathToFileURL(htmlPath).href,
@@ -69,7 +70,7 @@ describe('pdf-exporter', () => {
       );
       expect(mockPage.pdf).toHaveBeenCalledWith(
         expect.objectContaining({
-          path: '/tmp/test-reports/smart-report.pdf',
+          path: expectedPdfPath,
           format: 'A4',
           landscape: true,
           printBackground: true,
@@ -166,10 +167,11 @@ describe('pdf-exporter', () => {
         '/custom/output',
       );
 
-      expect(result).toBe('/custom/output/smart-report.pdf');
+      const expectedCustomPath = path.resolve('/custom/output', 'smart-report.pdf');
+      expect(result).toBe(expectedCustomPath);
       expect(mockPage.pdf).toHaveBeenCalledWith(
         expect.objectContaining({
-          path: '/custom/output/smart-report.pdf',
+          path: expectedCustomPath,
         }),
       );
 

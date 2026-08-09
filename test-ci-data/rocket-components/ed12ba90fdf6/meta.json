@@ -1,0 +1,8 @@
+{
+  "commit": "ed12ba90fdf62d862cadfd122decdf9174305c03",
+  "branch": "master",
+  "trigger": "pull_request",
+  "occurredAt": "2022-05-17T08:09:22Z",
+  "ciRunUrl": "https://github.com/osstotalsoft/rocket-webapp-components/commit/ed12ba90fdf62d862cadfd122decdf9174305c03",
+  "duration": 23600
+}

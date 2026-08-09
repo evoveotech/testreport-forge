@@ -1,0 +1,8 @@
+{
+  "commit": "e27c99edc4c2a4ffbdd277b53862b7b39a2c8631",
+  "branch": "main",
+  "trigger": "pull_request",
+  "occurredAt": "2020-11-06T19:14:47Z",
+  "ciRunUrl": "https://github.com/samvera-labs/ramp/commit/e27c99edc4c2a4ffbdd277b53862b7b39a2c8631",
+  "duration": 8076
+}

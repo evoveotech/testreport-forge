@@ -1,0 +1,8 @@
+{
+  "commit": "a02b7cab4c3057745a29e52b550b9fb6a64582ad",
+  "branch": "develop",
+  "trigger": "pull_request",
+  "occurredAt": "2025-12-22T21:41:02Z",
+  "ciRunUrl": "https://github.com/briebug/ngrx-auto-entity/commit/a02b7cab4c3057745a29e52b550b9fb6a64582ad",
+  "duration": 7061
+}

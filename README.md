@@ -208,6 +208,79 @@ generator.ingest(ingested);
 await generator.generate();
 ```
 
+## Leadership Dashboard — Test Intelligence Platform
+
+Aggregate test runs across your entire enterprise — multiple clients, products,
+teams, and stacks — into one leadership dashboard. See pass rates, flakiness,
+and trends by team. Drill down to the single-run report you already know.
+
+![Estate Overview](images/leadership-dashboard/estate-overview.png)
+*Estate overview: 500 runs across 5 clients, 6 teams, 8 stacks — pass rate ring, KPI cards, trend chart*
+
+### Quick Start
+
+```bash
+# Build
+npm run build
+
+# Seed sample data (500 runs across 5 clients, 6 teams, 8 stacks)
+node dist/bin/seed-data.js --data-dir ./data
+
+# Boot the dashboard
+npx evoveo-smart-reporter-dashboard --port 3000 --data-dir ./data
+
+# Open http://localhost:3000
+```
+
+### Views
+
+| View | What it shows |
+|------|---------------|
+| **Estate Overview** | KPI cards (pass rate, flaky rate, total runs), trend chart, heatmaps by client/product/team/stack |
+| **Team Contribution** | Tests authored + fixes landed per team (from GitHub/Jira connectors), worst runs, flaky tests |
+| **Recent Runs** | Run list with client, product, team, stack, pass rate, duration — click to drill down |
+| **Period Comparison** | Current period vs previous period — are things getting better or worse? |
+| **Sync Health** | CI pipeline connector status — is the dashboard data complete and current? |
+| **Settings** | Cloud storage (OneDrive/Google Drive), alert thresholds, connector config |
+
+![Team Contribution](images/leadership-dashboard/team-contribution.png)
+*Team contribution: tests authored and fixes landed per team, with drill-down*
+
+![Settings](images/leadership-dashboard/settings.png)
+*Settings: connect OneDrive or Google Drive as shared storage — no Docker, no Postgres*
+
+### Auth Modes
+
+| Mode | Flag | Use Case |
+|------|------|----------|
+| Dev | `--auth dev` | Local development (login form, trusts headers) |
+| OIDC | `--auth oidc --oidc-url <url>` | Enterprise SSO (Keycloak, Okta, Google) |
+| SAML | `--auth saml` | SAML via gateway delegation (mod_auth_mellon, Shibboleth) |
+
+### Ingesting Runs
+
+```bash
+# HTTP POST (authenticated)
+curl -X POST http://localhost:3000/api/ingest \
+  -H 'Content-Type: application/json' \
+  -H 'X-Tenant-Id: acme' -H 'X-User-Id: u1' -H 'X-User-Role: admin' \
+  -d '{
+    "orgContext": {
+      "tenantId": "acme", "client": "fiserv-payments", "product": "payments-gateway",
+      "team": "qa-payments", "stack": "junit", "runType": "nightly", "environment": "ci"
+    },
+    "format": "junit",
+    "rawArtifact": "<testsuites><testsuite name=\"s\" tests=\"10\" failures=\"1\"><testcase name=\"ok\"/><testcase name=\"bad\"><failure>boom</failure></testcase></testsuite></testsuites>"
+  }'
+```
+
+**Full guide with screenshots, cloud storage setup, and connector configuration:**
+[`docs/leadership-dashboard-guide.md`](docs/leadership-dashboard-guide.md)
+
+**Architecture decisions:** [`docs/adr/`](docs/adr/) (9 ADRs)
+
+---
+
 ## At a Glance
 
 - Stability grades (A–F) so you know which tests to trust

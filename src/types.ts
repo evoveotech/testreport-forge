@@ -221,6 +221,7 @@ export interface CIInfo {
   branch?: string;
   commit?: string;
   buildId?: string;
+  ciRunUrl?: string;  // link back to the CI pipeline run
 }
 
 // ============================================================================
@@ -535,9 +536,283 @@ export interface LiveCounters {
 // ============================================================================
 
 export interface DigestOptions {
-  period: 'daily' | 'weekly' | 'monthly';
+  period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'all';
   historyFile: string;
   output?: string;
   ai?: boolean;
   format?: 'markdown' | 'text';
+}
+
+// ============================================================================
+// Leadership Test Intelligence Platform
+// Multi-tenant aggregation layer for enterprise-wide test status.
+// See: tasks/plan.md, docs/leadership-platform.md
+// ============================================================================
+
+/**
+ * Organization context stamped on every ingested run. Explicit, never inferred
+ * (ADR-005): inference is brittle across 10k+ clients. This is the tenancy +
+ * attribution key that lets leadership slice the estate by client, product,
+ * team, stack, run-type, and environment.
+ */
+export interface OrgContext {
+  tenantId: string;       // the enterprise customer (multi-tenant isolation key)
+  client: string;         // external client / product line (e.g. "client-1042")
+  product: string;        // product name (e.g. "payments-gateway")
+  team: string;           // owning team (e.g. "payments-qa")
+  stack: string;          // technology (e.g. "dotnet" | "playwright" | "newman")
+  stackCategory?: StackCategory; // high-level grouping (mobile/backend/web/legacy/bff/microservices)
+  runType: 'pr' | 'nightly' | 'daily' | 'scheduled' | 'manual';
+  environment: string;    // e.g. "prod" | "staging" | "dev"
+}
+
+/**
+ * High-level technology stack categories for cross-cutting analysis.
+ * Maps individual stacks (playwright, xctest, espresso, etc.) to the
+ * categories leadership cares about: mobile, backend, web, legacy, BFF,
+ * microservices.
+ */
+export type StackCategory = 'mobile' | 'backend' | 'web' | 'legacy' | 'bff' | 'microservices';
+
+/**
+ * Known stack-to-category mappings. Stacks not in this map default to
+ * 'web' for web UI frameworks, 'mobile' for mobile frameworks, 'backend'
+ * for service/API frameworks. The map is used by the aggregator to add
+ * a byStackCategory slice to the estate rollup.
+ */
+export const STACK_CATEGORIES: Record<string, StackCategory> = {
+  // Mobile
+  xctest: 'mobile',
+  espresso: 'mobile',
+  appium: 'mobile',
+  'xamarin-uitest': 'mobile',
+  'detox': 'mobile',
+  // Backend
+  junit: 'backend',
+  trx: 'backend',
+  'dotnet-trx': 'backend',
+  pytest: 'backend',
+  mocha: 'backend',
+  'spring-boot': 'backend',
+  // Web
+  playwright: 'web',
+  cypress: 'web',
+  selenium: 'web',
+  puppeteer: 'web',
+  'webdriver-io': 'web',
+  // BFF
+  'bff-newman': 'bff',
+  'bff-contract': 'bff',
+  // Microservices
+  'contract-test': 'microservices',
+  'pact': 'microservices',
+  'spring-cloud-contract': 'microservices',
+  // Legacy
+  'selenium-rc': 'legacy',
+  'junit3': 'legacy',
+  'nunit2': 'legacy',
+};
+
+/**
+ * Resolve a stack name to its category. Falls back to 'web' for unknown
+ * stacks (most test automation is web-facing).
+ */
+export function resolveStackCategory(stack: string): StackCategory {
+  return STACK_CATEGORIES[stack.toLowerCase()] ?? 'web';
+}
+
+/**
+ * A run summary persisted with its org context. Extends the existing
+ * RunSummary so the leadership layer composes on top of the per-run schema
+ * rather than replacing it (ADR-001).
+ */
+export interface IngestedRun extends RunSummary {
+  orgContext: OrgContext;
+  reportPath?: string;        // relative path to the single-run HTML drilldown
+  rawArtifactPath?: string;   // original raw result artifact (JUnit/TRX/JSON)
+  ingestedAt: string;         // ISO timestamp of ingestion
+  archived?: boolean;         // true after retention job moves to cold tier
+}
+
+/**
+ * One slice of the estate rollup along a single dimension
+ * (client / product / team / stack / run-type).
+ */
+export interface RollupSlice {
+  key: string;
+  totalRuns: number;
+  passRate: number;       // 0-100
+  flakyRate: number;      // 0-100
+  deltaPct: number;       // pass-rate change vs previous period, in percentage points
+}
+
+/**
+ * Team contribution across all four metrics (ADR-006).
+ * runsExecuted / passRate / flakinessOwned come from the run store.
+ * testsAuthored / fixesLanded come from the connectors layer (git + issue tracker).
+ */
+export interface TeamContribution {
+  team: string;
+  runsExecuted: number;
+  passRate: number;       // 0-100
+  flakinessOwned: number; // count of flaky tests owned by this team in the period
+  testsAuthored: number;  // commits touching test files (from git connector)
+  fixesLanded: number;    // issues closed by the team (from issue-tracker connector)
+  products: string[];     // distinct products this team owns (for card display)
+  stacks: string[];       // distinct stacks this team uses
+}
+
+/**
+ * Connector data keyed by team name. Populated by the ConnectorService from
+ * GitHub/GitLab (testsAuthored) and Jira/Linear (fixesLanded). Passed to the
+ * aggregator's estateRollup to fill in the team contribution metrics that
+ * can't be derived from test runs alone.
+ */
+export interface ConnectorData {
+  [team: string]: {
+    testsAuthored: number;
+    fixesLanded: number;
+  };
+}
+
+/**
+ * A single point in the estate pass-rate trend series.
+ */
+export interface TrendPoint {
+  date: string;           // ISO date (YYYY-MM-DD)
+  passRate: number;       // 0-100
+  totalRuns: number;
+}
+
+/**
+ * The top-level leadership view: estate-wide health with breakdowns along
+ * every dimension leadership cares about, plus a trend series.
+ */
+export interface EstateRollup {
+  asOf: string;           // ISO timestamp the rollup was computed
+  tenantId: string;       // tenant scope (or '*' for cross-tenant admin views)
+  period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'all';
+  totalRuns: number;
+  passRate: number;       // 0-100
+  flakyRate: number;      // 0-100
+  byClient: RollupSlice[];
+  byProduct: RollupSlice[];
+  byTeam: TeamContribution[];
+  byStack: RollupSlice[];
+  byStackCategory: RollupSlice[];  // mobile/backend/web/legacy/bff/microservices
+  byRunType: RollupSlice[];
+  byEnvironment: RollupSlice[];
+  trend: TrendPoint[];    // last N days of estate-wide pass rate
+}
+
+/**
+ * Drill-down view for a specific team: shows the worst-performing runs
+ * and flaky tests owned by that team in the period.
+ */
+export interface TeamDrillDown {
+  team: string;
+  period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'all';
+  totalRuns: number;
+  passRate: number;
+  flakyRate: number;
+  worstRuns: IngestedRun[];      // bottom 20 runs by pass rate
+  flakyRuns: IngestedRun[];      // runs with flaky > 0, sorted by flaky count
+  byStack: RollupSlice[];        // team's stacks breakdown
+  byProduct: RollupSlice[];      // team's products breakdown
+}
+
+/**
+ * Individual contributor metrics within a team. Derived from connector
+ * data (git commits touching test files, issues closed) plus run
+ * attribution when the run's orgContext includes a userId.
+ */
+export interface IndividualContribution {
+  userId: string;
+  team: string;
+  runsExecuted: number;
+  testsAuthored: number;
+  fixesLanded: number;
+  passRate: number;       // pass rate of runs attributed to this user
+}
+
+/**
+ * Period-over-period comparison view. Shows how each dimension changed
+ * between two periods (e.g. this week vs last week).
+ */
+export interface PeriodComparison {
+  period1: { label: string; from: string; to: string; };
+  period2: { label: string; from: string; to: string; };
+  totalRunsDelta: number;
+  passRateDelta: number;
+  flakyRateDelta: number;
+  byClient: ComparisonSlice[];
+  byTeam: ComparisonSlice[];
+  byStack: ComparisonSlice[];
+}
+
+export interface ComparisonSlice {
+  key: string;
+  period1Runs: number;
+  period2Runs: number;
+  period1PassRate: number;
+  period2PassRate: number;
+  passRateDelta: number;
+}
+
+/**
+ * Payload accepted by the ingestion endpoint (POST /runs).
+ * Either `rawArtifact` (a JUnit/TRX/Newman/JSON string) + `format`, or a
+ * pre-normalized `run` (RunSummary + orgContext). The ingest service routes
+ * raw artifacts through the existing adapters/* (ADR-001).
+ */
+export interface IngestPayload {
+  orgContext: OrgContext;
+  format?: 'auto' | 'junit' | 'trx' | 'newman' | 'json' | 'playwright' | 'xctest' | 'espresso' | 'appium';
+  rawArtifact?: string;      // raw test result content (when format is set)
+  run?: RunSummary;          // pre-normalized summary (when no raw artifact)
+  reportPath?: string;       // optional: path to already-generated HTML report
+  rawArtifactPath?: string;
+  /** Override the generated runId (used by pipeline-sources sync for
+   *  composite-key idempotency: ${connectorId}:${ciRunId}). When set, the
+   *  ingest service uses this instead of generating a random runId, so
+   *  re-syncing the same CI run upserts rather than duplicating (ADR-009). */
+  runIdOverride?: string;
+  /** CI metadata (commit, branch, trigger, provider) to enrich the run
+   *  summary. When set, overrides the default ciInfo from summaryFromResults.
+   *  Used by pipeline-sources sync to attach provenance (ADR-009). */
+  ciInfo?: CIInfo;
+  /** When the CI run actually occurred (ISO 8601). When set, overrides the
+   *  default ingestedAt timestamp so trend charts reflect when tests ran,
+   *  not when we ingested them. Used by pipeline-sources sync (ADR-009). */
+  occurredAt?: string;
+}
+
+/**
+ * Result of an ingestion request.
+ */
+export interface IngestResult {
+  accepted: boolean;
+  runId: string;
+  errors?: string[];
+}
+
+/**
+ * Tenant + user + role model for RBAC (ADR-003). Row-level isolation is
+ * enforced by the store; these types describe the access-control surface.
+ */
+export type UserRole = 'viewer' | 'admin';
+
+export interface Tenant {
+  tenantId: string;
+  name: string;
+  region?: string;       // data-residency pin (ADR-003)
+  createdAt: string;
+}
+
+export interface User {
+  userId: string;
+  tenantId: string;
+  role: UserRole;
+  email: string;
+  createdAt: string;
 }

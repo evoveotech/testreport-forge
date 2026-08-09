@@ -1,0 +1,8 @@
+{
+  "commit": "205f1ef2a5ff1f237f7d1093be12818d8b8a02ad",
+  "branch": "main",
+  "trigger": "pull_request",
+  "occurredAt": "2026-02-19T19:26:29Z",
+  "ciRunUrl": "https://github.com/MrPowerUp82/filament-sql-field/commit/205f1ef2a5ff1f237f7d1093be12818d8b8a02ad",
+  "duration": 803
+}

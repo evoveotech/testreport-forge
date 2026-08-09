@@ -1,0 +1,8 @@
+{
+  "commit": "ec3075d520acfa2662f8b86e6ce61c7a32f85105",
+  "branch": "main",
+  "trigger": "pull_request",
+  "occurredAt": "2022-01-06T02:02:03Z",
+  "ciRunUrl": "https://github.com/TOPdesk/dart-junitreport/commit/ec3075d520acfa2662f8b86e6ce61c7a32f85105",
+  "duration": 0
+}

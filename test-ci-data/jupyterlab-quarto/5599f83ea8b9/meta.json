@@ -1,0 +1,8 @@
+{
+  "commit": "5599f83ea8b98efc19a730971ab691dae8f72411",
+  "branch": "main",
+  "trigger": "pull_request",
+  "occurredAt": "2024-06-26T19:29:51Z",
+  "ciRunUrl": "https://github.com/quarto-dev/jupyterlab-quarto/commit/5599f83ea8b98efc19a730971ab691dae8f72411",
+  "duration": 2954
+}

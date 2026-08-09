@@ -1,0 +1,38 @@
+name: Leadership Platform CI
+
+on:
+  push:
+    branches: [main, feat/leadership-dashboard]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 22]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+      - name: Leadership platform tests
+        run: npx vitest run src/leadership-types.test.ts src/store/ src/ingest/ src/aggregator/ src/dashboard/ src/connectors/ src/retention/ src/benchmark.test.ts
+
+      - name: 10k benchmark
+        run: npx vitest run src/benchmark.test.ts --reporter=verbose

@@ -1,0 +1,8 @@
+{
+  "commit": "3fc7139edc2d164063a889720ac975e49b357b7c",
+  "branch": "main",
+  "trigger": "pull_request",
+  "occurredAt": "2024-12-10T08:33:43Z",
+  "ciRunUrl": "https://github.com/alibori/laravel-api-resource-generator/commit/3fc7139edc2d164063a889720ac975e49b357b7c",
+  "duration": 213
+}

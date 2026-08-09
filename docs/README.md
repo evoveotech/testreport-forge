@@ -1,12 +1,14 @@
 # Docs
 
-Concepts, patterns, and guides for **AI report engineering** in a testing context.
+Architecture decisions and user-facing guides for the Evoveo Smart Reporter.
 
-Suggested topics to seed:
+## Contents
 
-- What is "report engineering" vs. report writing?
-- Audience-first report design (devs, leads, execs, customers)
-- Evidence, traceability, and reproducibility in AI-assisted reports
-- Risk framing and confidence calibration
-- Multilingual and locale-aware reporting
-- Reviewing and validating AI-drafted reports
+- [`leadership-dashboard-guide.md`](./leadership-dashboard-guide.md) -- **User
+  guide for the leadership dashboard** with screenshots of every view, cloud
+  storage setup, auth modes, ingest API, and connector configuration.
+- [`leadership-platform.md`](./leadership-platform.md) -- Architecture overview
+  for the Test Intelligence Platform (components, auth, storage, ADRs).
+- [`adr/`](./adr/) -- Architecture Decision Records (ADRs 001-009). Each ADR
+  captures the WHY behind a key decision: context, decision, consequences,
+  and verification. Code shows WHAT was built; ADRs show WHY.

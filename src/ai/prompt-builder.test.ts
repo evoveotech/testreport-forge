@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
+import * as path from 'path';
 import { buildPlaywrightStyleAiPrompt } from './prompt-builder';
 import type { FullConfig, TestCase, TestResult, TestError } from '@playwright/test/reporter';
 
@@ -394,8 +395,9 @@ describe('buildPlaywrightStyleAiPrompt', () => {
       // The multiline error survives; "Expected true" is a substring so it's removed
       expect(result).toContain('Expected true to be false');
       // Only one error block should appear (the multiline one)
-      const errorBlocks = result.split('# Error details')[1];
-      const codeBlocks = errorBlocks?.match(/```/g) ?? [];
+      // Isolate the error section (exclude # Test source which also uses ```)
+      const errorSection = result.split('# Error details')[1]?.split('# Test source')[0] ?? '';
+      const codeBlocks = errorSection.match(/```/g) ?? [];
       // Each error is wrapped in a pair of ```, so 2 = one error
       expect(codeBlocks.length).toBe(2);
     });
@@ -476,7 +478,7 @@ describe('buildPlaywrightStyleAiPrompt', () => {
       });
 
       expect(mockFs.readFileSync).toHaveBeenCalledWith(
-        '/project/tests/relative.spec.ts',
+        path.join('/project', 'tests/relative.spec.ts'),
         'utf-8',
       );
     });

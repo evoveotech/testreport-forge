@@ -14,7 +14,8 @@ const PLAYWRIGHT_COPY_PROMPT_INSTRUCTIONS = `
 function safeRelativePath(rootDir: string, filePath: string): string {
   const rel = path.relative(rootDir, filePath);
   if (rel.startsWith('..')) return filePath;
-  return rel;
+  // Normalize to forward slashes for cross-platform consistency in AI prompts
+  return rel.split(path.sep).join('/');
 }
 
 function chunkToString(chunk: string | Buffer): string {

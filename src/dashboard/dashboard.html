@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test Intelligence Platform</title>
+<style>
+  :root {
+    --bg-primary: #0a0a0f; --bg-secondary: #12121a; --bg-card: #1a1a24; --bg-card-hover: #22222e; --bg-sidebar: #0d0d14;
+    --border-subtle: #2a2a3a; --border-glow: #3b3b4f;
+    --text-primary: #f0f0f5; --text-secondary: #8888a0; --text-muted: #5a5a70;
+    --accent-green: #00ff88; --accent-green-dim: #00cc6a;
+    --accent-red: #ff4466; --accent-red-dim: #cc3355;
+    --accent-yellow: #ffcc00; --accent-yellow-dim: #ccaa00;
+    --accent-blue: #00aaff; --accent-blue-dim: #0088cc;
+    --accent-purple: #aa66ff; --accent-orange: #ff8844;
+    --sidebar-width: 260px; --topbar-height: 56px;
+  }
+  :root[data-theme="light"] {
+    --bg-primary: #f5f5f7; --bg-secondary: #ffffff; --bg-card: #ffffff; --bg-card-hover: #f0f0f2; --bg-sidebar: #fafafa;
+    --border-subtle: #e0e0e5; --border-glow: #d0d0d8;
+    --text-primary: #1a1a1f; --text-secondary: #5a5a6e; --text-muted: #8a8a9a;
+    --accent-green: #00aa55; --accent-red: #dd3344; --accent-yellow: #cc9900; --accent-blue: #0077cc; --accent-purple: #8844cc; --accent-orange: #dd6622;
+  }
+  :root[data-theme="ocean"] {
+    --bg-primary: #0b1628; --bg-secondary: #0f1f38; --bg-card: #152847; --bg-card-hover: #1a3358; --bg-sidebar: #091320;
+    --border-subtle: #1e3a5f; --border-glow: #2a4f7a;
+    --text-primary: #d4e5f7; --text-secondary: #7ba3c9; --text-muted: #4a7a9f;
+    --accent-green: #00d4aa; --accent-red: #ff6b8a; --accent-yellow: #ffd166; --accent-blue: #00b4d8; --accent-purple: #8ea4f2; --accent-orange: #ff9e6d;
+  }
+  :root[data-theme="dracula"] {
+    --bg-primary: #282a36; --bg-secondary: #21222c; --bg-card: #343746; --bg-card-hover: #3e4155; --bg-sidebar: #1e1f29;
+    --border-subtle: #44475a; --border-glow: #555870;
+    --text-primary: #f8f8f2; --text-secondary: #bfbfb0; --text-muted: #6272a4;
+    --accent-green: #50fa7b; --accent-red: #ff5555; --accent-yellow: #f1fa8c; --accent-blue: #8be9fd; --accent-purple: #bd93f9; --accent-orange: #ffb86c;
+  }
+  :root[data-theme="cyberpunk"] {
+    --bg-primary: #0a0014; --bg-secondary: #110022; --bg-card: #1a0033; --bg-card-hover: #220044; --bg-sidebar: #08000f;
+    --border-subtle: #2d0055; --border-glow: #4400aa;
+    --text-primary: #e0d0ff; --text-secondary: #a080cc; --text-muted: #6644aa;
+    --accent-green: #00ff9f; --accent-red: #ff0055; --accent-yellow: #ffee00; --accent-blue: #00ccff; --accent-purple: #cc00ff; --accent-orange: #ff6600;
+  }
+  :root[data-theme="forest"] {
+    --bg-primary: #0c1a0e; --bg-secondary: #112416; --bg-card: #182e1c; --bg-card-hover: #1e3a22; --bg-sidebar: #091408;
+    --border-subtle: #254a2a; --border-glow: #305a36;
+    --text-primary: #d4ecd8; --text-secondary: #88b890; --text-muted: #557a5c;
+    --accent-green: #4ade80; --accent-red: #f87171; --accent-yellow: #fbbf24; --accent-blue: #67c9e0; --accent-purple: #a78bfa; --accent-orange: #fb923c;
+  }
+  :root[data-theme="sunset"] {
+    --bg-primary: #1a0f0a; --bg-secondary: #241510; --bg-card: #2e1c14; --bg-card-hover: #3a241a; --bg-sidebar: #140c08;
+    --border-subtle: #4a3028; --border-glow: #5f3e32;
+    --text-primary: #f5e6dc; --text-secondary: #c9a08a; --text-muted: #8a6a55;
+    --accent-green: #7ecf8a; --accent-red: #ff6b6b; --accent-yellow: #ffc857; --accent-blue: #6eb5ff; --accent-purple: #c084fc; --accent-orange: #ff8c42;
+  }
+  :root[data-theme="rose"] {
+    --bg-primary: #1a0a14; --bg-secondary: #24101c; --bg-card: #2e1626; --bg-card-hover: #3a1c30; --bg-sidebar: #140810;
+    --border-subtle: #4a2840; --border-glow: #5f3452;
+    --text-primary: #f5dce8; --text-secondary: #c990af; --text-muted: #8a5a74;
+    --accent-green: #6ee7b7; --accent-red: #fb7185; --accent-yellow: #fcd34d; --accent-blue: #93c5fd; --accent-purple: #e879f9; --accent-orange: #fdba74;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); height: 100vh; overflow: hidden; line-height: 1.5; }
+  button { background: none; border: none; font: inherit; color: inherit; cursor: pointer; }
+  input, select { font: inherit; }
+
+  /* APP SHELL */
+  .app-shell { display: grid; grid-template-areas: "topbar topbar" "sidebar main"; grid-template-columns: var(--sidebar-width) 1fr; grid-template-rows: var(--topbar-height) 1fr; height: 100vh; overflow: hidden; transition: grid-template-columns 0.3s cubic-bezier(0.4,0,0.2,1); }
+  .app-shell.sidebar-collapsed { grid-template-columns: 0 1fr; }
+  .app-shell.sidebar-collapsed .sidebar { transform: translateX(-100%); opacity: 0; }
+
+  /* TOP BAR */
+  .top-bar { grid-area: topbar; display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border-subtle); z-index: 100; }
+  .top-bar-left { display: flex; align-items: center; gap: 1rem; }
+  .top-bar-right { display: flex; align-items: center; gap: 0.75rem; }
+  .sidebar-toggle { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: transparent; border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-secondary); transition: all 0.2s; }
+  .sidebar-toggle:hover { background: var(--bg-card); border-color: var(--border-glow); color: var(--text-primary); }
+
+  /* BREADCRUMBS */
+  .breadcrumbs { display: flex; align-items: center; gap: 0.5rem; margin-left: 0.5rem; padding-left: 1rem; border-left: 1px solid var(--border-subtle); }
+  .breadcrumb { font-size: 0.8rem; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+  .breadcrumb:hover { color: var(--text-secondary); }
+  .breadcrumb.active { color: var(--text-primary); font-weight: 500; }
+  .breadcrumb-sep { color: var(--text-muted); font-size: 0.7rem; }
+
+  /* SEARCH TRIGGER */
+  .search-trigger { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-muted); cursor: pointer; transition: all 0.2s; min-width: 180px; }
+  .search-trigger:hover { border-color: var(--border-glow); color: var(--text-secondary); }
+  .search-label { flex: 1; text-align: left; font-size: 0.8rem; }
+  .search-kbd { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.7rem; padding: 0.1rem 0.35rem; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 4px; color: var(--text-muted); }
+
+  /* SEARCH MODAL */
+  .search-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: flex; align-items: flex-start; justify-content: center; padding-top: 15vh; backdrop-filter: blur(4px); }
+  .search-modal { background: var(--bg-card); border: 1px solid var(--border-glow); border-radius: 12px; width: 560px; max-width: 90vw; box-shadow: 0 20px 60px rgba(0,0,0,0.5); overflow: hidden; }
+  .search-input-row { display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-subtle); }
+  .search-input-row .search-icon { font-size: 1.1rem; color: var(--text-muted); }
+  .search-input { flex: 1; background: transparent; border: none; color: var(--text-primary); font-size: 1rem; outline: none; }
+  .search-input::placeholder { color: var(--text-muted); }
+  .search-results { max-height: 400px; overflow-y: auto; }
+  .search-result { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1.25rem; cursor: pointer; transition: background 0.15s; border-bottom: 1px solid var(--border-subtle); }
+  .search-result:hover, .search-result.selected { background: var(--bg-card-hover); }
+  .search-result-icon { font-size: 0.9rem; color: var(--text-muted); width: 20px; text-align: center; }
+  .search-result-text { flex: 1; }
+  .search-result-title { font-size: 0.85rem; color: var(--text-primary); }
+  .search-result-sub { font-size: 0.7rem; color: var(--text-muted); }
+  .search-result-badge { font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 4px; font-family: 'SF Mono', 'Fira Code', monospace; }
+  .search-empty { padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
+  .logo { display: flex; align-items: center; gap: 0.75rem; }
+  .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-blue) 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: var(--bg-primary); }
+  .logo-text { display: flex; flex-direction: column; line-height: 1.2; }
+  .logo-title { font-size: 0.95rem; font-weight: 700; letter-spacing: -0.02em; }
+  .logo-subtitle { font-size: 0.65rem; color: var(--text-muted); font-family: 'SF Mono', 'Fira Code', monospace; }
+  .theme-switcher { display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-secondary); font-size: 0.8rem; transition: all 0.2s; }
+  .theme-switcher:hover { border-color: var(--border-glow); color: var(--text-primary); }
+  .theme-switcher select { background: transparent; border: none; color: inherit; font-size: 0.8rem; cursor: pointer; outline: none; }
+  .theme-switcher select option { background: var(--bg-card); color: var(--text-primary); }
+  .timestamp { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.75rem; color: var(--text-muted); padding: 0.4rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; }
+  .user-chip { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; font-size: 0.8rem; color: var(--text-secondary); }
+  .user-chip .role-badge { font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 600; }
+  .user-chip .role-badge.admin { background: rgba(0,170,255,0.15); color: var(--accent-blue); }
+  .user-chip .role-badge.viewer { background: rgba(136,136,160,0.15); color: var(--text-secondary); }
+  .logout-btn { color: var(--text-muted); font-size: 0.8rem; padding: 0.4rem 0.5rem; transition: color 0.2s; }
+  .logout-btn:hover { color: var(--accent-red); }
+
+  /* SIDEBAR */
+  .sidebar { grid-area: sidebar; display: flex; flex-direction: column; background: var(--bg-sidebar); border-right: 1px solid var(--border-subtle); overflow-y: auto; overflow-x: hidden; transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease; }
+  .sidebar-progress { padding: 1.25rem; text-align: center; border-bottom: 1px solid var(--border-subtle); flex-shrink: 0; }
+  .progress-ring-container { position: relative; width: 80px; height: 80px; margin: 0 auto; }
+  .progress-ring { transform: rotate(-90deg); }
+  .progress-ring-bg { fill: none; stroke: var(--border-subtle); stroke-width: 6; }
+  .progress-ring-fill { fill: none; stroke: var(--accent-green); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.5s ease; filter: drop-shadow(0 0 6px var(--accent-green)); }
+  .progress-ring-value { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 1.1rem; font-weight: 700; color: var(--accent-green); }
+  .progress-label { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem; text-transform: uppercase; letter-spacing: 0.1em; }
+  .sidebar-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; padding: 0.75rem; border-bottom: 1px solid var(--border-subtle); flex-shrink: 0; }
+  .mini-stat { display: flex; flex-direction: column; align-items: center; padding: 0.5rem; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; transition: all 0.2s; }
+  .mini-stat:hover { background: var(--bg-card-hover); border-color: var(--border-glow); transform: translateY(-1px); }
+  .mini-stat-value { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 1rem; font-weight: 700; }
+  .mini-stat-label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; }
+  .mini-stat.passed .mini-stat-value { color: var(--accent-green); }
+  .mini-stat.failed .mini-stat-value { color: var(--accent-red); }
+  .mini-stat.flaky .mini-stat-value { color: var(--accent-yellow); }
+  .sidebar-nav { padding: 0.75rem; flex-shrink: 0; }
+  .nav-section-title { font-size: 0.65rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; }
+  .nav-item { position: relative; display: flex; flex-direction: row; align-items: center; gap: 0.75rem; width: 100%; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text-secondary); text-decoration: none; cursor: pointer; transition: all 0.2s; font-size: 0.85rem; text-align: left; margin-bottom: 0.25rem; }
+  .nav-item:hover { background: var(--bg-card); color: var(--text-primary); }
+  .nav-item.active { background: var(--bg-card); color: var(--accent-green); border-left: 3px solid var(--accent-green); padding-left: calc(0.75rem - 3px); }
+  .nav-icon { font-size: 1rem; flex-shrink: 0; }
+  .nav-label { flex: 1; font-weight: 500; white-space: nowrap; }
+  .nav-badge { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.7rem; padding: 0.15rem 0.5rem; background: var(--bg-secondary); border-radius: 10px; color: var(--text-muted); }
+
+  /* MAIN CONTENT */
+  .main { grid-area: main; overflow-y: auto; padding: 1.5rem; }
+  .main-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+  .main-title { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+  .main-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+  .period-select { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-secondary); padding: 0.5rem 0.75rem; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+  .period-select:hover { border-color: var(--border-glow); color: var(--text-primary); }
+
+  /* KPI CARDS */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+  .kpi-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 1.25rem; transition: all 0.2s; position: relative; overflow: hidden; }
+  .kpi-card:hover { border-color: var(--border-glow); transform: translateY(-2px); }
+  .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 12px 12px 0 0; }
+  .kpi-card.green::before { background: var(--accent-green); }
+  .kpi-card.red::before { background: var(--accent-red); }
+  .kpi-card.yellow::before { background: var(--accent-yellow); }
+  .kpi-card.blue::before { background: var(--accent-blue); }
+  .kpi-card.purple::before { background: var(--accent-purple); }
+  .kpi-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+  .kpi-value { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 2rem; font-weight: 700; line-height: 1; }
+  .kpi-delta { font-size: 0.8rem; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.25rem; }
+  .kpi-delta.up { color: var(--accent-green); }
+  .kpi-delta.down { color: var(--accent-red); }
+  .kpi-delta.neutral { color: var(--text-muted); }
+
+  /* CHART */
+  .chart-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; }
+  .chart-card h3 { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; }
+  .trend-svg { width: 100%; height: 180px; }
+
+  /* CHART GRID — multi-chart layouts for executive views */
+  .chart-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+  .chart-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  @media (max-width: 900px) { .chart-grid-2, .chart-grid-3 { grid-template-columns: 1fr; } }
+
+  /* DONUT CHART */
+  .donut-chart { width: 100%; max-width: 320px; height: 240px; }
+  .donut-center { text-anchor: middle; dominant-baseline: central; }
+  .donut-center-value { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 1.8rem; font-weight: 700; fill: var(--text-primary); }
+  .donut-center-label { font-size: 0.7rem; fill: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .donut-legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin-top: 0.75rem; font-size: 0.75rem; }
+  .donut-legend-item { display: flex; align-items: center; gap: 0.4rem; color: var(--text-secondary); }
+  .donut-legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+  /* HORIZONTAL BAR CHART */
+  .hbar-chart { width: 100%; }
+  .hbar-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; font-size: 0.8rem; }
+  .hbar-label { width: 130px; text-align: right; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
+  .hbar-track { flex: 1; height: 22px; background: var(--bg-secondary); border-radius: 4px; position: relative; overflow: hidden; }
+  .hbar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; display: flex; align-items: center; padding-left: 0.5rem; }
+  .hbar-fill.green { background: rgba(0,255,136,0.25); border-left: 3px solid var(--accent-green); }
+  .hbar-fill.yellow { background: rgba(255,204,0,0.25); border-left: 3px solid var(--accent-yellow); }
+  .hbar-fill.red { background: rgba(255,68,102,0.25); border-left: 3px solid var(--accent-red); }
+  .hbar-fill.blue { background: rgba(0,170,255,0.25); border-left: 3px solid var(--accent-blue); }
+  .hbar-fill.purple { background: rgba(170,102,255,0.25); border-left: 3px solid var(--accent-purple); }
+  .hbar-fill.orange { background: rgba(255,136,68,0.25); border-left: 3px solid var(--accent-orange); }
+  .hbar-value { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; }
+  .hbar-value-label { width: 60px; text-align: left; color: var(--text-muted); flex-shrink: 0; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.75rem; }
+
+  /* STAT ROW (inline mini-stats for chart cards) */
+  .stat-row { display: flex; gap: 1.5rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-subtle); }
+  .stat-row-item { display: flex; flex-direction: column; }
+  .stat-row-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat-row-value { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 1.1rem; font-weight: 700; }
+
+  /* DATA TABLES */
+  .data-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+  .data-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 1.25rem; }
+  .data-card h3 { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { text-align: left; padding: 0.5rem 0.75rem; color: var(--text-muted); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-subtle); }
+  td { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border-subtle); }
+  tr:hover td { background: var(--bg-card-hover); }
+  .badge { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; font-family: 'SF Mono', 'Fira Code', monospace; }
+  .badge.green { background: rgba(0,255,136,0.12); color: var(--accent-green); }
+  .badge.red { background: rgba(255,68,102,0.12); color: var(--accent-red); }
+  .badge.yellow { background: rgba(255,204,0,0.12); color: var(--accent-yellow); }
+  .badge.blue { background: rgba(0,170,255,0.12); color: var(--accent-blue); }
+  .badge.purple { background: rgba(170,102,255,0.12); color: var(--accent-purple); }
+  .badge.orange { background: rgba(255,136,68,0.12); color: var(--accent-orange); }
+  .delta-arrow { font-size: 0.7rem; }
+
+  /* TEAM CARDS */
+  .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+  .team-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 1.25rem; transition: all 0.2s; }
+  .team-card:hover { border-color: var(--border-glow); transform: translateY(-2px); }
+  .team-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .team-name { font-size: 1rem; font-weight: 600; }
+  .team-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .team-stat { display: flex; flex-direction: column; }
+  .team-stat-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .team-stat-value { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 1.25rem; font-weight: 700; }
+  .team-stat-value.green { color: var(--accent-green); }
+  .team-stat-value.red { color: var(--accent-red); }
+  .team-stat-value.yellow { color: var(--accent-yellow); }
+  .team-stat-value.blue { color: var(--accent-blue); }
+  .team-stat-value.purple { color: var(--accent-purple); }
+
+  /* RUNS TABLE */
+  .runs-table { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; }
+  .runs-table h3 { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; }
+  .filter-bar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .filter-input { background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 6px; color: var(--text-primary); padding: 0.4rem 0.6rem; font-size: 0.8rem; transition: all 0.2s; }
+  .filter-input:focus { outline: none; border-color: var(--accent-blue); }
+  .filter-input::placeholder { color: var(--text-muted); }
+
+  /* SETTINGS */
+  .settings-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; max-width: 700px; }
+  .setting-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 1.5rem; }
+  .setting-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .setting-card p { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.6; }
+  .form-group { margin-bottom: 0.75rem; }
+  .form-label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .form-input { width: 100%; padding: 0.6rem 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 0.85rem; transition: all 0.2s; }
+  .form-input:focus { outline: none; border-color: var(--accent-blue); }
+  .form-select { width: 100%; padding: 0.6rem 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 0.85rem; cursor: pointer; }
+  .btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; transition: all 0.2s; border: 1px solid transparent; }
+  .btn-primary { background: var(--accent-blue); color: var(--bg-primary); }
+  .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-danger { background: var(--accent-red); color: var(--bg-primary); }
+  .btn-danger:hover { filter: brightness(1.1); }
+  .btn-ghost { background: transparent; border: 1px solid var(--border-subtle); color: var(--text-secondary); }
+  .btn-ghost:hover { border-color: var(--border-glow); color: var(--text-primary); }
+
+  /* LOGIN */
+  .login-overlay { display: flex; align-items: center; justify-content: center; height: 100vh; background: var(--bg-primary); }
+  .login-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 2.5rem; width: 380px; max-width: 90vw; }
+  .login-logo { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 2rem; }
+  .login-logo .logo-icon { width: 40px; height: 40px; font-size: 1.2rem; }
+  .login-title { font-size: 1.25rem; font-weight: 700; }
+  .login-subtitle { font-size: 0.75rem; color: var(--text-muted); font-family: 'SF Mono', 'Fira Code', monospace; }
+
+  /* EMPTY STATE */
+  .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
+  .empty-state-icon { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5; }
+  .empty-state-text { font-size: 0.9rem; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-glow); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function() {
+  'use strict';
+  var state = { session: null, rollup: null, runs: [], tab: 'estate', period: 'all', theme: 'dark' };
+
+  // -- Auth helpers (dev mode: headers) --------------------------------
+  function getAuthHeaders() {
+    var s = state.session;
+    if (!s) return {};
+    return { 'X-Tenant-Id': s.tenantId, 'X-User-Id': s.userId, 'X-User-Role': s.role };
+  }
+  function api(path, opts) {
+    opts = opts || {};
+    opts.headers = Object.assign({}, getAuthHeaders(), opts.headers || {});
+    return fetch('/api' + path, opts).then(function(r) {
+      if (r.status === 401) { state.session = null; render(); throw new Error('unauthorized'); }
+      if (!r.ok) throw new Error('API ' + r.status);
+      return r.json();
+    });
+  }
+  function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+  function rateColor(r) { return r >= 90 ? 'green' : r >= 70 ? 'yellow' : 'red'; }
+  function fmtDate(s) { return new Date(s).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); }
+
+  // -- Theme -----------------------------------------------------------
+  function setTheme(t) { state.theme = t; document.documentElement.setAttribute('data-theme', t); }
+
+  // -- Login view -------------------------------------------------------
+  function renderLogin() {
+    document.getElementById('app').innerHTML =
+      '<div class="login-overlay"><div class="login-card">' +
+      '<div class="login-logo"><div class="logo-icon">TI</div>' +
+      '<div class="logo-text"><div class="login-title">Test Intelligence</div>' +
+      '<div class="login-subtitle">Leadership Platform</div></div></div>' +
+      '<div class="form-group"><label class="form-label">Tenant ID</label>' +
+      '<input class="form-input" id="tenant" value="acme" placeholder="acme"></div>' +
+      '<div class="form-group"><label class="form-label">User ID</label>' +
+      '<input class="form-input" id="user" value="director" placeholder="your.user"></div>' +
+      '<div class="form-group"><label class="form-label">Role</label>' +
+      '<select class="form-select" id="role"><option value="admin">Admin (Director/VP)</option><option value="viewer">Viewer (Team Member)</option></select></div>' +
+      '<button class="btn btn-primary" id="login-btn" style="width:100%;margin-top:0.5rem">Sign In</button>' +
+      '<p style="margin-top:1rem;font-size:0.75rem;color:var(--text-muted);text-align:center">Dev mode: enter any tenant/user. Production uses OIDC/SAML SSO.</p>' +
+      '</div></div>';
+    document.getElementById('login-btn').onclick = function() {
+      state.session = { tenantId: document.getElementById('tenant').value, userId: document.getElementById('user').value, role: document.getElementById('role').value };
+      loadEstate();
+    };
+  }
+
+  // -- Main dashboard shell --------------------------------------------
+  function renderDashboard() {
+    var s = state.session;
+    var r = state.rollup;
+    var passRate = r ? r.passRate : 0;
+    var passColor = rateColor(passRate);
+    var ringColor = passColor === 'green' ? 'var(--accent-green)' : passColor === 'yellow' ? 'var(--accent-yellow)' : 'var(--accent-red)';
+    var circumference = 2 * Math.PI * 34;
+    var dashOffset = circumference - (passRate / 100) * circumference;
+
+    document.getElementById('app').innerHTML =
+      '<div class="app-shell" id="app-shell">' +
+      // TOP BAR
+      '<div class="top-bar">' +
+        '<div class="top-bar-left">' +
+          '<button class="sidebar-toggle" id="sidebar-toggle">&#9776;</button>' +
+          '<div class="logo"><div class="logo-icon">TI</div>' +
+          '<div class="logo-text"><div class="logo-title">Test Intelligence</div>' +
+          '<div class="logo-subtitle">Leadership Platform</div></div></div>' +
+          breadcrumbs() +
+        '</div>' +
+        '<div class="top-bar-right">' +
+          '<button class="search-trigger" id="search-trigger"><span style="font-size:0.85rem">&#128269;</span><span class="search-label">Search...</span><span class="search-kbd">&#8984;K</span></button>' +
+          '<div class="theme-switcher">Theme <select id="theme-select">' +
+            '<option value="dark">Dark</option><option value="light">Light</option>' +
+            '<option value="ocean">Ocean</option><option value="dracula">Dracula</option>' +
+            '<option value="cyberpunk">Cyberpunk</option><option value="forest">Forest</option>' +
+            '<option value="sunset">Sunset</option><option value="rose">Rose</option>' +
+          '</select></div>' +
+          '<div class="timestamp" id="timestamp">' + new Date().toLocaleString() + '</div>' +
+          '<div class="user-chip">' + esc(s.userId) + ' <span class="role-badge ' + s.role + '">' + s.role + '</span></div>' +
+          '<button class="logout-btn" id="logout">Sign Out</button>' +
+        '</div>' +
+      '</div>' +
+      // SIDEBAR
+      '<div class="sidebar">' +
+        '<div class="sidebar-progress">' +
+          '<div class="progress-ring-container">' +
+            '<svg class="progress-ring" width="80" height="80">' +
+              '<circle class="progress-ring-bg" cx="40" cy="40" r="34"></circle>' +
+              '<circle class="progress-ring-fill" cx="40" cy="40" r="34" stroke="' + ringColor + '" stroke-dasharray="' + circumference + '" stroke-dashoffset="' + dashOffset + '" style="filter:drop-shadow(0 0 6px ' + ringColor + ')"></circle>' +
+            '</svg>' +
+            '<div class="progress-ring-value" style="color:' + ringColor + '">' + passRate + '%</div>' +
+          '</div>' +
+          '<div class="progress-label">Pass Rate</div>' +
+        '</div>' +
+        '<div class="sidebar-stats">' +
+          '<div class="mini-stat passed"><div class="mini-stat-value">' + (r ? r.totalRuns : 0) + '</div><div class="mini-stat-label">Runs</div></div>' +
+          '<div class="mini-stat failed"><div class="mini-stat-value">' + (r ? r.flakyRate + '%' : '0%') + '</div><div class="mini-stat-label">Flaky</div></div>' +
+          '<div class="mini-stat flaky"><div class="mini-stat-value">' + (r ? r.byTeam.length : 0) + '</div><div class="mini-stat-label">Teams</div></div>' +
+        '</div>' +
+        '<div class="sidebar-nav">' +
+          '<div class="nav-section-title">Views</div>' +
+          navItem('estate', 'Estate Overview', r ? r.totalRuns : 0) +
+          navItem('teams', 'Team Contribution', r ? r.byTeam.length : 0) +
+          navItem('runs', 'Recent Runs', r ? r.totalRuns : 0) +
+          navItem('compare', 'Compare', '') +
+          navItem('sync', 'Sync Health', '') +
+          navItem('settings', 'Settings', '') +
+        '</div>' +
+      '</div>' +
+      // MAIN
+      '<div class="main" id="main"></div>' +
+      '</div>';
+
+    document.getElementById('sidebar-toggle').onclick = function() { document.getElementById('app-shell').classList.toggle('sidebar-collapsed'); };
+    document.getElementById('logout').onclick = function() { state.session = null; render(); };
+    document.getElementById('theme-select').value = state.theme;
+    document.getElementById('theme-select').onchange = function() { setTheme(this.value); };
+    document.getElementById('search-trigger').onclick = openSearch;
+    var navItems = document.querySelectorAll('.nav-item');
+    for (var i = 0; i < navItems.length; i++) {
+      navItems[i].onclick = function() { state.tab = this.dataset.tab; render(); };
+    }
+    // Breadcrumb clicks navigate to estate tab
+    var crumbs = document.querySelectorAll('.breadcrumb[data-tab]');
+    for (var c = 0; c < crumbs.length; c++) {
+      crumbs[c].onclick = function() { state.tab = this.dataset.tab; render(); };
+    }
+    if (state.tab === 'estate') renderEstate();
+    else if (state.tab === 'teams') renderTeams();
+    else if (state.tab === 'runs') renderRuns();
+    else if (state.tab === 'compare') renderCompare();
+    else if (state.tab === 'sync') renderSyncHealth();
+    else if (state.tab === 'settings') renderSettings();
+  }
+
+  function navItem(tab, label, badge) {
+    var icons = { estate: '&#9632;', teams: '&#9632;', runs: '&#9632;', compare: '&#8645;', sync: '&#8635;', settings: '&#9881;' };
+    return '<button class="nav-item ' + (state.tab === tab ? 'active' : '') + '" data-tab="' + tab + '">' +
+      '<span class="nav-icon">' + (icons[tab] || '') + '</span>' +
+      '<span class="nav-label">' + label + '</span>' +
+      (badge !== '' ? '<span class="nav-badge">' + badge + '</span>' : '') + '</button>';
+  }
+
+  function breadcrumbs() {
+    var tabLabels = { estate: 'Estate Overview', teams: 'Team Contribution', runs: 'Recent Runs', settings: 'Settings' };
+    var s = state.session;
+    var r = state.rollup;
+    var crumbs = '<nav class="breadcrumbs" aria-label="Breadcrumb">';
+    crumbs += '<span class="breadcrumb">' + esc(s.tenantId) + '</span>';
+    crumbs += '<span class="breadcrumb-sep">/</span>';
+    crumbs += '<span class="breadcrumb" data-tab="estate">' + (tabLabels[state.tab] || 'Estate') + '</span>';
+    if (state.tab === 'estate' && r) {
+      crumbs += '<span class="breadcrumb-sep">/</span>';
+      crumbs += '<span class="breadcrumb active">' + r.period + '</span>';
+    }
+    crumbs += '</nav>';
+    return crumbs;
+  }
+
+  // -- Search modal ----------------------------------------------------
+  function openSearch() {
+    var overlay = document.createElement('div');
+    overlay.className = 'search-overlay';
+    overlay.id = 'search-overlay';
+    overlay.innerHTML =
+      '<div class="search-modal">' +
+        '<div class="search-input-row">' +
+          '<span class="search-icon">&#128269;</span>' +
+          '<input class="search-input" id="search-input" placeholder="Search clients, products, teams, stacks..." autocomplete="off">' +
+          '<span class="search-kbd">ESC</span>' +
+        '</div>' +
+        '<div class="search-results" id="search-results">' +
+          '<div class="search-empty">Type to search across the estate...</div>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    var input = document.getElementById('search-input');
+    input.focus();
+    input.addEventListener('input', function() { updateSearchResults(input.value); });
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) closeSearch(); });
+  }
+
+  function closeSearch() {
+    var el = document.getElementById('search-overlay');
+    if (el) el.remove();
+  }
+
+  function updateSearchResults(query) {
+    var r = state.rollup;
+    var el = document.getElementById('search-results');
+    if (!el) return;
+    query = (query || '').toLowerCase().trim();
+    if (!query || !r) { el.innerHTML = '<div class="search-empty">Type to search across the estate...</div>'; return; }
+
+    var results = [];
+    var iconMap = { client: '&#127970;', product: '&#128230;', team: '&#128101;', stack: '&#128187;', runType: '&#9881;', environment: '&#127744;' };
+
+    function searchSlices(slices, type) {
+      if (!slices) return;
+      for (var i = 0; i < slices.length; i++) {
+        var s = slices[i];
+        if (s.key.toLowerCase().indexOf(query) !== -1) {
+          results.push({ type: type, title: s.key, sub: s.totalRuns + ' runs &middot; ' + s.passRate + '% pass', badge: rateColor(s.passRate), badgeText: s.passRate + '%' });
+        }
+      }
+    }
+    searchSlices(r.byClient, 'Client');
+    searchSlices(r.byProduct, 'Product');
+    searchSlices(r.byTeam, 'Team');
+    searchSlices(r.byStack, 'Stack');
+    searchSlices(r.byRunType, 'Run Type');
+    searchSlices(r.byEnvironment, 'Environment');
+
+    if (results.length === 0) {
+      el.innerHTML = '<div class="search-empty">No matches for "' + esc(query) + '"</div>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < results.length; i++) {
+      var res = results[i];
+      html += '<div class="search-result" data-type="' + res.type + '" data-title="' + esc(res.title) + '">' +
+        '<span class="search-result-icon">' + (iconMap[res.type.toLowerCase().replace(/ /g, '')] || '&#128269;') + '</span>' +
+        '<div class="search-result-text"><div class="search-result-title">' + esc(res.title) + '</div>' +
+        '<div class="search-result-sub">' + res.type + ' &middot; ' + res.sub + '</div></div>' +
+        '<span class="search-result-badge badge ' + res.badge + '">' + res.badgeText + '</span></div>';
+    }
+    el.innerHTML = html;
+    var items = el.querySelectorAll('.search-result');
+    for (var j = 0; j < items.length; j++) {
+      items[j].onclick = function() { closeSearch(); };
+    }
+  }
+
+  // -- Estate tab ------------------------------------------------------
+  function renderEstate() {
+    var r = state.rollup;
+    if (!r) { document.getElementById('main').innerHTML = emptyState('Loading estate data...'); return; }
+    var html = '<div class="main-header"><div><div class="main-title">Estate Overview</div>' +
+      '<div class="main-subtitle">' + r.totalRuns + ' runs across ' + r.byClient.length + ' clients, ' + r.byStack.length + ' stacks, ' + r.byTeam.length + ' teams</div></div>' +
+      '<select class="period-select" id="period-select">' +
+      '<option value="daily"' + (r.period === 'daily' ? ' selected' : '') + '>Daily</option>' +
+      '<option value="weekly"' + (r.period === 'weekly' ? ' selected' : '') + '>Weekly</option>' +
+      '<option value="monthly"' + (r.period === 'monthly' ? ' selected' : '') + '>Monthly</option>' +
+      '<option value="quarterly"' + (r.period === 'quarterly' ? ' selected' : '') + '>Quarterly</option>' +
+      '<option value="all"' + (r.period === 'all' ? ' selected' : '') + '>All Time</option></select></div>';
+
+    // KPI cards
+    html += '<div class="kpi-grid">' +
+      kpiCard('Total Runs', r.totalRuns, 'blue', null) +
+      kpiCard('Pass Rate', r.passRate + '%', rateColor(r.passRate), null) +
+      kpiCard('Flaky Rate', r.flakyRate + '%', r.flakyRate < 5 ? 'green' : r.flakyRate < 15 ? 'yellow' : 'red', null) +
+      kpiCard('Clients', r.byClient.length, 'purple', null) +
+      kpiCard('Products', r.byProduct.length, 'purple', null) +
+      kpiCard('Stacks', r.byStack.length, 'orange', null) +
+      '</div>';
+
+    // Trend chart
+    html += '<div class="chart-card"><h3>Pass Rate Trend (' + r.period + ')</h3>' + trendChart(r.trend) + '</div>';
+
+    // Executive charts: donut + failure bars (2-column)
+    html += '<div class="chart-grid-2">' +
+      '<div class="chart-card"><h3>Run Distribution by Stack</h3>' + donutChart(r.byStack, 'Runs') + '</div>' +
+      '<div class="chart-card"><h3>Products Needing Attention (by failures)</h3><div id="estate-failures-chart"><div class="empty-state"><div class="empty-state-text">Loading...</div></div></div></div>' +
+      '</div>';
+
+    // Stack pass-rate comparison + duration (2-column)
+    html += '<div class="chart-grid-2">' +
+      '<div class="chart-card"><h3>Pass Rate by Stack</h3>' + hbarPassRate(r.byStack, 18) + '</div>' +
+      '<div class="chart-card"><h3>Slowest Products (duration)</h3><div id="estate-duration-chart"><div class="empty-state"><div class="empty-state-text">Loading...</div></div></div></div>' +
+      '</div>';
+
+    // Stack category donut + test volume by stack (2-column)
+    var stackVolData = r.byStack.map(function(s) { return { key: s.key, total: s.totalRuns }; }).sort(function(a, b) { return b.total - a.total; });
+    html += '<div class="chart-grid-2">' +
+      '<div class="chart-card"><h3>Run Distribution by Stack Category</h3>' + donutChart(r.byStackCategory, 'Runs') + '</div>' +
+      '<div class="chart-card"><h3>Test Volume by Stack (runs)</h3>' + hbarTestVolume(stackVolData, 18) + '</div>' +
+      '</div>';
+
+    // Breakdown tables
+    html += '<div class="data-grid">' +
+      sliceTable('By Client', r.byClient) +
+      sliceTable('By Product', r.byProduct) +
+      sliceTable('By Stack', r.byStack) +
+      sliceTable('By Stack Category', r.byStackCategory) +
+      sliceTable('By Run Type', r.byRunType) +
+      sliceTable('By Environment', r.byEnvironment) +
+      '</div>';
+
+    document.getElementById('main').innerHTML = html;
+    document.getElementById('period-select').onchange = function() { state.period = this.value; loadEstate(); };
+
+    // Async-load runs for failure + duration charts (real data from /api/runs)
+    var fromParam = '';
+    if (r.period !== 'all') {
+      var periodDays = r.period === 'daily' ? 1 : r.period === 'weekly' ? 7 : r.period === 'monthly' ? 30 : 90;
+      var fromDate = new Date(Date.now() - periodDays * 86400000).toISOString();
+      fromParam = '&from=' + fromDate;
+    }
+    api('/runs?limit=100' + fromParam).then(function(runs) {
+      var failData = runs.map(function(r) { return { key: r.orgContext.product, failed: r.failed, total: r.total }; })
+        .sort(function(a, b) { return b.failed - a.failed; });
+      var durData = runs.map(function(r) { return { key: r.orgContext.product, duration: r.duration }; })
+        .sort(function(a, b) { return b.duration - a.duration; });
+      var failEl = document.getElementById('estate-failures-chart');
+      var durEl = document.getElementById('estate-duration-chart');
+      if (failEl) failEl.innerHTML = hbarFailures(failData, 15);
+      if (durEl) durEl.innerHTML = hbarDuration(durData, 15);
+    }).catch(function() {});
+  }
+
+  function kpiCard(label, value, color, delta) {
+    var deltaHtml = delta != null ? '<div class="kpi-delta ' + (delta >= 0 ? 'up' : 'down') + '">' +
+      '<span class="delta-arrow">' + (delta >= 0 ? '&#9650;' : '&#9660;') + '</span> ' + Math.abs(delta) + '% vs last period</div>' : '';
+    return '<div class="kpi-card ' + color + '"><div class="kpi-label">' + label + '</div>' +
+      '<div class="kpi-value">' + value + '</div>' + deltaHtml + '</div>';
+  }
+
+  function trendChart(trend) {
+    if (!trend || trend.length === 0) return '<div class="empty-state"><div class="empty-state-text">No trend data yet</div></div>';
+    var w = 800, h = 180, pad = { top: 20, right: 20, bottom: 30, left: 40 };
+    var pw = w - pad.left - pad.right, ph = h - pad.top - pad.bottom;
+    var maxRate = 100, minRate = Math.min(60, Math.min.apply(null, trend.map(function(t) { return t.passRate; })));
+    var xStep = trend.length > 1 ? pw / (trend.length - 1) : 0;
+    var points = trend.map(function(t, i) {
+      var x = pad.left + i * xStep;
+      var y = pad.top + ph - ((t.passRate - minRate) / (maxRate - minRate)) * ph;
+      return { x: x, y: y, date: t.date, rate: t.passRate, runs: t.totalRuns };
+    });
+    var pathD = points.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x + ' ' + p.y; }).join(' ');
+    var areaD = pathD + ' L' + points[points.length - 1].x + ' ' + (pad.top + ph) + ' L' + points[0].x + ' ' + (pad.top + ph) + ' Z';
+    var labels = '';
+    var labelStep = Math.ceil(trend.length / 7);
+    for (var i = 0; i < trend.length; i += labelStep) {
+      labels += '<text x="' + points[i].x + '" y="' + (h - 8) + '" fill="var(--text-muted)" font-size="10" text-anchor="middle">' + fmtDate(trend[i].date) + '</text>';
+    }
+    var dots = points.map(function(p) {
+      return '<circle cx="' + p.x + '" cy="' + p.y + '" r="3" fill="var(--accent-blue)" opacity="0.8"><title>' + p.date + ': ' + p.rate + '% (' + p.runs + ' runs)</title></circle>';
+    }).join('');
+    return '<svg class="trend-svg" viewBox="0 0 ' + w + ' ' + h + '">' +
+      '<defs><linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="var(--accent-blue)" stop-opacity="0.3"/>' +
+      '<stop offset="100%" stop-color="var(--accent-blue)" stop-opacity="0"/>' +
+      '</linearGradient></defs>' +
+      '<path d="' + areaD + '" fill="url(#trendGrad)"/>' +
+      '<path d="' + pathD + '" fill="none" stroke="var(--accent-blue)" stroke-width="2"/>' +
+      dots + labels + '</svg>';
+  }
+
+  // -- Executive chart functions (pure SVG, no dependencies) ------------
+
+  var CHART_COLORS = ['#00ff88', '#00aaff', '#aa66ff', '#ff8844', '#ffcc00', '#ff4466',
+    '#00ddaa', '#4488ff', '#cc66ff', '#ffaa00', '#ff6688', '#00ffcc',
+    '#66aaff', '#dd44ff', '#ff6600', '#ffdd44', '#ff2244', '#22ffdd'];
+
+  /**
+   * Donut chart for distribution data (e.g., byStack).
+   * data: [{ key, totalRuns, passRate }, ...]
+   */
+  function donutChart(data, centerLabel) {
+    if (!data || data.length === 0) return '<div class="empty-state"><div class="empty-state-text">No data</div></div>';
+    var total = data.reduce(function(s, d) { return s + d.totalRuns; }, 0);
+    if (total === 0) return '<div class="empty-state"><div class="empty-state-text">No runs</div></div>';
+    var cx = 120, cy = 120, r = 90, ir = 55;
+    var angle = -Math.PI / 2; // start at top
+    var slices = '';
+    var legend = '';
+    for (var i = 0; i < data.length; i++) {
+      var d = data[i];
+      var frac = d.totalRuns / total;
+      var endAngle = angle + frac * 2 * Math.PI;
+      var largeArc = frac > 0.5 ? 1 : 0;
+      var x1 = cx + r * Math.cos(angle), y1 = cy + r * Math.sin(angle);
+      var x2 = cx + r * Math.cos(endAngle), y2 = cy + r * Math.sin(endAngle);
+      var x3 = cx + ir * Math.cos(endAngle), y3 = cy + ir * Math.sin(endAngle);
+      var x4 = cx + ir * Math.cos(angle), y4 = cy + ir * Math.sin(angle);
+      var color = CHART_COLORS[i % CHART_COLORS.length];
+      var path = 'M' + x1 + ' ' + y1 + ' A' + r + ' ' + r + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 +
+        ' L' + x3 + ' ' + y3 + ' A' + ir + ' ' + ir + ' 0 ' + largeArc + ' 0 ' + x4 + ' ' + y4 + ' Z';
+      slices += '<path d="' + path + '" fill="' + color + '" opacity="0.85"><title>' + esc(d.key) + ': ' + d.totalRuns + ' runs (' + (frac * 100).toFixed(1) + '%)</title></path>';
+      legend += '<div class="donut-legend-item"><span class="donut-legend-dot" style="background:' + color + '"></span>' + esc(d.key) + ' <span style="color:var(--text-muted)">' + d.totalRuns + '</span></div>';
+      angle = endAngle;
+    }
+    return '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:1rem">' +
+      '<svg class="donut-chart" viewBox="0 0 240 240">' + slices +
+      '<text class="donut-center donut-center-value" x="120" y="115">' + total + '</text>' +
+      '<text class="donut-center donut-center-label" x="120" y="138">' + esc(centerLabel || 'Total') + '</text>' +
+      '</svg>' +
+      '<div class="donut-legend" style="flex:1;min-width:200px">' + legend + '</div></div>';
+  }
+
+  /**
+   * Horizontal bar chart for pass-rate comparison.
+   * data: [{ key, passRate, totalRuns }, ...]  (already sorted)
+   * maxItems: how many bars to show
+   */
+  function hbarPassRate(data, maxItems) {
+    if (!data || data.length === 0) return '<div class="empty-state"><div class="empty-state-text">No data</div></div>';
+    var items = data.slice(0, maxItems || 15);
+    var rows = items.map(function(d) {
+      var color = rateColor(d.passRate);
+      var width = Math.max(2, d.passRate); // min 2% so it's visible
+      return '<div class="hbar-row">' +
+        '<span class="hbar-label" title="' + esc(d.key) + '">' + esc(d.key) + '</span>' +
+        '<div class="hbar-track"><div class="hbar-fill ' + color + '" style="width:' + width + '%"></div></div>' +
+        '<span class="hbar-value">' + d.passRate + '%</span>' +
+        '<span class="hbar-value-label">' + d.totalRuns + ' run' + (d.totalRuns !== 1 ? 's' : '') + '</span>' +
+        '</div>';
+    }).join('');
+    return '<div class="hbar-chart">' + rows + '</div>';
+  }
+
+  /**
+   * Horizontal bar chart for test volume (total tests, not runs).
+   * data: [{ key, total }, ...]  (already sorted desc)
+   */
+  function hbarTestVolume(data, maxItems) {
+    if (!data || data.length === 0) return '<div class="empty-state"><div class="empty-state-text">No data</div></div>';
+    var items = data.slice(0, maxItems || 15);
+    var maxVal = Math.max.apply(null, items.map(function(d) { return d.total; }));
+    var rows = items.map(function(d) {
+      var width = maxVal > 0 ? (d.total / maxVal * 100) : 0;
+      return '<div class="hbar-row">' +
+        '<span class="hbar-label" title="' + esc(d.key) + '">' + esc(d.key) + '</span>' +
+        '<div class="hbar-track"><div class="hbar-fill blue" style="width:' + width + '%"></div></div>' +
+        '<span class="hbar-value">' + d.total + '</span>' +
+        '<span class="hbar-value-label">tests</span>' +
+        '</div>';
+    }).join('');
+    return '<div class="hbar-chart">' + rows + '</div>';
+  }
+
+  /**
+   * Horizontal bar chart for duration (ms → seconds).
+   * data: [{ key, duration }, ...]  (already sorted desc)
+   */
+  function hbarDuration(data, maxItems) {
+    if (!data || data.length === 0) return '<div class="empty-state"><div class="empty-state-text">No data</div></div>';
+    var items = data.filter(function(d) { return d.duration > 0; }).slice(0, maxItems || 15);
+    if (items.length === 0) return '<div class="empty-state"><div class="empty-state-text">No duration data</div></div>';
+    var maxVal = Math.max.apply(null, items.map(function(d) { return d.duration; }));
+    var rows = items.map(function(d) {
+      var width = maxVal > 0 ? (d.duration / maxVal * 100) : 0;
+      var secs = (d.duration / 1000).toFixed(1);
+      return '<div class="hbar-row">' +
+        '<span class="hbar-label" title="' + esc(d.key) + '">' + esc(d.key) + '</span>' +
+        '<div class="hbar-track"><div class="hbar-fill orange" style="width:' + width + '%"></div></div>' +
+        '<span class="hbar-value">' + secs + 's</span>' +
+        '<span class="hbar-value-label"></span>' +
+        '</div>';
+    }).join('');
+    return '<div class="hbar-chart">' + rows + '</div>';
+  }
+
+  /**
+   * Horizontal bar chart for failure counts.
+   * data: [{ key, failed, total }, ...]  (already sorted desc by failed)
+   */
+  function hbarFailures(data, maxItems) {
+    if (!data || data.length === 0) return '<div class="empty-state"><div class="empty-state-text">No failures</div></div>';
+    var items = data.filter(function(d) { return d.failed > 0; }).slice(0, maxItems || 15);
+    if (items.length === 0) return '<div class="empty-state"><div class="empty-state-text">No failures — all tests passing</div></div>';
+    var maxVal = Math.max.apply(null, items.map(function(d) { return d.failed; }));
+    var rows = items.map(function(d) {
+      var width = maxVal > 0 ? (d.failed / maxVal * 100) : 0;
+      return '<div class="hbar-row">' +
+        '<span class="hbar-label" title="' + esc(d.key) + '">' + esc(d.key) + '</span>' +
+        '<div class="hbar-track"><div class="hbar-fill red" style="width:' + width + '%"></div></div>' +
+        '<span class="hbar-value">' + d.failed + '</span>' +
+        '<span class="hbar-value-label">/' + d.total + '</span>' +
+        '</div>';
+    }).join('');
+    return '<div class="hbar-chart">' + rows + '</div>';
+  }
+
+  function sliceTable(title, slices) {
+    if (!slices || slices.length === 0) return '';
+    var rows = slices.slice(0, 10).map(function(s) {
+      var deltaHtml = s.deltaPct != null && s.deltaPct !== 0
+        ? '<span class="badge ' + (s.deltaPct > 0 ? 'green' : 'red') + '">' + (s.deltaPct > 0 ? '+' : '') + s.deltaPct + '%</span>'
+        : '<span style="color:var(--text-muted)">-</span>';
+      return '<tr><td>' + esc(s.key) + '</td><td>' + s.totalRuns + '</td>' +
+        '<td><span class="badge ' + rateColor(s.passRate) + '">' + s.passRate + '%</span></td>' +
+        '<td>' + deltaHtml + '</td></tr>';
+    }).join('');
+    return '<div class="data-card"><h3>' + title + '</h3><table>' +
+      '<tr><th>Name</th><th>Runs</th><th>Pass</th><th>Delta</th></tr>' + rows + '</table></div>';
+  }
+
+  // -- Teams tab -------------------------------------------------------
+  function renderTeams() {
+    var r = state.rollup;
+    if (!r || !r.byTeam.length) { document.getElementById('main').innerHTML = emptyState('No team data'); return; }
+    var html = '<div class="main-header"><div><div class="main-title">Team Contribution</div>' +
+      '<div class="main-subtitle">Click a team to drill down into worst runs and flaky tests</div></div></div>';
+
+    // Executive summary charts: team pass-rate comparison + team activity (runs executed)
+    var teamsByPass = r.byTeam.slice().sort(function(a, b) { return a.passRate - b.passRate; });
+    var teamsByRuns = r.byTeam.slice().sort(function(a, b) { return b.runsExecuted - a.runsExecuted; });
+    var teamsByPassData = teamsByPass.map(function(t) { return { key: t.team, passRate: t.passRate, totalRuns: t.runsExecuted }; });
+    var teamsByRunsData = teamsByRuns.map(function(t) { return { key: t.team, totalRuns: t.runsExecuted }; });
+    html += '<div class="chart-grid-2">' +
+      '<div class="chart-card"><h3>Team Pass Rate Comparison (lowest first)</h3>' + hbarPassRate(teamsByPassData, 20) + '</div>' +
+      '<div class="chart-card"><h3>Team Activity (runs executed)</h3>' + hbarTestVolume(teamsByRunsData.map(function(d) { return { key: d.key, total: d.totalRuns }; }), 20) + '</div>' +
+      '</div>';
+
+    html += '<div class="team-grid">';
+    for (var i = 0; i < r.byTeam.length; i++) {
+      var t = r.byTeam[i];
+      var products = (t.products || []).join(', ');
+      var stacks = (t.stacks || []).join(', ');
+      html += '<div class="team-card" data-team="' + esc(t.team) + '" style="cursor:pointer">' +
+        '<div class="team-header"><div class="team-name">' + esc(t.team) + '</div>' +
+        '<span class="badge ' + rateColor(t.passRate) + '">' + t.passRate + '%</span></div>' +
+        '<div class="team-meta" style="padding:0 12px 6px;font-size:0.75rem;color:var(--text-secondary);line-height:1.4">' +
+          '<div><strong>Product:</strong> ' + esc(products || '—') + '</div>' +
+          '<div><strong>Stack:</strong> ' + esc(stacks || '—') + '</div>' +
+        '</div>' +
+        '<div class="team-stats">' +
+          teamStat('Runs', t.runsExecuted, 'blue') +
+          teamStat('Flakiness', t.flakinessOwned, t.flakinessOwned > 5 ? 'red' : 'green') +
+          teamStat('Tests Authored', t.testsAuthored, 'green') +
+          teamStat('Fixes Landed', t.fixesLanded, 'purple') +
+        '</div></div>';
+    }
+    html += '</div>';
+    // Individual contributors section
+    html += '<div class="chart-card" id="contributors-section"><h3>Individual Contributors</h3><div class="empty-state"><div class="empty-state-text">Loading...</div></div></div>';
+    document.getElementById('main').innerHTML = html;
+    var cards = document.querySelectorAll('.team-card[data-team]');
+    for (var j = 0; j < cards.length; j++) {
+      cards[j].onclick = function() { loadTeamDrillDown(this.dataset.team); };
+    }
+    loadContributors();
+  }
+
+  function loadTeamDrillDown(team) {
+    var main = document.getElementById('main');
+    main.innerHTML = '<div class="main-header"><div><div class="main-title">' + esc(team) + ' &mdash; Drill Down</div>' +
+      '<div class="main-subtitle">Worst runs and flaky tests for this team</div></div>' +
+      '<button class="btn btn-ghost" id="back-to-teams">Back to Teams</button></div>' +
+      '<div id="drilldown-content"><div class="empty-state"><div class="empty-state-text">Loading...</div></div></div>';
+    document.getElementById('back-to-teams').onclick = function() { state.tab = 'teams'; render(); };
+    api('/estate/drilldown?team=' + encodeURIComponent(team) + '&period=' + state.period).then(function(d) {
+      var html = '<div class="kpi-grid">' +
+        kpiCard('Total Runs', d.totalRuns, 'blue', null) +
+        kpiCard('Pass Rate', d.passRate + '%', rateColor(d.passRate), null) +
+        kpiCard('Flaky Rate', d.flakyRate + '%', d.flakyRate < 5 ? 'green' : 'yellow', null) +
+        '</div>';
+      // Executive charts for the team: stack donut + product pass-rate bars
+      var productBarData = d.byProduct.map(function(p) { return { key: p.key, passRate: p.passRate, totalRuns: p.totalRuns }; }).sort(function(a, b) { return a.passRate - b.passRate; });
+      html += '<div class="chart-grid-2">' +
+        '<div class="chart-card"><h3>Stack Distribution</h3>' + donutChart(d.byStack, 'Runs') + '</div>' +
+        '<div class="chart-card"><h3>Product Pass Rates</h3>' + hbarPassRate(productBarData, 15) + '</div>' +
+        '</div>';
+      html += '<div class="data-grid">' + sliceTable('By Stack', d.byStack) + sliceTable('By Product', d.byProduct) + '</div>';
+      if (d.worstRuns.length > 0) {
+        html += '<div class="runs-table"><h3>Worst Runs (bottom 20)</h3>' + runsTable(d.worstRuns) + '</div>';
+      }
+      if (d.flakyRuns.length > 0) {
+        html += '<div class="runs-table"><h3>Flaky Runs (most flaky)</h3>' + runsTable(d.flakyRuns) + '</div>';
+      }
+      document.getElementById('drilldown-content').innerHTML = html;
+    }).catch(function(e) { document.getElementById('drilldown-content').innerHTML = emptyState('Failed to load: ' + e.message); });
+  }
+
+  function loadContributors() {
+    api('/contributors?period=' + state.period).then(function(contributors) {
+      var el = document.getElementById('contributors-section');
+      if (!el) return;
+      if (!contributors.length) { el.innerHTML = '<h3>Individual Contributors</h3><div class="empty-state"><div class="empty-state-text">No individual contributor data. Configure connectors in Settings.</div></div>'; return; }
+      var html = '<h3>Individual Contributors</h3><table><tr><th>User</th><th>Team</th><th>Runs</th><th>Tests Authored</th><th>Fixes Landed</th><th>Pass Rate</th></tr>';
+      for (var i = 0; i < contributors.length; i++) {
+        var c = contributors[i];
+        html += '<tr><td>' + esc(c.userId) + '</td><td>' + esc(c.team) + '</td><td>' + c.runsExecuted + '</td>' +
+          '<td><span class="badge green">' + c.testsAuthored + '</span></td>' +
+          '<td><span class="badge purple">' + c.fixesLanded + '</span></td>' +
+          '<td><span class="badge ' + rateColor(c.passRate) + '">' + c.passRate + '%</span></td></tr>';
+      }
+      html += '</table>';
+      el.innerHTML = html;
+    }).catch(function() { /* optional */ });
+  }
+
+  function teamStat(label, value, color) {
+    return '<div class="team-stat"><div class="team-stat-label">' + label + '</div>' +
+      '<div class="team-stat-value ' + color + '">' + value + '</div></div>';
+  }
+
+  // -- Runs tab --------------------------------------------------------
+  function renderRuns() {
+    var runs = state.runs;
+    document.getElementById('main').innerHTML =
+      '<div class="main-header"><div><div class="main-title">Recent Runs</div>' +
+      '<div class="main-subtitle">' + runs.length + ' runs in the current period</div></div></div>' +
+      '<div class="runs-table"><h3>Run List</h3>' +
+      '<div class="filter-bar">' +
+      '<input class="filter-input" id="f-client" placeholder="Client...">' +
+      '<input class="filter-input" id="f-product" placeholder="Product...">' +
+      '<input class="filter-input" id="f-team" placeholder="Team...">' +
+      '<input class="filter-input" id="f-stack" placeholder="Stack...">' +
+      '<select class="filter-input" id="f-runType"><option value="">All Types</option><option value="pr">PR</option><option value="nightly">Nightly</option><option value="daily">Daily</option><option value="scheduled">Scheduled</option></select>' +
+      '<button class="btn btn-ghost" id="filter-btn">Filter</button>' +
+      '</div><div id="runs-list">' + runsTable(runs.slice(0, 50)) + '</div></div>';
+    document.getElementById('filter-btn').onclick = function() {
+      var q = '?limit=100';
+      var c = document.getElementById('f-client').value; if (c) q += '&client=' + encodeURIComponent(c);
+      var p = document.getElementById('f-product').value; if (p) q += '&product=' + encodeURIComponent(p);
+      var t = document.getElementById('f-team').value; if (t) q += '&team=' + encodeURIComponent(t);
+      var st = document.getElementById('f-stack').value; if (st) q += '&stack=' + encodeURIComponent(st);
+      var rt = document.getElementById('f-runType').value; if (rt) q += '&runType=' + encodeURIComponent(rt);
+      api('/runs' + q).then(function(data) { state.runs = data; document.getElementById('runs-list').innerHTML = runsTable(data.slice(0, 50)); });
+    };
+  }
+
+  function runsTable(runs) {
+    if (!runs.length) return '<div class="empty-state"><div class="empty-state-text">No runs match your filters</div></div>';
+    var rows = runs.map(function(r) {
+      var ciBadge = r.ciInfo && r.ciInfo.provider
+        ? '<span class="badge" style="background:var(--bg-hover);color:var(--text-secondary)">' + esc(r.ciInfo.provider) + '</span>'
+        : '&mdash;';
+      var commitShort = r.ciInfo && r.ciInfo.commit ? esc(r.ciInfo.commit.substring(0, 7)) : '';
+      var branchInfo = r.ciInfo && r.ciInfo.branch ? esc(r.ciInfo.branch) : '';
+      var ciLink = r.ciInfo && r.ciInfo.ciRunUrl
+        ? '<a href="' + esc(r.ciInfo.ciRunUrl) + '" target="_blank" rel="noopener" style="font-size:0.75rem;color:var(--accent,#4aa3ff);text-decoration:none">view run &#8599;</a>'
+        : '';
+      var ciDetail = commitShort
+        ? ciBadge + '<br><span style="font-size:0.75rem;color:var(--text-secondary)">' + branchInfo + ' @ ' + commitShort + '</span>' + (ciLink ? '<br>' + ciLink : '')
+        : ciBadge + (ciLink ? '<br>' + ciLink : '');
+      return '<tr class="run-row" data-run-id="' + esc(r.runId) + '" style="cursor:pointer" title="Click to see all test cases">' +
+        '<td>' + esc(r.runId.substring(0, 20)) + '...</td>' +
+        '<td>' + esc(r.orgContext.client) + '</td>' +
+        '<td>' + esc(r.orgContext.product) + '</td>' +
+        '<td>' + esc(r.orgContext.team) + '</td>' +
+        '<td><span class="badge blue">' + esc(r.orgContext.stack) + '</span></td>' +
+        '<td><span class="badge ' + (r.orgContext.runType === 'pr' ? 'green' : r.orgContext.runType === 'nightly' ? 'purple' : 'yellow') + '">' + r.orgContext.runType + '</span></td>' +
+        '<td>' + ciDetail + '</td>' +
+        '<td>' + r.total + '</td>' +
+        '<td><span class="badge ' + rateColor(r.passRate) + '">' + r.passRate + '%</span></td>' +
+        '<td>' + fmtDate(r.timestamp) + '</td></tr>';
+    }).join('');
+    // Wire up row clicks after render
+    setTimeout(function() {
+      var rowEls = document.querySelectorAll('.run-row[data-run-id]');
+      for (var i = 0; i < rowEls.length; i++) {
+        rowEls[i].onclick = function() { loadRunTests(this.dataset.runId); };
+      }
+    }, 0);
+    return '<table><tr><th>Run ID</th><th>Client</th><th>Product</th><th>Team</th><th>Stack</th><th>Type</th><th>CI Source</th><th>Total</th><th>Pass</th><th>Date</th></tr>' + rows + '</table>';
+  }
+
+  /**
+   * Load and display individual test cases for a specific run.
+   * Calls /api/runs/:runId/tests which re-parses the raw JUnit/TRX artifact
+   * and returns every test case with status, duration, and error messages.
+   */
+  function loadRunTests(runId) {
+    var main = document.getElementById('main');
+    main.innerHTML = '<div class="main-header"><div><div class="main-title">Test Cases</div>' +
+      '<div class="main-subtitle">Individual test results for ' + esc(runId) + '</div></div>' +
+      '<button class="btn btn-ghost" id="back-from-tests">Back</button></div>' +
+      '<div id="tests-content"><div class="empty-state"><div class="empty-state-text">Loading test cases...</div></div></div>';
+    document.getElementById('back-from-tests').onclick = function() { history.back(); state.tab = 'teams'; render(); };
+    api('/runs/' + encodeURIComponent(runId) + '/tests').then(function(data) {
+      renderTestCases(data, runId);
+    }).catch(function(e) {
+      document.getElementById('tests-content').innerHTML = emptyState('Failed to load test cases: ' + e.message);
+    });
+  }
+
+  function renderTestCases(data, runId) {
+    var tests = data.tests || [];
+    // Summary KPIs
+    var html = '<div class="kpi-grid">' +
+      kpiCard('Total Tests', data.total, 'blue', null) +
+      kpiCard('Passed', data.passed, 'green', null) +
+      kpiCard('Failed', data.failed, data.failed > 0 ? 'red' : 'green', null) +
+      kpiCard('Skipped', data.skipped, 'yellow', null) +
+      '</div>';
+
+    // Filter bar
+    html += '<div class="runs-table"><h3>Test Cases</h3>' +
+      '<div class="filter-bar">' +
+      '<input class="filter-input" id="test-search" placeholder="Search tests..." style="flex:1;min-width:200px">' +
+      '<select class="filter-input" id="test-status-filter">' +
+      '<option value="all">All statuses (' + data.total + ')</option>' +
+      '<option value="failed">Failed (' + data.failed + ')</option>' +
+      '<option value="passed">Passed (' + data.passed + ')</option>' +
+      '<option value="skipped">Skipped (' + data.skipped + ')</option>' +
+      '</select></div>' +
+      '<div id="test-cases-list"></div></div>';
+
+    document.getElementById('tests-content').innerHTML = html;
+
+    // Render test cases (initially all)
+    var listEl = document.getElementById('test-cases-list');
+    function renderList() {
+      var searchTerm = (document.getElementById('test-search').value || '').toLowerCase();
+      var statusFilter = document.getElementById('test-status-filter').value;
+      var filtered = tests.filter(function(t) {
+        if (statusFilter !== 'all' && t.status !== statusFilter) return false;
+        if (searchTerm && t.title.toLowerCase().indexOf(searchTerm) === -1 && (t.suite || '').toLowerCase().indexOf(searchTerm) === -1) return false;
+        return true;
+      });
+      listEl.innerHTML = testCaseList(filtered);
+    }
+    renderList();
+    document.getElementById('test-search').oninput = renderList;
+    document.getElementById('test-status-filter').onchange = renderList;
+  }
+
+  function testCaseList(tests) {
+    if (tests.length === 0) return '<div class="empty-state"><div class="empty-state-text">No tests match your filter</div></div>';
+    // Sort: failed first, then skipped, then passed — within each by duration desc
+    var statusOrder = { failed: 0, timedOut: 0, interrupted: 0, skipped: 1, passed: 2 };
+    var sorted = tests.slice().sort(function(a, b) {
+      var so = (statusOrder[a.status] ?? 3) - (statusOrder[b.status] ?? 3);
+      if (so !== 0) return so;
+      return b.duration - a.duration;
+    });
+    var html = '';
+    for (var i = 0; i < sorted.length; i++) {
+      var t = sorted[i];
+      var statusColor = t.status === 'passed' ? 'green' : t.status === 'skipped' ? 'yellow' : 'red';
+      var statusIcon = t.status === 'passed' ? '&#10003;' : t.status === 'skipped' ? '&#9888;' : '&#10007;';
+      var durationStr = t.duration > 0 ? (t.duration >= 1000 ? (t.duration / 1000).toFixed(1) + 's' : t.duration + 'ms') : '';
+      var suiteStr = t.suite ? '<span style="color:var(--text-muted);font-size:0.75rem">' + esc(t.suite) + '</span>' : '';
+      var errorHtml = '';
+      if (t.error) {
+        // Truncate very long errors but show first ~500 chars with expand option
+        var errorText = esc(t.error);
+        var truncated = errorText.length > 500;
+        var shortError = truncated ? errorText.substring(0, 500) + '...' : errorText;
+        errorHtml = '<div class="test-error" style="margin-top:0.5rem;padding:0.75rem;background:var(--bg-secondary);border-radius:6px;font-family:SF Mono,Fira Code,monospace;font-size:0.75rem;color:var(--accent-red);white-space:pre-wrap;word-break:break-word;max-height:' + (truncated ? '120px' : 'none') + ';overflow:auto;cursor:' + (truncated ? 'pointer' : 'default') + '" ' + (truncated ? 'data-full-error="' + errorText.replace(/"/g, '&quot;') + '"' : '') + '>' + shortError + '</div>';
+      }
+      html += '<div class="test-case" style="padding:0.75rem;border-bottom:1px solid var(--border-subtle)' + (t.status === 'failed' ? ';background:rgba(255,68,102,0.04)' : '') + '">' +
+        '<div style="display:flex;align-items:center;gap:0.5rem">' +
+        '<span class="badge ' + statusColor + '">' + statusIcon + ' ' + t.status + '</span>' +
+        '<span style="font-weight:500;flex:1">' + esc(t.title) + '</span>' +
+        '<span style="font-family:SF Mono,Fira Code,monospace;font-size:0.75rem;color:var(--text-muted)">' + durationStr + '</span>' +
+        '</div>' +
+        '<div style="margin-top:0.25rem;font-size:0.8rem">' + suiteStr + '</div>' +
+        errorHtml +
+        '</div>';
+    }
+    // Wire up expandable errors
+    setTimeout(function() {
+      var errorEls = document.querySelectorAll('.test-error[data-full-error]');
+      for (var i = 0; i < errorEls.length; i++) {
+        errorEls[i].onclick = function() {
+          if (this.style.maxHeight === 'none') {
+            this.style.maxHeight = '120px';
+            this.innerHTML = this.getAttribute('data-full-error').substring(0, 500) + '...';
+          } else {
+            this.style.maxHeight = 'none';
+            this.innerHTML = this.getAttribute('data-full-error');
+          }
+        };
+      }
+    }, 0);
+    return html;
+  }
+
+  // -- Compare tab -----------------------------------------------------
+  function renderCompare() {
+    document.getElementById('main').innerHTML =
+      '<div class="main-header"><div><div class="main-title">Period Comparison</div>' +
+      '<div class="main-subtitle">Current period vs previous period</div></div>' +
+      '<select class="period-select" id="compare-period">' +
+      '<option value="daily"' + (state.period === 'daily' ? ' selected' : '') + '>Daily</option>' +
+      '<option value="weekly"' + (state.period === 'weekly' ? ' selected' : '') + '>Weekly</option>' +
+      '<option value="monthly"' + (state.period === 'monthly' ? ' selected' : '') + '>Monthly</option>' +
+      '<option value="quarterly"' + (state.period === 'quarterly' ? ' selected' : '') + '>Quarterly</option>' +
+      '<option value="all"' + (state.period === 'all' ? ' selected' : '') + '>All Time</option></select></div>' +
+      '<div id="compare-content"><div class="empty-state"><div class="empty-state-text">Loading comparison...</div></div></div>';
+    document.getElementById('compare-period').onchange = function() { state.period = this.value; renderCompare(); };
+    api('/compare?period=' + state.period).then(function(c) {
+      var deltaColor = c.passRateDelta >= 0 ? 'green' : 'red';
+      var html = '<div class="kpi-grid">' +
+        kpiCard('Runs Delta', (c.totalRunsDelta >= 0 ? '+' : '') + c.totalRunsDelta, c.totalRunsDelta >= 0 ? 'green' : 'red', null) +
+        kpiCard('Pass Rate Delta', (c.passRateDelta >= 0 ? '+' : '') + c.passRateDelta + '%', deltaColor, null) +
+        kpiCard('Flaky Rate Delta', (c.flakyRateDelta >= 0 ? '+' : '') + c.flakyRateDelta + '%', c.flakyRateDelta <= 0 ? 'green' : 'red', null) +
+        '</div>';
+      html += '<div class="data-grid">' +
+        compareTable('By Client', c.byClient) +
+        compareTable('By Team', c.byTeam) +
+        compareTable('By Stack', c.byStack) +
+        '</div>';
+      document.getElementById('compare-content').innerHTML = html;
+    }).catch(function(e) { document.getElementById('compare-content').innerHTML = emptyState('Failed to load: ' + e.message); });
+  }
+
+  function compareTable(title, slices) {
+    if (!slices || slices.length === 0) return '';
+    var rows = slices.slice(0, 15).map(function(s) {
+      var deltaColor = s.passRateDelta >= 0 ? 'green' : 'red';
+      return '<tr><td>' + esc(s.key) + '</td>' +
+        '<td>' + s.period1Runs + '</td><td>' + s.period2Runs + '</td>' +
+        '<td><span class="badge ' + rateColor(s.period1PassRate) + '">' + s.period1PassRate + '%</span></td>' +
+        '<td><span class="badge ' + rateColor(s.period2PassRate) + '">' + s.period2PassRate + '%</span></td>' +
+        '<td><span class="badge ' + deltaColor + '">' + (s.passRateDelta >= 0 ? '+' : '') + s.passRateDelta + '%</span></td></tr>';
+    }).join('');
+    return '<div class="data-card"><h3>' + title + '</h3><table>' +
+      '<tr><th>Name</th><th>Prev Runs</th><th>Curr Runs</th><th>Prev Pass</th><th>Curr Pass</th><th>Delta</th></tr>' +
+      rows + '</table></div>';
+  }
+
+  // -- Settings tab ----------------------------------------------------
+  function renderSettings() {
+    var html = '<div class="main-header"><div><div class="main-title">Settings</div>' +
+      '<div class="main-subtitle">Cloud storage and connector configuration</div></div></div>';
+    html += '<div class="settings-grid">' +
+      '<div class="setting-card" id="storage-status-card"><h3>Cloud Storage</h3><p>Loading...</p></div>' +
+      '<div class="setting-card" id="connect-form" style="display:none"><h3>Connect Cloud Storage</h3>' +
+      '<p>Connect your Microsoft 365 OneDrive or Google Workspace Drive as shared storage. ' +
+      'Data is stored as files in your cloud drive. Share the folder with your team via native sharing. ' +
+      'Team members view results through this dashboard — they never open the raw files.</p>' +
+      '<div class="form-group"><label class="form-label">Provider</label>' +
+      '<select class="form-select" id="provider"><option value="onedrive">Microsoft 365 (OneDrive)</option><option value="googledrive">Google Workspace (Google Drive)</option></select></div>' +
+      '<div class="form-group"><label class="form-label">OAuth Client ID</label><input class="form-input" id="client-id" placeholder="from app registration"></div>' +
+      '<div class="form-group"><label class="form-label">OAuth Client Secret</label><input class="form-input" id="client-secret" placeholder="client secret"></div>' +
+      '<div class="form-group"><label class="form-label">Redirect URI</label><input class="form-input" id="redirect-uri" value="' + window.location.origin + '/api/storage/oauth/callback"></div>' +
+      '<div class="form-group"><label class="form-label">Folder Path</label><input class="form-input" id="folder-path" placeholder="e.g. TestIntelligencePlatform/acme"></div>' +
+      '<button class="btn btn-primary" id="connect-btn">Connect</button></div>' +
+      '<div class="setting-card" id="team-configs" style="display:none"></div>' +
+      '<div class="setting-card"><h3>Alert Thresholds</h3>' +
+      '<p>Get notified when test quality drops below your thresholds. Alerts appear in the dashboard and can trigger webhooks.</p>' +
+      '<div class="form-group"><label class="form-label">Pass Rate Alert (below this %)</label>' +
+      '<input class="form-input" id="alert-pass-rate" type="number" min="0" max="100" value="85" placeholder="85"></div>' +
+      '<div class="form-group"><label class="form-label">Flaky Rate Alert (above this %)</label>' +
+      '<input class="form-input" id="alert-flaky-rate" type="number" min="0" max="100" value="15" placeholder="15"></div>' +
+      '<div class="form-group"><label class="form-label">Webhook URL (optional)</label>' +
+      '<input class="form-input" id="alert-webhook" placeholder="https://hooks.slack.com/services/..."></div>' +
+      '<button class="btn btn-primary" id="save-alerts-btn">Save Alerts</button>' +
+      '<div id="alert-status" style="margin-top:0.75rem"></div></div>' +
+      '<div class="setting-card"><h3>How Sharing Works</h3>' +
+      '<p><strong>For Directors / VPs (admin):</strong><br>' +
+      '1. Connect your cloud drive above.<br>2. Data is stored in YOUR cloud drive folder.<br>3. Share that folder with your team via M365/Google native sharing.<br><br>' +
+      '<strong>For Team Members (viewer):</strong><br>' +
+      '1. Open this dashboard on your machine.<br>2. Go to Settings and connect your cloud storage.<br>' +
+      '3. Choose the SAME provider and enter the SAME folder path your director shared.<br>' +
+      '4. Authenticate with your own cloud account.<br>5. View results in the dashboard — you never open the raw files.<br><br>' +
+      '<strong>No Docker, no Postgres needed.</strong> The cloud drive is the shared database.</p></div>' +
+      '</div>';
+    document.getElementById('main').innerHTML = html;
+    document.getElementById('connect-btn').onclick = connectStorage;
+    document.getElementById('save-alerts-btn').onclick = saveAlerts;
+    loadStorageStatus();
+    loadAlerts();
+  }
+
+  // -- Sync Health tab (ADR-009 — trust layer for CI pipeline sources) ----
+  function renderSyncHealth() {
+    var html = '<div class="main-header"><div><div class="main-title">Sync Health</div>' +
+      '<div class="main-subtitle">CI pipeline connector status — is the dashboard data complete and current?</div></div></div>';
+    html += '<div id="sync-health-content"><p style="color:var(--text-secondary);padding:2rem">Loading sync status...</p></div>';
+    document.getElementById('main').innerHTML = html;
+    loadSyncHealth();
+  }
+
+  function loadSyncHealth() {
+    fetch('/api/sync/health', { headers: getAuthHeaders() })
+      .then(function(r) { if (!r.ok) throw new Error('Failed to load sync health'); return r.json(); })
+      .then(function(summary) {
+        var c = document.getElementById('sync-health-content');
+        if (!summary || summary.connectorCount === 0) {
+          c.innerHTML = '<div class="setting-card"><h3>No CI Connectors Configured</h3>' +
+            '<p>No pipeline-sources connectors have been synced yet. Configure connectors in <code>pipeline-sources.json</code> ' +
+            'and run <code>evoveo-smart-reporter-sync run</code> to start pulling test results from your CI estate.</p>' +
+            '<p style="margin-top:1rem;color:var(--text-secondary)">Supported: Azure DevOps, GitHub Actions, GitLab (coming), AWS CodePipeline (coming).</p></div>';
+          return;
+        }
+        var cards = '<div class="kpi-row">' +
+          kpiCard('Connectors', summary.connectorCount, 'var(--accent-green)') +
+          kpiCard('Healthy', summary.healthyCount, 'var(--accent-green)') +
+          kpiCard('Stale', summary.staleCount, summary.staleCount > 0 ? 'var(--accent-amber)' : 'var(--text-secondary)') +
+          kpiCard('Errors', summary.errorCount, summary.errorCount > 0 ? 'var(--accent-red)' : 'var(--text-secondary)') +
+          '</div>';
+        cards += '<div class="runs-table"><h3>Connector Status</h3><table><thead><tr>' +
+          '<th>Connector</th><th>Last Sync</th><th>Runs Pulled</th><th>Status</th><th>Errors</th></tr></thead><tbody>';
+        for (var i = 0; i < summary.connectors.length; i++) {
+          var conn = summary.connectors[i];
+          var status = conn.stale ? '<span style="color:var(--accent-amber)">&#9888; Stale</span>'
+            : conn.lastError ? '<span style="color:var(--accent-red)">&#10007; Error</span>'
+            : conn.lastSyncAt ? '<span style="color:var(--accent-green)">&#10003; Healthy</span>'
+            : '<span style="color:var(--text-secondary)">&#8212; Never synced</span>';
+          var lastSync = conn.lastSyncAt ? new Date(conn.lastSyncAt).toLocaleString() : 'Never';
+          if (conn.minutesSinceSync !== null) {
+            var hrs = Math.floor(conn.minutesSinceSync / 60);
+            var mins = conn.minutesSinceSync % 60;
+            lastSync += ' (' + (hrs > 0 ? hrs + 'h ' : '') + mins + 'm ago)';
+          }
+          cards += '<tr><td>' + conn.connectorId + '</td><td>' + lastSync + '</td><td>' +
+            conn.lastRunCount + '</td><td>' + status + '</td><td>' +
+            (conn.lastError ? '<span style="color:var(--accent-red)">' + conn.lastError + '</span>' : '&mdash;') +
+            '</td></tr>';
+        }
+        cards += '</tbody></table></div>';
+        c.innerHTML = cards;
+      })
+      .catch(function(e) {
+        document.getElementById('sync-health-content').innerHTML =
+          '<div class="setting-card"><h3>Unable to load sync health</h3><p>' + e.message + '</p></div>';
+      });
+  }
+
+  function kpiCard(label, value, color) {
+    return '<div class="mini-stat" style="border-left:3px solid ' + color + '">' +
+      '<div class="mini-stat-value">' + value + '</div>' +
+      '<div class="mini-stat-label">' + label + '</div></div>';
+  }
+
+  function loadAlerts() {
+    try {
+      var saved = localStorage.getItem('tip-alerts');
+      if (saved) {
+        var alerts = JSON.parse(saved);
+        if (alerts.passRate) document.getElementById('alert-pass-rate').value = alerts.passRate;
+        if (alerts.flakyRate) document.getElementById('alert-flaky-rate').value = alerts.flakyRate;
+        if (alerts.webhook) document.getElementById('alert-webhook').value = alerts.webhook;
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  function saveAlerts() {
+    var alerts = {
+      passRate: document.getElementById('alert-pass-rate').value,
+      flakyRate: document.getElementById('alert-flaky-rate').value,
+      webhook: document.getElementById('alert-webhook').value,
+    };
+    localStorage.setItem('tip-alerts', JSON.stringify(alerts));
+    var status = document.getElementById('alert-status');
+    status.innerHTML = '<span class="badge green">Saved</span> Alerts will trigger when pass rate drops below ' + alerts.passRate + '% or flaky rate exceeds ' + alerts.flakyRate + '%.';
+    checkAlerts(alerts);
+  }
+
+  function checkAlerts(alerts) {
+    var r = state.rollup;
+    if (!r) return;
+    var passThreshold = parseFloat(alerts.passRate) || 0;
+    var flakyThreshold = parseFloat(alerts.flakyRate) || 100;
+    var violations = [];
+    if (r.passRate < passThreshold) violations.push('Pass rate ' + r.passRate + '% is below threshold ' + passThreshold + '%');
+    if (r.flakyRate > flakyThreshold) violations.push('Flaky rate ' + r.flakyRate + '% exceeds threshold ' + flakyThreshold + '%');
+    if (violations.length > 0) {
+      var status = document.getElementById('alert-status');
+      if (status) {
+        status.innerHTML += '<div style="margin-top:0.5rem;padding:0.5rem 0.75rem;background:rgba(255,68,102,0.1);border:1px solid var(--accent-red);border-radius:8px;color:var(--accent-red);font-size:0.8rem">' +
+          '<strong>&#9888; Active Alerts:</strong><br>' + violations.join('<br>') + '</div>';
+      }
+    }
+  }
+
+  function loadStorageStatus() {
+    api('/storage/config').then(function(cfg) {
+      var el = document.getElementById('storage-status-card');
+      if (!cfg.configured) {
+        el.innerHTML = '<h3>Cloud Storage</h3><p>No cloud storage connected. Using local file storage. ' +
+          'Connect below to use OneDrive or Google Drive as shared storage.</p>';
+        document.getElementById('connect-form').style.display = 'block';
+      } else {
+        el.innerHTML = '<h3>Cloud Storage</h3><p><span class="badge green">Connected</span> ' + cfg.provider + ' &mdash; ' + esc(cfg.folderPath) + '</p>' +
+          '<button class="btn btn-danger" id="disconnect-btn" style="margin-top:0.75rem">Disconnect</button>';
+        document.getElementById('disconnect-btn').onclick = disconnectStorage;
+      }
+      loadTeamConfigs();
+    }).catch(function() { document.getElementById('storage-status-card').innerHTML = '<h3>Cloud Storage</h3><p style="color:var(--accent-red)">Failed to load storage status</p>'; });
+  }
+
+  function loadTeamConfigs() {
+    api('/storage/team-configs').then(function(data) {
+      var configs = data.configs || [];
+      if (configs.length === 0) return;
+      var el = document.getElementById('team-configs');
+      el.style.display = 'block';
+      var html = '<h3>Team Configurations</h3><p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem">Other users in this deployment have configured:</p><table>' +
+        '<tr><th>User</th><th>Provider</th><th>Folder</th></tr>';
+      for (var i = 0; i < configs.length; i++) {
+        html += '<tr><td>' + esc(configs[i].userId) + '</td><td>' + esc(configs[i].provider) + '</td><td>' + esc(configs[i].folderPath) + '</td></tr>';
+      }
+      html += '</table><p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem">Use the same provider and folder path to see shared data.</p>';
+      el.innerHTML = html;
+    }).catch(function() {});
+  }
+
+  function connectStorage() {
+    var body = { provider: document.getElementById('provider').value, clientId: document.getElementById('client-id').value, clientSecret: document.getElementById('client-secret').value, redirectUri: document.getElementById('redirect-uri').value, folderPath: document.getElementById('folder-path').value };
+    fetch('/api/storage/connect', { method: 'POST', headers: Object.assign({}, getAuthHeaders(), { 'Content-Type': 'application/json' }), body: JSON.stringify(body) })
+      .then(function(r) { return r.json(); }).then(function(data) {
+        if (data.warning) alert(data.warning);
+        if (data.authorizeUrl) window.location.href = data.authorizeUrl;
+        else alert('Error: ' + (data.error || 'unknown'));
+      }).catch(function(e) { alert('Error: ' + e.message); });
+  }
+
+  function disconnectStorage() {
+    if (!confirm('Disconnect cloud storage? Data will remain in your cloud drive.')) return;
+    fetch('/api/storage/disconnect', { method: 'POST', headers: getAuthHeaders() }).then(function() { loadStorageStatus(); });
+  }
+
+  // -- Helpers ---------------------------------------------------------
+  function emptyState(msg) {
+    return '<div class="empty-state"><div class="empty-state-icon">&#9776;</div><div class="empty-state-text">' + msg + '</div></div>';
+  }
+
+  // -- Data loading ----------------------------------------------------
+  function loadEstate() {
+    render();
+    api('/estate?period=' + state.period).then(function(rollup) {
+      state.rollup = rollup;
+      api('/runs?limit=100').then(function(runs) {
+        state.runs = runs;
+        render();
+      }).catch(function() { render(); });
+    }).catch(function(e) { document.getElementById('main').innerHTML = emptyState('Failed to load: ' + e.message); });
+  }
+
+  function render() {
+    if (!state.session) { renderLogin(); return; }
+    renderDashboard();
+  }
+
+  // -- Init ------------------------------------------------------------
+  // Global keyboard shortcuts: ⌘K / Ctrl+K = search, Escape = close search, ⌘B / Ctrl+B = toggle sidebar
+  document.addEventListener('keydown', function(e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      if (document.getElementById('search-overlay')) { closeSearch(); } else if (state.session) { openSearch(); }
+    }
+    if (e.key === 'Escape') {
+      if (document.getElementById('search-overlay')) { closeSearch(); }
+    }
+    if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+      e.preventDefault();
+      var shell = document.getElementById('app-shell');
+      if (shell) shell.classList.toggle('sidebar-collapsed');
+    }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

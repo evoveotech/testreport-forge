@@ -1,0 +1,86 @@
+{
+  "connectors": [
+    {
+      "id": "azure-acme",
+      "kind": "azure-devops",
+      "organization": "acme-corp",
+      "auth": {
+        "method": "pat",
+        "tokenEnv": "AZURE_DEVOPS_PAT"
+      },
+      "projects": ["Payments", "Claims"]
+    },
+    {
+      "id": "github-acme",
+      "kind": "github-actions",
+      "owner": "acme-corp",
+      "auth": {
+        "method": "pat",
+        "tokenEnv": "GITHUB_TOKEN"
+      },
+      "repos": ["payments-gateway", "claims-ios", "claims-android", "platform-bff"]
+    }
+  ],
+  "classificationRules": [
+    {
+      "match": {
+        "connector": "azure-acme",
+        "repoName": "^payments-(.+)$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "internal",
+        "product": "payments-${1}",
+        "team": "payments-qa",
+        "stack": "dotnet",
+        "runType": "nightly",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "azure-acme",
+        "repoName": "^claims-(.+)$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "internal",
+        "product": "claims",
+        "team": "claims-qa",
+        "stack": "dotnet",
+        "runType": "nightly",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "github-acme",
+        "repoName": "^claims-(ios|android)$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "internal",
+        "product": "claims",
+        "team": "claims-${1}",
+        "stack": "${1}",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "github-acme",
+        "repoName": "^platform-bff$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "internal",
+        "product": "platform",
+        "team": "platform-qa",
+        "stack": "newman",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    }
+  ]
+}
