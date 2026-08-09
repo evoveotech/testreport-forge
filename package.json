@@ -2,6 +2,9 @@
   "name": "evoveo-smart-reporter",
   "version": "2.1.0",
   "description": "An intelligent test reporter with AI-powered failure analysis, flakiness detection, and performance regression alerts. Works with Playwright, Cypress, Selenium, Jest, Vitest, Pytest, MSTest/TRX, Postman/Newman, SoapUI, and more.",
+  "engines": {
+    "node": ">=20.12"
+  },
   "main": "dist/smart-reporter.js",
   "types": "dist/smart-reporter.d.ts",
   "bin": {
