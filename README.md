@@ -13,37 +13,35 @@ An intelligent test reporter with AI-powered failure analysis, flakiness detecti
 |------------|---------|------------|---------|----------|--------|
 | ![Playwright](https://raw.githubusercontent.com/evoveotech/testreport-forge/master/images/report-overview-dark.png) | ![Cypress](https://raw.githubusercontent.com/evoveotech/testreport-forge/master/images/multi-framework/cypress-report.png) | ![TRX](https://raw.githubusercontent.com/evoveotech/testreport-forge/master/images/multi-framework/dotnet-trx-report.png) | ![Newman](https://raw.githubusercontent.com/evoveotech/testreport-forge/master/images/multi-framework/newman-report.png) | ![Selenium](https://raw.githubusercontent.com/evoveotech/testreport-forge/master/images/multi-framework/selenium-report.png) | ![SoapUI](https://raw.githubusercontent.com/evoveotech/testreport-forge/master/images/multi-framework/soapui-report.png) |
 
-*The same rich dashboard for every framework — stability grades, failure clustering, trend analytics, and AI-powered root cause analysis.*
+<details>
+<summary><b>Framework screenshots</b> (click to expand)</summary>
 
----
+#### Cypress (JUnit XML)
+![Cypress report](images/multi-framework/cypress-report.png)
+*Cypress E2E test results — 12 tests across Auth, Cart, and API suites*
+Example: [`examples/multi-framework/cypress-junit.xml`](examples/multi-framework/cypress-junit.xml)
 
-## QA Spec Kit -- AI-Powered QA with Loop Engineering
+#### .NET / MSTest (TRX)
+![TRX report](images/multi-framework/dotnet-trx-report.png)
+*.NET test results via `dotnet test --logger trx` — MSTest, xUnit, NUnit, RestSharp*
+Example: [`examples/multi-framework/dotnet-trx.trx`](examples/multi-framework/dotnet-trx.trx)
 
-This repo doubles as a **QA Spec Kit** -- a bundle of 72 AI agent skills +
-the Loop Engineering methodology that helps any AI IDE write better tests,
-debug faster, review code more thoroughly, and ship with confidence.
+#### Postman / Newman (JSON)
+![Newman report](images/multi-framework/newman-report.png)
+*Postman/Newman API collection results — 6 requests with assertion-level pass/fail*
+Example: [`examples/multi-framework/postman-newman.json`](examples/multi-framework/postman-newman.json)
 
-**Works with:** Claude Code, GitHub Copilot, Cursor, Windsurf, Devin, and any
-IDE that reads `AGENTS.md`.
+#### Selenium (Generic JSON)
+![Selenium report](images/multi-framework/selenium-report.png)
+*Selenium WebDriver test results — 8 tests across Login, Navigation, Search, Cart, Checkout*
+Example: [`examples/multi-framework/selenium-generic.json`](examples/multi-framework/selenium-generic.json)
 
-### Quick setup
+#### SoapUI (JUnit XML)
+![SoapUI report](images/multi-framework/soapui-report.png)
+*SoapUI service test results — 9 tests across SOAP, REST, and Security suites*
+Example: [`examples/multi-framework/soapui-junit.xml`](examples/multi-framework/soapui-junit.xml)
 
-```powershell
-# Windows -- links 72 skills into all IDE folders
-pwsh scripts/setup-agents.ps1 -Project
-```
-
-```bash
-# macOS / Linux
-bash scripts/setup-agents.sh --project
-```
-
-Then just open the repo in your AI IDE and ask a question. The agent will
-automatically analyze your repo, select the right skills, and use Loop
-Engineering (Goal -> Action -> Observation -> Adjustment -> Stop) to solve
-your problem.
-
-**Full setup guide:** [`QA-SPEC-KIT.md`](QA-SPEC-KIT.md)
+</details>
 
 ---
 
@@ -75,39 +73,25 @@ Run your tests and open the generated `smart-report.html`.
 
 ## Multi-Framework Support (CLI)
 
-Beyond the native Playwright reporter, the `generate` CLI command produces the
-same rich report from **any** automation technology's result file. The input
-format is auto-detected; you can also specify it explicitly.
+The `generate` CLI produces the same rich report from **any** automation technology's result file. Format is auto-detected.
 
 ```bash
 npx evoveo-smart-reporter generate --input <results-file> [options]
 ```
 
-### Supported input formats
-
 | Format | Flag | Covers |
 |--------|------|--------|
-| JUnit XML | `--format junit` | Cypress, Selenium, Jest (jest-junit), Vitest (vitest-junit), Pytest, Go (go-junit-report), Maven Surefire, Gradle, TestNG, SoapUI, Newman (junit reporter), WebdriverIO |
-| TRX | `--format trx` | Microsoft MSTest / VSTest (`dotnet test --logger trx`), xUnit (TRX), NUnit (TRX adapter) — covers .NET and RestSharp integration runs |
-| Newman JSON | `--format newman` | Postman / Newman API collections (`newman run -r json`) |
-| Generic JSON | `--format json` | Any framework — convert your results to the `smart-report-data.json` schema (or a bare array of test objects) and feed it in |
+| JUnit XML | `--format junit` | Cypress, Selenium, Jest, Vitest, Pytest, Go, Maven, TestNG, SoapUI, WebdriverIO |
+| TRX | `--format trx` | MSTest, xUnit, NUnit (.NET) |
+| Newman JSON | `--format newman` | Postman / Newman API collections |
+| Generic JSON | `--format json` | Any framework — convert to the schema |
 | Auto-detect | `--format auto` (default) | Detects from file content and extension |
 
-### Examples
-
-The repo ships with ready-to-run example files for every supported format in
-[`examples/multi-framework/`](examples/multi-framework/). Generate all reports
-and screenshots with one command:
+<details>
+<summary><b>CLI examples</b> (click to expand)</summary>
 
 ```bash
-npm run build
-node scripts/generate-examples.js
-```
-
-Or generate individual reports:
-
-```bash
-# Cypress (emits JUnit XML via cypress-junit-reporter)
+# Cypress (emits JUnit XML)
 npx evoveo-smart-reporter generate --input cypress-results.xml --framework "Cypress"
 
 # .NET / RestSharp (MSTest TRX)
@@ -119,55 +103,19 @@ npx evoveo-smart-reporter generate --input newman-report.json --format newman
 # SoapUI (JUnit XML export)
 npx evoveo-smart-reporter generate --input soapui-junit.xml --framework "SoapUI" --title "API Regression"
 
-# Selenium (generic JSON — convert your results to the schema)
+# Selenium (generic JSON)
 npx evoveo-smart-reporter generate --input selenium-results.json --format json --framework "Selenium"
 
 # Any framework — convert to the generic JSON schema
 npx evoveo-smart-reporter generate --input my-results.json --format json --framework "Custom Runner"
 ```
 
-### Report screenshots by framework
+Generate all example reports and screenshots: `node scripts/generate-examples.js`
 
-The same rich dashboard — stability grades, failure clustering, trend analytics,
-quality gates — works for every input format. The framework badge in the header
-shows which automation tool produced the results.
+</details>
 
-#### Cypress (JUnit XML)
-
-![Cypress report](images/multi-framework/cypress-report.png)
-*Cypress E2E test results with 12 tests across Auth, Cart, and API suites*
-
-Example file: [`examples/multi-framework/cypress-junit.xml`](examples/multi-framework/cypress-junit.xml)
-
-#### .NET / MSTest (TRX)
-
-![TRX report](images/multi-framework/dotnet-trx-report.png)
-*.NET test results via `dotnet test --logger trx` — covers MSTest, xUnit, NUnit, and RestSharp integration tests*
-
-Example file: [`examples/multi-framework/dotnet-trx.trx`](examples/multi-framework/dotnet-trx.trx)
-
-#### Postman / Newman (JSON)
-
-![Newman report](images/multi-framework/newman-report.png)
-*Postman/Newman API collection results — 6 requests with assertion-level pass/fail*
-
-Example file: [`examples/multi-framework/postman-newman.json`](examples/multi-framework/postman-newman.json)
-
-#### Selenium (Generic JSON)
-
-![Selenium report](images/multi-framework/selenium-report.png)
-*Selenium WebDriver test results — 8 tests across Login, Navigation, Search, Cart, and Checkout suites*
-
-Example file: [`examples/multi-framework/selenium-generic.json`](examples/multi-framework/selenium-generic.json)
-
-#### SoapUI (JUnit XML)
-
-![SoapUI report](images/multi-framework/soapui-report.png)
-*SoapUI service test results — 9 tests across SOAP, REST, and Security suites*
-
-Example file: [`examples/multi-framework/soapui-junit.xml`](examples/multi-framework/soapui-junit.xml)
-
-### CLI options for `generate`
+<details>
+<summary><b>CLI options for <code>generate</code></b> (click to expand)</summary>
 
 | Option | Description |
 |--------|-------------|
@@ -183,13 +131,10 @@ Example file: [`examples/multi-framework/soapui-junit.xml`](examples/multi-frame
 | `--theme <preset>` | Theme preset (`default`, `dark`, `light`, `high-contrast`, ...) |
 | `--title <title>` | Report title (branding) |
 
-The detected (or overridden) framework is shown as a badge in the report header
-and in the page metadata, so it's always clear which automation tool produced
-the results.
+</details>
 
-### Programmatic API
-
-You can also ingest results from any framework in code:
+<details>
+<summary><b>Programmatic API</b> (click to expand)</summary>
 
 ```typescript
 import { detectAdapter, getAdapter } from 'evoveo-smart-reporter/adapters';
@@ -208,11 +153,13 @@ generator.ingest(ingested);
 await generator.generate();
 ```
 
+</details>
+
+---
+
 ## Leadership Dashboard — Test Intelligence Platform
 
-Aggregate test runs across your entire enterprise — multiple clients, products,
-teams, and stacks — into one leadership dashboard. See pass rates, flakiness,
-and trends by team. Drill down to the single-run report you already know.
+Aggregate test runs across your entire enterprise — multiple clients, products, teams, and stacks — into one leadership dashboard. See pass rates, flakiness, and trends by team. Drill down to the single-run report you already know.
 
 ![Estate Overview](images/leadership-dashboard/estate-overview.png)
 *Estate overview: 500 runs across 5 clients, 6 teams, 8 stacks — pass rate ring, KPI cards, trend chart*
@@ -220,15 +167,9 @@ and trends by team. Drill down to the single-run report you already know.
 ### Quick Start
 
 ```bash
-# Build
 npm run build
-
-# Seed sample data (500 runs across 5 clients, 6 teams, 8 stacks)
-node dist/bin/seed-data.js --data-dir ./data
-
-# Boot the dashboard
+node dist/bin/seed-data.js --data-dir ./data    # seed 500 sample runs
 npx evoveo-smart-reporter-dashboard --port 3000 --data-dir ./data
-
 # Open http://localhost:3000
 ```
 
@@ -243,11 +184,31 @@ npx evoveo-smart-reporter-dashboard --port 3000 --data-dir ./data
 | **Sync Health** | CI pipeline connector status — is the dashboard data complete and current? |
 | **Settings** | Cloud storage (OneDrive/Google Drive), alert thresholds, connector config |
 
+<details>
+<summary><b>Dashboard screenshots</b> (click to expand)</summary>
+
 ![Team Contribution](images/leadership-dashboard/team-contribution.png)
 *Team contribution: tests authored and fixes landed per team, with drill-down*
 
 ![Settings](images/leadership-dashboard/settings.png)
 *Settings: connect OneDrive or Google Drive as shared storage — no Docker, no Postgres*
+
+![Estate Trend](images/leadership-dashboard/estate-trend.png)
+*Estate trend: pass rate and flaky rate over time with distribution heatmaps*
+
+![Recent Runs](images/leadership-dashboard/runs-list.png)
+*Recent runs: client, product, team, stack, pass rate, duration — click to drill down*
+
+![Period Comparison](images/leadership-dashboard/period-comparison.png)
+*Period comparison: current vs previous period — pass rate delta, flaky rate delta*
+
+![Sync Health](images/leadership-dashboard/sync-health.png)
+*Sync health: CI pipeline connector status — last sync, stale warnings*
+
+![Login](images/leadership-dashboard/login-dev.png)
+*Dev mode login — enter any tenant/user. Production uses OIDC or SAML SSO.*
+
+</details>
 
 ### Auth Modes
 
@@ -260,7 +221,6 @@ npx evoveo-smart-reporter-dashboard --port 3000 --data-dir ./data
 ### Ingesting Runs
 
 ```bash
-# HTTP POST (authenticated)
 curl -X POST http://localhost:3000/api/ingest \
   -H 'Content-Type: application/json' \
   -H 'X-Tenant-Id: acme' -H 'X-User-Id: u1' -H 'X-User-Role: admin' \
@@ -274,84 +234,49 @@ curl -X POST http://localhost:3000/api/ingest \
   }'
 ```
 
-**Full guide with screenshots, cloud storage setup, and connector configuration:**
-[`docs/leadership-dashboard-guide.md`](docs/leadership-dashboard-guide.md)
-
-**Architecture decisions:** [`docs/adr/`](docs/adr/) (9 ADRs)
+**Full guide:** [`docs/leadership-dashboard-guide.md`](docs/leadership-dashboard-guide.md) · **ADRs:** [`docs/adr/`](docs/adr/) (9 ADRs)
 
 ---
-
-## At a Glance
-
-- Stability grades (A–F) so you know which tests to trust
-- Flakiness detection across retries and history
-- Run-to-run comparison — catch regressions before they ship
-- Screenshot, video, and trace gallery for every failure
-- Network request logs to pinpoint API issues
-- CI auto-detection & notifications
-- Live progress dashboard — run, cancel, and filter tests as they execute
-- AI-powered root cause analysis (bring your own Anthropic, OpenAI, or Gemini API key)
-- 10 themes plus fully custom theme colours
-- PDF, JSON, and JUnit XML exports
-- Quality gates — block merges when quality drops
-- Auto-quarantine unreliable tests to keep CI green
-- Custom report branding (logo, title, footer)
 
 ## Features
 
 ### Core Analysis
-- **AI Failure Analysis** — AI-powered fix suggestions using your own Anthropic, OpenAI, or Gemini API key
-- **Flakiness Detection** — Historical tracking to identify unreliable tests (not single-run retries)
-- **Performance Regression Alerts** — Warns when tests get significantly slower than average
-- **Stability Scoring** — Composite health metrics (0-100 with grades A to F)
-- **Failure Clustering** — Group similar failures by error type with error previews and AI analysis
-- **Test Retry Analysis** — Track tests that frequently need retries
+- **AI Failure Analysis** — fix suggestions via your own Anthropic, OpenAI, or Gemini API key
+- **Flakiness Detection** — historical tracking across runs (not single-run retries)
+- **Performance Regression Alerts** — warns when tests get significantly slower
+- **Stability Scoring** — composite health metrics (0-100, grades A–F)
+- **Failure Clustering** — group similar failures by error type with AI analysis
+- **Test Retry Analysis** — track tests that frequently need retries
 
 ### Interactive Dashboard
 - **Sidebar Navigation** — Overview, Tests, Trends, Comparison, Gallery views
-- **Theme Support** — 4 built-in themes (System, Light, Dark, High Contrast) with persistent preference
-- **Keyboard Shortcuts** — `1-5` switch views, `j/k` navigate tests, `f` focus search, `e` export summary
-- **Virtual Scroll** — Pagination for large test suites (500+ tests)
-- **Exportable Summary Card** — One-click export of test run summary
+- **10 themes** + fully custom theme colours (Ocean, Sunset, Dracula, Cyberpunk, Forest, Rose, and more)
+- **Keyboard Shortcuts** — `1-5` switch views, `j/k` navigate tests, `f` search, `e` export
+- **Virtual Scroll** — pagination for large test suites (500+ tests)
 
-### Test Details
+<details>
+<summary><b>Feature screenshots</b> (click to expand)</summary>
 
 ![Test Expanded](https://raw.githubusercontent.com/evoveotech/testreport-forge/master/images/test-expanded-dark.png)
 *Expanded test card with step timeline, network logs, run history, and quarantine badge*
 
-- **Step Timing Breakdown** — Visual bars highlighting the slowest steps
-- **Flamechart Visualisation** — Colour-coded timeline bars (navigation, assertion, action, API, wait)
-- **Network Logs** — API calls with status codes, timing, and payload details (from trace files)
-- **Inline Trace Viewer** — View traces directly in the dashboard
-- **Screenshot Embedding** — Failure screenshots displayed inline
-- **Browser & Project Badges** — Shows which browser/project each test ran against
-- **Annotation Support** — `@slow`, `@fixme`, `@skip`, `@issue`, custom annotations with styled badges
-
-### Trend Analytics
-
 ![Trend Charts](https://raw.githubusercontent.com/evoveotech/testreport-forge/master/images/trends-dark.png)
 *Interactive trend charts with pass rate, duration, flaky tests, and slow test tracking*
-
-- **Moving Averages** — Overlay on pass rate and duration trends
-- **Anomaly Detection** — 2-sigma outlier detection with visual markers
-- **Clickable History** — Click any chart bar to drill into that historical run
-
-### Artifact Gallery
 
 ![Gallery View](https://raw.githubusercontent.com/evoveotech/testreport-forge/master/images/gallery-dark.png)
 *Visual grid of screenshots, videos, and trace files*
 
-### Trace Viewer
-
 ![Tests View](https://raw.githubusercontent.com/evoveotech/testreport-forge/master/images/tests-view-dark.png)
 *Test list with status badges, stability grades, quarantine indicators, and filtering*
-
-### Flakiness Detection
 
 ![Comparison View](https://raw.githubusercontent.com/evoveotech/testreport-forge/master/images/comparison-dark.png)
 *Run comparison showing new failures, performance changes, and baseline diffs*
 
-Evoveo Smart Reporter tracks flakiness **across runs**, not within a single run:
+</details>
+
+### Flakiness Detection
+
+Tracks flakiness **across runs**, not within a single run:
 
 | | Playwright HTML Report | Evoveo Smart Reporter |
 |---|---|---|
@@ -359,134 +284,19 @@ Evoveo Smart Reporter tracks flakiness **across runs**, not within a single run:
 | **Criteria** | Fails then passes on retry | Failed 30%+ of the time historically |
 | **Use Case** | Immediate retry success | Chronically unreliable tests |
 
-Indicators:
-- **Stable** (<10% failure rate) — **Unstable** (10-30%) — **Flaky** (>30%) — **New** (no history)
+Indicators: **Stable** (<10% failure) — **Unstable** (10-30%) — **Flaky** (>30%) — **New** (no history)
 
-## More Features
+### Stability Grades
 
-### Themes
+Composite score (0-100): Flakiness (40%) + Performance (30%) + Reliability (30%).
+Grades: **A** (90-100), **B** (80-89), **C** (70-79), **D** (60-69), **F** (<60). All configurable.
 
-6 additional themes beyond the 4 built-in themes (System, Light, Dark, High Contrast): **Ocean**, **Sunset**, **Dracula**, **Cyberpunk**, **Forest**, and **Rose**. Set via config:
-
-```typescript
-reporter: [
-  ['evoveo-smart-reporter', {
-    outputFile: 'smart-report.html',
-    theme: { preset: 'dracula' },  // ocean, sunset, dracula, cyberpunk, forest, rose
-  }],
-]
-```
-
-### Executive PDF Export
-
-Generate professional PDF reports in 3 themed variants: **Corporate**, **Minimal**, and **Dark**. Includes a style picker modal in the HTML report.
-
-```typescript
-reporter: [
-  ['evoveo-smart-reporter', {
-    outputFile: 'smart-report.html',
-    exportPdf: true,
-  }],
-]
-```
-
-### Quality Gates
-
-Fail CI builds when test results don't meet your thresholds:
-
-```typescript
-reporter: [
-  ['evoveo-smart-reporter', {
-    outputFile: 'smart-report.html',
-    qualityGates: {
-      minPassRate: 95,
-      maxFlakyRate: 5,
-      minStabilityGrade: 'B',
-    },
-  }],
-]
-```
-
-Or run as a standalone CLI check:
-
-```bash
-npx evoveo-smart-reporter gate --min-pass-rate 95 --max-flaky-rate 5
-```
-
-Exit codes: `0` = all gates passed, `1` = gate failed (use in CI to block deploys).
-
-### Flaky Test Quarantine
-
-Automatically detect and quarantine chronically flaky tests. Quarantined tests are tracked in a JSON file and can be excluded from gate failures:
-
-```typescript
-reporter: [
-  ['evoveo-smart-reporter', {
-    outputFile: 'smart-report.html',
-    quarantine: {
-      enabled: true,
-      outputFile: '.smart-quarantine.json',
-      threshold: 0.3,  // flakiness score 0-1
-    },
-  }],
-]
-```
-
-### Custom Branding
-
-Customise the report title, footer, and theme colours:
-
-```typescript
-reporter: [
-  ['evoveo-smart-reporter', {
-    outputFile: 'smart-report.html',
-    branding: {
-      title: 'Acme Corp Test Report',
-      footer: 'Generated by QA Team',
-    },
-    theme: {
-      primary: '#6366f1',
-      accent: '#8b5cf6',
-      success: '#22c55e',
-      error: '#ef4444',
-      warning: '#f59e0b',
-    },
-  }],
-]
-```
-
-### JSON & JUnit Export
-
-Export test results in structured formats for external tools:
-
-```typescript
-reporter: [
-  ['evoveo-smart-reporter', {
-    outputFile: 'smart-report.html',
-    exportJson: true,
-    exportJunit: true,
-  }],
-]
-```
-
-### AI Suite Health Summary
-
-An AI-generated executive summary appears at the top of the Overview tab, combining failure clusters, flakiness trends, performance regressions, and historical pass rate data into natural-language insights. Enabled by default when an AI API key is set (see [AI Analysis](#ai-analysis)).
-
-To disable (e.g., to save one AI request per run):
-
-```typescript
-reporter: [
-  ['evoveo-smart-reporter', {
-    outputFile: 'smart-report.html',
-    enableAISuiteHealth: false,  // Disable AI health summary
-  }],
-]
-```
+---
 
 ## Configuration
 
-### Full Options Reference
+<details>
+<summary><b>Full options reference</b> (click to expand)</summary>
 
 ```typescript
 reporter: [
@@ -511,7 +321,7 @@ reporter: [
     enableTrendsView: true,
     enableTraceViewer: true,
     enableHistoryDrilldown: false,
-    enableAISuiteHealth: true,      // AI health summary in Overview tab (uses 1 AI request)
+    enableAISuiteHealth: true,      // AI health summary (uses 1 AI request)
     enableNetworkLogs: true,
 
     // Step and path options
@@ -532,23 +342,14 @@ reporter: [
     retryFailureThreshold: 3,
     baselineRunId: 'main-branch-baseline',
     thresholds: {
-      flakinessStable: 0.1,
-      flakinessUnstable: 0.3,
-      performanceRegression: 0.2,
-      stabilityWeightFlakiness: 0.4,
-      stabilityWeightPerformance: 0.3,
-      stabilityWeightReliability: 0.3,
-      gradeA: 90,
-      gradeB: 80,
-      gradeC: 70,
-      gradeD: 60,
+      flakinessStable: 0.1, flakinessUnstable: 0.3, performanceRegression: 0.2,
+      stabilityWeightFlakiness: 0.4, stabilityWeightPerformance: 0.3, stabilityWeightReliability: 0.3,
+      gradeA: 90, gradeB: 80, gradeC: 70, gradeD: 60,
     },
 
     // Report customisation & exports
     theme: { preset: 'default' },  // default, light, dark, high-contrast, ocean, sunset, dracula, cyberpunk, forest, rose
-    exportPdf: false,
-    exportJson: false,
-    exportJunit: false,
+    exportPdf: false, exportJson: false, exportJunit: false,
     qualityGates: {},           // { minPassRate, maxFlakyRate, minStabilityGrade }
     quarantine: {},             // { enabled, outputFile, threshold }
     branding: {},               // { logo, title, footer, hidePoweredBy }
@@ -560,9 +361,11 @@ reporter: [
 ]
 ```
 
+</details>
+
 ### AI Analysis
 
-AI failure analysis uses your own API key. Set one of the following environment variables:
+Set one environment variable — costs are billed by your provider (uses small, fast models with short prompts):
 
 ```bash
 export ANTHROPIC_API_KEY=your-key    # Claude (used first if multiple are set)
@@ -570,154 +373,74 @@ export OPENAI_API_KEY=your-key       # OpenAI
 export GEMINI_API_KEY=your-key       # Google Gemini
 ```
 
-When a test fails, the reporter sends the failure context to your chosen provider and includes fix suggestions in the report. Costs are billed by your provider — the reporter uses small, fast models (`claude-haiku-4-5`, `gpt-4o-mini`, `gemini-2.5-flash`) with short prompts, so per-run cost is minimal.
+If no API key is set, AI analysis is skipped. Every failed test still gets a **Copy AI Prompt** button for use with any AI assistant.
 
-If no API key is set, AI analysis is skipped and everything else works as normal — every failed test still gets a **Copy AI Prompt** button in the report, which copies a ready-to-paste prompt (error, call log, code frame) for use with any AI assistant.
+<details>
+<summary><b>Feature configuration examples</b> (click to expand)</summary>
 
-## Stability Grades
-
-Composite score (0-100) from three factors:
-
-| Factor | Weight | Description |
-|---|---|---|
-| Flakiness | 40% | Inverse of flakiness score |
-| Performance | 30% | Execution time consistency |
-| Reliability | 30% | Pass rate from history |
-
-Grades: **A** (90-100), **B** (80-89), **C** (70-79), **D** (60-69), **F** (<60). All weights and thresholds are configurable.
-
-## Step Filtering
-
+#### Themes
 ```typescript
-reporter: [
-  ['evoveo-smart-reporter', {
-    filterPwApiSteps: true,  // Only show custom test.step() entries
-  }],
-]
+reporter: [['evoveo-smart-reporter', {
+  theme: { preset: 'dracula' },  // ocean, sunset, dracula, cyberpunk, forest, rose
+}]]
 ```
 
-With filtering on, verbose `page.click()`, `page.fill()` steps are hidden — only your named `test.step()` entries appear.
-
-## Multi-Project History
-
-Isolate history per test suite to prevent metric contamination:
-
+#### Executive PDF Export
 ```typescript
-reporter: [
-  ['evoveo-smart-reporter', {
-    projectName: 'api',
-    historyFile: 'reports/{project}/history.json',
-  }],
-]
+reporter: [['evoveo-smart-reporter', { exportPdf: true }]]
 ```
+Generates PDF reports in 3 variants: Corporate, Minimal, Dark.
 
-## Trace Viewer
-
-### Inline Viewer
-Click **View** on any test with traces to open the built-in viewer with film strip, actions panel, before/after screenshots, network waterfall, console messages, and errors.
-
-### Local Server
-```bash
-npx evoveo-smart-reporter-serve smart-report.html
-```
-Serves the report locally with full trace viewer support — no `file://` CORS issues.
-
-### CLI Viewer
-```bash
-npx evoveo-smart-reporter-view-trace ./traces/my-test-trace-0.zip
-```
-
-## Network Logs
-
-Automatically extracted from Playwright trace files — no code changes required. Shows method, URL, status code, duration, and payload sizes. Requires tracing enabled:
-
+#### Quality Gates
 ```typescript
-use: {
-  trace: 'retain-on-failure',  // or 'on'
-}
+reporter: [['evoveo-smart-reporter', {
+  qualityGates: { minPassRate: 95, maxFlakyRate: 5, minStabilityGrade: 'B' },
+}]]
 ```
+Or as a standalone CLI: `npx evoveo-smart-reporter gate --min-pass-rate 95 --max-flaky-rate 5`
+Exit codes: `0` = passed, `1` = gate failed (use in CI to block deploys).
 
-## Annotations
-
-| Annotation | Badge | Annotation | Badge |
-|---|---|---|---|
-| `@slow` | Amber | `@fixme` / `@fix` | Pink |
-| `@skip` | Indigo | `@fail` | Red |
-| `@issue` / `@bug` | Red | `@flaky` | Orange |
-| `@todo` | Blue | Custom | Grey |
-
+#### Flaky Test Quarantine
 ```typescript
-test('payment flow', async ({ page }) => {
-  test.slow();
-  test.info().annotations.push({ type: 'issue', description: 'JIRA-123' });
-});
+reporter: [['evoveo-smart-reporter', {
+  quarantine: { enabled: true, outputFile: '.smart-quarantine.json', threshold: 0.3 },
+}]]
 ```
+
+#### Custom Branding
+```typescript
+reporter: [['evoveo-smart-reporter', {
+  branding: { title: 'Acme Corp Test Report', footer: 'Generated by QA Team' },
+  theme: { primary: '#6366f1', accent: '#8b5cf6', success: '#22c55e', error: '#ef4444', warning: '#f59e0b' },
+}]]
+```
+
+#### JSON & JUnit Export
+```typescript
+reporter: [['evoveo-smart-reporter', { exportJson: true, exportJunit: true }]]
+```
+
+#### Step Filtering
+```typescript
+reporter: [['evoveo-smart-reporter', { filterPwApiSteps: true }]]
+```
+Hides verbose `page.click()`, `page.fill()` steps — only named `test.step()` entries appear.
+
+#### Multi-Project History
+```typescript
+reporter: [['evoveo-smart-reporter', {
+  projectName: 'api',
+  historyFile: 'reports/{project}/history.json',
+}]]
+```
+
+</details>
+
+---
 
 ## CI Integration
 
-### Persisting History
-
 History must persist between runs for flakiness detection and trends to work.
-
-#### GitHub Actions
-
-```yaml
-- uses: actions/cache@v4
-  with:
-    path: test-history.json
-    key: test-history-${{ github.ref }}
-    restore-keys: test-history-
-
-- run: npx playwright test
-
-- uses: actions/cache/save@v4
-  if: always()
-  with:
-    path: test-history.json
-    key: test-history-${{ github.ref }}-${{ github.run_id }}
-```
-
-#### GitLab CI
-
-```yaml
-test:
-  cache:
-    key: test-history-$CI_COMMIT_REF_SLUG
-    paths: [test-history.json]
-    policy: pull-push
-  script: npx playwright test
-```
-
-#### CircleCI
-
-```yaml
-- restore_cache:
-    keys: [test-history-{{ .Branch }}, test-history-]
-- run: npx playwright test
-- save_cache:
-    key: test-history-{{ .Branch }}-{{ .Revision }}
-    paths: [test-history.json]
-```
-
-#### Azure DevOps
-
-```yaml
-steps:
-  - task: Cache@2
-    inputs:
-      key: 'test-history | "$(Build.SourceBranchName)"'
-      restoreKeys: 'test-history |'
-      path: test-history.json
-
-  - script: npx playwright test
-    continueOnError: true
-
-  - task: PublishPipelineArtifact@1
-    inputs:
-      targetPath: smart-report.html
-      artifact: playwright-smart-report
-    condition: always()
-```
 
 ### CI Auto-Detection
 
@@ -729,91 +452,138 @@ The reporter automatically detects GitHub Actions, GitLab CI, CircleCI, Jenkins,
 # GitHub Actions example
 - run: npx playwright test
   continue-on-error: true
-
 - run: npx evoveo-smart-reporter gate --min-pass-rate 95 --max-flaky-rate 5
   # Exits non-zero if gates fail — blocks the pipeline
 ```
 
 ### Sharded Runs
 
-For consistent history across parallel shards, set `runId`:
-
+Set `runId` for consistent history across parallel shards:
 ```typescript
-reporter: [
-  ['evoveo-smart-reporter', {
-    runId: process.env.GITHUB_RUN_ID,
-  }],
-]
+reporter: [['evoveo-smart-reporter', { runId: process.env.GITHUB_RUN_ID }]]
 ```
 
-### Merging History from Multiple Machines
-
+Merge history from multiple machines:
 ```bash
-npx evoveo-smart-reporter-merge-history \
-  shard1/test-history.json \
-  shard2/test-history.json \
-  -o merged-history.json \
-  --max-runs 10
+npx evoveo-smart-reporter-merge-history shard1/test-history.json shard2/test-history.json -o merged-history.json --max-runs 10
+```
+
+<details>
+<summary><b>CI cache examples</b> — GitHub Actions, GitLab, CircleCI, Azure DevOps (click to expand)</summary>
+
+#### GitHub Actions
+```yaml
+- uses: actions/cache@v4
+  with:
+    path: test-history.json
+    key: test-history-${{ github.ref }}
+    restore-keys: test-history-
+- run: npx playwright test
+- uses: actions/cache/save@v4
+  if: always()
+  with:
+    path: test-history.json
+    key: test-history-${{ github.ref }}-${{ github.run_id }}
+```
+
+#### GitLab CI
+```yaml
+test:
+  cache:
+    key: test-history-$CI_COMMIT_REF_SLUG
+    paths: [test-history.json]
+    policy: pull-push
+  script: npx playwright test
+```
+
+#### CircleCI
+```yaml
+- restore_cache:
+    keys: [test-history-{{ .Branch }}, test-history-]
+- run: npx playwright test
+- save_cache:
+    key: test-history-{{ .Branch }}-{{ .Revision }}
+    paths: [test-history.json]
+```
+
+#### Azure DevOps
+```yaml
+steps:
+  - task: Cache@2
+    inputs:
+      key: 'test-history | "$(Build.SourceBranchName)"'
+      restoreKeys: 'test-history |'
+      path: test-history.json
+  - script: npx playwright test
+    continueOnError: true
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: smart-report.html
+      artifact: playwright-smart-report
+    condition: always()
+```
+
+</details>
+
+---
+
+## Trace Viewer & Network Logs
+
+**Inline Viewer:** Click **View** on any test with traces — film strip, actions panel, before/after screenshots, network waterfall, console messages, errors.
+
+**Local Server:** `npx evoveo-smart-reporter-serve smart-report.html` — serves with full trace viewer support (no `file://` CORS issues).
+
+**CLI Viewer:** `npx evoveo-smart-reporter-view-trace ./traces/my-test-trace-0.zip`
+
+**Network Logs:** Automatically extracted from Playwright trace files. Requires tracing enabled:
+```typescript
+use: { trace: 'retain-on-failure' }  // or 'on'
+```
+
+## Annotations
+
+| `@slow` | `@fixme`/`@fix` | `@skip` | `@issue`/`@bug` | `@todo` | `@flaky` | `@fail` | Custom |
+|---------|-----------------|---------|------------------|---------|----------|--------|--------|
+| Amber | Pink | Indigo | Red | Blue | Orange | Red | Grey |
+
+```typescript
+test('payment flow', async ({ page }) => {
+  test.slow();
+  test.info().annotations.push({ type: 'issue', description: 'JIRA-123' });
+});
 ```
 
 ## CSP-Safe Mode
 
 For environments with strict Content Security Policy (e.g., Jenkins):
-
 ```typescript
-reporter: [
-  ['evoveo-smart-reporter', { cspSafe: true }],
-]
+reporter: [['evoveo-smart-reporter', { cspSafe: true }]]
 ```
-
-When enabled, the reporter generates companion `.css` and `.js` files alongside the HTML report. The HTML references these via `<link rel="stylesheet">` and `<script src defer>` instead of inline `<style>` and `<script>` tags. Report data is embedded in `<script type="application/json">` tags (not executed by the browser). System fonts are used instead of Google Fonts.
-
-**Jenkins CSP configuration** — Add to Jenkins script console or startup:
-
-```
-System.setProperty("hudson.model.DirectoryBrowserSupport.CSP",
-  "script-src 'self' 'unsafe-inline'; style-src 'self'; img-src 'self';")
-```
-
-> **Note**: Inline event handlers (`onclick`, etc.) still require `'unsafe-inline'` in `script-src`. Full event delegation is planned for a future release.
+Generates companion `.css` and `.js` files instead of inline tags. System fonts used instead of Google Fonts.
 
 ## Cucumber Integration
 
 Works with Playwright + Cucumber frameworks:
-
 ```typescript
 import { defineBddConfig } from 'playwright-bdd';
-
-const testDir = defineBddConfig({
-  features: 'features/**/*.feature',
-  steps: 'steps/**/*.ts',
-});
-
-export default defineConfig({
-  testDir,
-  reporter: [['evoveo-smart-reporter']],
-});
+const testDir = defineBddConfig({ features: 'features/**/*.feature', steps: 'steps/**/*.ts' });
+export default defineConfig({ testDir, reporter: [['evoveo-smart-reporter']] });
 ```
 
-## FAQ
+---
 
-### Is this really free?
+## FAQ & Troubleshooting
 
-Yes. Everything is Apache-2.0-licensed and included — no tiers, no license keys. AI analysis is the only feature with an external cost, and that's billed directly by your AI provider via your own API key.
+<details>
+<summary><b>Common questions and issues</b> (click to expand)</summary>
 
-### RangeError with large test suites?
+**Is this really free?** Yes. Everything is Apache-2.0-licensed — no tiers, no license keys. AI analysis is the only feature with an external cost (billed by your provider via your own API key).
 
-Fixed in v1.0.6. Update: `npm install evoveo-smart-reporter@latest`
+**RangeError with large test suites?** Fixed in v1.0.6. Update: `npm install evoveo-smart-reporter@latest`
 
-### Different flakiness than Playwright's HTML report?
+**Different flakiness than Playwright's HTML report?** They use different methodologies — see [Flakiness Detection](#flakiness-detection) above.
 
-They use different methodologies — see [Flakiness Detection](#flakiness-detection) above.
-
-### Report too large or browser hangs?
-
-Enable `cspSafe: true` to save attachments as files instead of embedding, or reduce `maxHistoryRuns`. Use `maxEmbeddedSize` to control the inline trace threshold.
-
-## Troubleshooting
+**Report too large or browser hangs?** Enable `cspSafe: true` to save attachments as files, or reduce `maxHistoryRuns`. Use `maxEmbeddedSize` to control the inline trace threshold.
 
 | Problem | Cause | Fix |
 |---|---|---|
@@ -823,13 +593,35 @@ Enable `cspSafe: true` to save attachments as files instead of embedding, or red
 | Mixed project metrics | Shared history file | Use `projectName` to isolate |
 | Quality gate not failing CI | Gate not run as separate step | Run `npx evoveo-smart-reporter gate` as its own CI step |
 
+</details>
+
+---
+
+## QA Spec Kit — AI-Powered QA with Loop Engineering
+
+This repo doubles as a **QA Spec Kit** — 72 AI agent skills + the Loop Engineering methodology that helps any AI IDE write better tests, debug faster, and ship with confidence.
+
+**Works with:** Claude Code, GitHub Copilot, Cursor, Windsurf, Devin, and any IDE that reads `AGENTS.md`.
+
+```powershell
+# Windows
+pwsh scripts/setup-agents.ps1 -Project
+```
+```bash
+# macOS / Linux
+bash scripts/setup-agents.sh --project
+```
+
+**Full setup guide:** [`QA-SPEC-KIT.md`](QA-SPEC-KIT.md)
+
+---
+
 ## Development
 
 ```bash
 npm install
 npm run build
 npm test
-npm run test:demo
 ```
 
 ## License
