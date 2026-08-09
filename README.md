@@ -624,6 +624,17 @@ npm run build
 npm test
 ```
 
+## Sponsor This Project
+
+Evoveo Smart Reporter is free and open source — every feature included, no paywalls. Building and maintaining it takes real time and money. If this tool saves your team hours every sprint, consider sponsoring its continued development.
+
+[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor_on_GitHub-ea4aaa?logo=github-sponsors&logoColor=white)](https://github.com/sponsors/evoveotech)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy_Me_a_Coffee-ffdd00?logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/ipoboards)
+
+**Sponsorship funds:** maintenance, new features, CI infrastructure, documentation, and demo deployments.
+
+See [`SPONSORS.md`](SPONSORS.md) for sponsor tiers and details.
+
 ## License
 
 Apache License 2.0
