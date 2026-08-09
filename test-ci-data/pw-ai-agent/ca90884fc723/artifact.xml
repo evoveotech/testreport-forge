@@ -1,0 +1,62 @@
+<testsuites id="" name="" tests="25" failures="0" skipped="0" errors="0" time="2.930849">
+<testsuite name="unit-tests/api.spec.ts" timestamp="2026-07-01T18:04:09.644Z" hostname="chromium" tests="5" failures="0" skipped="0" time="0.03" errors="0">
+<testcase name="Unit Tests - API Operations › should parse URL correctly" classname="unit-tests/api.spec.ts" time="0.009">
+</testcase>
+<testcase name="Unit Tests - API Operations › should validate email format" classname="unit-tests/api.spec.ts" time="0.008">
+</testcase>
+<testcase name="Unit Tests - API Operations › should calculate request timeout correctly" classname="unit-tests/api.spec.ts" time="0.004">
+</testcase>
+<testcase name="Unit Tests - API Operations › negative: invalid URL throws" classname="unit-tests/api.spec.ts" time="0.004">
+</testcase>
+<testcase name="Unit Tests - API Operations › negative: should reject malformed JSON response" classname="unit-tests/api.spec.ts" time="0.005">
+</testcase>
+</testsuite>
+<testsuite name="unit-tests/api.spec.ts" timestamp="2026-07-01T18:04:09.644Z" hostname="firefox" tests="5" failures="0" skipped="0" time="0.037" errors="0">
+<testcase name="Unit Tests - API Operations › should parse URL correctly" classname="unit-tests/api.spec.ts" time="0.01">
+</testcase>
+<testcase name="Unit Tests - API Operations › should validate email format" classname="unit-tests/api.spec.ts" time="0.009">
+</testcase>
+<testcase name="Unit Tests - API Operations › should calculate request timeout correctly" classname="unit-tests/api.spec.ts" time="0.009">
+</testcase>
+<testcase name="Unit Tests - API Operations › negative: invalid URL throws" classname="unit-tests/api.spec.ts" time="0.004">
+</testcase>
+<testcase name="Unit Tests - API Operations › negative: should reject malformed JSON response" classname="unit-tests/api.spec.ts" time="0.005">
+</testcase>
+</testsuite>
+<testsuite name="unit-tests/api.spec.ts" timestamp="2026-07-01T18:04:09.644Z" hostname="webkit" tests="5" failures="0" skipped="0" time="0.032" errors="0">
+<testcase name="Unit Tests - API Operations › should parse URL correctly" classname="unit-tests/api.spec.ts" time="0.01">
+</testcase>
+<testcase name="Unit Tests - API Operations › should validate email format" classname="unit-tests/api.spec.ts" time="0.007">
+</testcase>
+<testcase name="Unit Tests - API Operations › should calculate request timeout correctly" classname="unit-tests/api.spec.ts" time="0.005">
+</testcase>
+<testcase name="Unit Tests - API Operations › negative: invalid URL throws" classname="unit-tests/api.spec.ts" time="0.005">
+</testcase>
+<testcase name="Unit Tests - API Operations › negative: should reject malformed JSON response" classname="unit-tests/api.spec.ts" time="0.005">
+</testcase>
+</testsuite>
+<testsuite name="unit-tests/api.spec.ts" timestamp="2026-07-01T18:04:09.644Z" hostname="Mobile Chrome" tests="5" failures="0" skipped="0" time="0.033" errors="0">
+<testcase name="Unit Tests - API Operations › should parse URL correctly" classname="unit-tests/api.spec.ts" time="0.008">
+</testcase>
+<testcase name="Unit Tests - API Operations › should validate email format" classname="unit-tests/api.spec.ts" time="0.012">
+</testcase>
+<testcase name="Unit Tests - API Operations › should calculate request timeout correctly" classname="unit-tests/api.spec.ts" time="0.004">
+</testcase>
+<testcase name="Unit Tests - API Operations › negative: invalid URL throws" classname="unit-tests/api.spec.ts" time="0.004">
+</testcase>
+<testcase name="Unit Tests - API Operations › negative: should reject malformed JSON response" classname="unit-tests/api.spec.ts" time="0.005">
+</testcase>
+</testsuite>
+<testsuite name="unit-tests/api.spec.ts" timestamp="2026-07-01T18:04:09.644Z" hostname="Mobile Safari" tests="5" failures="0" skipped="0" time="0.026" errors="0">
+<testcase name="Unit Tests - API Operations › should parse URL correctly" classname="unit-tests/api.spec.ts" time="0.007">
+</testcase>
+<testcase name="Unit Tests - API Operations › should validate email format" classname="unit-tests/api.spec.ts" time="0.007">
+</testcase>
+<testcase name="Unit Tests - API Operations › should calculate request timeout correctly" classname="unit-tests/api.spec.ts" time="0.003">
+</testcase>
+<testcase name="Unit Tests - API Operations › negative: invalid URL throws" classname="unit-tests/api.spec.ts" time="0.005">
+</testcase>
+<testcase name="Unit Tests - API Operations › negative: should reject malformed JSON response" classname="unit-tests/api.spec.ts" time="0.004">
+</testcase>
+</testsuite>
+</testsuites>

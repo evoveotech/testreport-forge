@@ -1,0 +1,8 @@
+{
+  "commit": "c26431a9a8e302fe07deff57c47e0807a3673c4f",
+  "branch": "main",
+  "trigger": "pull_request",
+  "occurredAt": "2024-09-30T14:08:02Z",
+  "ciRunUrl": "https://github.com/jupyter-robotics/ipylgbst/commit/c26431a9a8e302fe07deff57c47e0807a3673c4f",
+  "duration": 4195
+}

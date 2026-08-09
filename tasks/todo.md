@@ -1,6 +1,6 @@
 # TODO -- Leadership Test Intelligence Dashboard
 
-> Branch: `feat/leadership-dashboard`. Plan: `tasks/plan.md`. Idea: `docs/ideas/leadership-dashboard.md`.
+> Branch: `feat/leadership-dashboard`. Plan: `tasks/plan.md`. Guide: `docs/leadership-platform.md`.
 > Update this file as tasks complete (Loop Engineering spine).
 >
 > USER DECISIONS (confirmed): self-hosted + SaaS, 3yr retention, all four team

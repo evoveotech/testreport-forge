@@ -1,0 +1,8 @@
+{
+  "commit": "c3061db0a846a64e19008fa8e91bc9781abdcfea",
+  "branch": "master",
+  "trigger": "pull_request",
+  "occurredAt": "2020-01-27T11:08:06Z",
+  "ciRunUrl": "https://github.com/altivi/lz_string/commit/c3061db0a846a64e19008fa8e91bc9781abdcfea",
+  "duration": 6
+}

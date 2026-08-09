@@ -225,6 +225,27 @@ For IDE-specific manual setup, see [`.github/agents/README.md`](.github/agents/R
 
 ---
 
+## Verification Commands
+
+```bash
+npm run build     # tsc + copy dashboard.html to dist/
+npm test          # vitest run (all tests, ~25s)
+```
+
+### Windows-specific test gotchas (resolved in [Unreleased])
+
+- **vitest 4 arrow-function constructors**: `vi.fn().mockImplementation(() => ({...}))` fails with `is not a constructor` when the source calls `new`. Use `function () { return {...}; }` instead.
+- **Path separators**: tests that hardcode POSIX paths (`/tmp/...`) fail on Windows. Use `path.join`/`path.resolve` for cross-platform assertions.
+- **Integration tests**: `live-filter-integration.test.ts` requires a running server — it skip-gates on `LIVE_FILTER_URL` env var. Connector integration tests skip-gate on `GITHUB_TOKEN`/`JIRA_API_TOKEN`.
+
+### Benchmark
+
+```bash
+npx vitest run src/benchmark.test.ts  # ~22s (FileStore 10k + cloud-drive latency simulation)
+```
+
+---
+
 ## Skills Index (71 testing-focused skills)
 
 These skills are **domain knowledge applied within loops**. Loop Engineering is

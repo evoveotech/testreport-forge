@@ -108,6 +108,24 @@ describe('Aggregator', () => {
     expect(b.passRate).toBe(100);
   });
 
+  it('populates products and stacks arrays on TeamContribution', async () => {
+    await store.insertRun(run('acme', 'r1', 90, 0, 1, { team: 'qa-a', product: 'payments', stack: 'dotnet' }));
+    await store.insertRun(run('acme', 'r2', 80, 0, 1, { team: 'qa-a', product: 'payments', stack: 'mstest' }));
+    await store.insertRun(run('acme', 'r3', 100, 0, 1, { team: 'qa-a', product: 'claims', stack: 'dotnet' }));
+    await store.insertRun(run('acme', 'r4', 100, 0, 1, { team: 'qa-b', product: 'platform', stack: 'newman' }));
+    const r = await agg.estateRollup('acme', 'weekly');
+    const a = r.byTeam.find(t => t.team === 'qa-a')!;
+    const b = r.byTeam.find(t => t.team === 'qa-b')!;
+    // qa-a has 2 distinct products across 2 stacks
+    expect(a.products).toEqual(expect.arrayContaining(['payments', 'claims']));
+    expect(a.products).toHaveLength(2);
+    expect(a.stacks).toEqual(expect.arrayContaining(['dotnet', 'mstest']));
+    expect(a.stacks).toHaveLength(2);
+    // qa-b has 1 product, 1 stack
+    expect(b.products).toEqual(['platform']);
+    expect(b.stacks).toEqual(['newman']);
+  });
+
   it('builds a daily trend series', async () => {
     await store.insertRun(run('acme', 'r1', 80, 0, 0));
     await store.insertRun(run('acme', 'r2', 90, 0, 1));

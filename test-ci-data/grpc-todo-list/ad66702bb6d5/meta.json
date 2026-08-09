@@ -1,0 +1,8 @@
+{
+  "commit": "ad66702bb6d5f865733b605f80a06eacc20e04de",
+  "branch": "main",
+  "trigger": "pull_request",
+  "occurredAt": "2022-02-23T10:32:15Z",
+  "ciRunUrl": "https://github.com/luru-eb/grpc-todo-list/commit/ad66702bb6d5f865733b605f80a06eacc20e04de",
+  "duration": 5716
+}

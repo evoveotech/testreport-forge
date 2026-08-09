@@ -8,3 +8,5 @@ export type { MeterEvent } from './usage-meter';
 export { StorageSettingsApi } from './storage-settings';
 export { StoreResolver } from './store-resolver';
 export { ConnectorSettingsApi } from './connector-settings';
+export { SyncHealthApi } from './sync-health-api';
+export type { ConnectorHealth, SyncHealthSummary } from './sync-health-api';

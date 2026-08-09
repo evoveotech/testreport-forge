@@ -1,0 +1,656 @@
+{
+  "connectors": [
+    {
+      "id": "local-ci",
+      "kind": "local",
+      "rootDir": "./test-ci-data"
+    }
+  ],
+  "classificationRules": [
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^angular-starter$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "angular-starter",
+        "team": "frontend-starter",
+        "stack": "karma",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^aquality-api$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "aquality-api",
+        "team": "qa-automation",
+        "stack": "mstest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^aquality-tracking$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "aquality-tracking",
+        "team": "qa-automation",
+        "stack": "mstest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^aws-devops-course$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "aws-devops-course",
+        "team": "cloud-training",
+        "stack": "unittest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^azure-flutter-tasks$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "azure-flutter-tasks",
+        "team": "mobile-ci",
+        "stack": "flutter",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^botscanner$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "botscanner",
+        "team": "security-tools",
+        "stack": "junit",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^bs-app-tests$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "bs-app-tests",
+        "team": "mobile-testing",
+        "stack": "testng",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^codecov-test-results$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "codecov-test-results",
+        "team": "devtools-ci",
+        "stack": "jest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^dart-junitreport$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "dart-junitreport",
+        "team": "dart-tools",
+        "stack": "dart",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^daviplata-ios$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "daviplata-ios",
+        "team": "ios-banking",
+        "stack": "xctest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^django-adminactions$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "django-adminactions",
+        "team": "python-web",
+        "stack": "pytest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^fast-track-framework$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "fast-track-framework",
+        "team": "python-frameworks",
+        "stack": "nose",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^filament-firewall$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "filament-firewall",
+        "team": "laravel-ecosystem",
+        "stack": "phpunit",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^filament-sql-field$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "filament-sql-field",
+        "team": "laravel-ecosystem",
+        "stack": "phpunit",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^flaui-uiautomation$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "flaui-uiautomation",
+        "team": "desktop-automation",
+        "stack": "pytest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^flexible-fl$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "flexible-fl",
+        "team": "research-tools",
+        "stack": "pytest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^flutter-course-android$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "flutter-course-android",
+        "team": "mobile-edu",
+        "stack": "espresso",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^frontend-testing-guide$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "frontend-testing-guide",
+        "team": "education",
+        "stack": "mocha",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^grpc-todo-list$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "grpc-todo-list",
+        "team": "backend-services",
+        "stack": "pytest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^hostingproxmox$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "hostingproxmox",
+        "team": "infra-management",
+        "stack": "pytest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^ipylgbst$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "ipylgbst",
+        "team": "robotics-tools",
+        "stack": "jest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^jupyterlab-horizon$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "jupyterlab-horizon",
+        "team": "data-science-tools",
+        "stack": "jest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^jupyterlab-quarto$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "jupyterlab-quarto",
+        "team": "data-science-tools",
+        "stack": "jest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^laravel-api-generator$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "laravel-api-generator",
+        "team": "laravel-ecosystem",
+        "stack": "phpunit",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^laravel-oembed$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "laravel-oembed",
+        "team": "laravel-ecosystem",
+        "stack": "phpunit",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^lz-string-ruby$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "lz-string-ruby",
+        "team": "ruby-gems",
+        "stack": "rspec",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^nesper$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "nesper",
+        "team": "dotnet-streaming",
+        "stack": "nunit",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^ngrx-auto-entity$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "ngrx-auto-entity",
+        "team": "angular-ecosystem",
+        "stack": "karma",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^node-steamgriddb$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "node-steamgriddb",
+        "team": "gaming-platform",
+        "stack": "jest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^notion-ts-client$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "notion-ts-client",
+        "team": "productivity-tools",
+        "stack": "jest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^php-datatypes$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "php-datatypes",
+        "team": "php-libs",
+        "stack": "phpunit",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^pst-extractor$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "pst-extractor",
+        "team": "data-engineering",
+        "stack": "jest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^pw-ai-agent$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "pw-ai-agent",
+        "team": "ai-testing",
+        "stack": "playwright",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^pw-demo$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "pw-demo",
+        "team": "e2e-automation",
+        "stack": "playwright",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^pw-saucedemo$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "pw-saucedemo",
+        "team": "e2e-automation",
+        "stack": "playwright",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^react-timeline-gantt$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "react-timeline-gantt",
+        "team": "frontend-widgets",
+        "stack": "jest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^rn-carousel$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "rn-carousel",
+        "team": "mobile-ui",
+        "stack": "jest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^rocket-components$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "rocket-components",
+        "team": "enterprise-web",
+        "stack": "jest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^samvera-ramp$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "samvera-ramp",
+        "team": "digital-libraries",
+        "stack": "jest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^unifi-protect-downloader$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "unifi-protect-downloader",
+        "team": "video-tools",
+        "stack": "junit",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^whisperx-fastapi$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "whisperx-fastapi",
+        "team": "ml-infra",
+        "stack": "pytest",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^xtra4u$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "xtra4u",
+        "team": "php-apps",
+        "stack": "phpunit",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    },
+    {
+      "match": {
+        "connector": "local-ci",
+        "repoName": "^xunit-viewer$"
+      },
+      "orgContext": {
+        "tenantId": "acme",
+        "client": "open-source",
+        "product": "xunit-viewer",
+        "team": "dev-tools",
+        "stack": "xunit",
+        "runType": "pr",
+        "environment": "ci"
+      }
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
+import * as path from 'path';
 import { AttachmentCollector } from './attachment-collector';
 import type { TestResult } from '@playwright/test/reporter';
 
@@ -222,7 +223,7 @@ describe('AttachmentCollector', () => {
       const attachments = collector.collectAttachments(result);
 
       expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-        expect.stringContaining('/output/screenshot-'),
+        expect.stringContaining(path.join('/output', 'screenshot-')),
         imgBuffer,
       );
       expect(attachments.screenshots[0]).toMatch(/^screenshot-\d+\.png$/);

@@ -1,15 +1,16 @@
-# ADR-003: Tenant isolation enforced at the store boundary
+# ADR-003: Tenant isolation enforced at the store boundary (self-hosted first)
 
-**Status:** Accepted
+**Status:** Accepted (revised 2026-08-09 — self-hosted enterprise first, SaaS deferred)
 **Date:** 2026-08-09
 
 ## Context
 
-The product ships as both self-hosted enterprise AND managed multi-tenant
-SaaS (user-confirmed). Tenant isolation is a hard security requirement: a
-tenant must never read another tenant's runs, users, or rollups. In SaaS
-mode this is a legal/compliance boundary; in self-hosted mode it isolates
-business units.
+The v1 product ships as **self-hosted enterprise** first. The buyer is
+enterprise security teams who deploy inside their own network. Managed
+multi-tenant SaaS is a future business decision, not a v1 requirement.
+Tenant isolation is a hard security requirement: a tenant must never read
+another tenant's runs, users, or rollups. In self-hosted mode this isolates
+business units; in a future SaaS mode it would be a legal/compliance boundary.
 
 ## Decision
 
@@ -25,16 +26,25 @@ returns rows belonging to that tenant:
 
 The `RunQuery.tenantId` field is **required at the type level** — there is
 no way to call `queryRuns` without naming a tenant. A future Postgres
-implementation enforces the same with row-level security policies.
+implementation would additionally enforce this with row-level security
+policies (ADR-002, deferred).
+
+Usage metering (runs ingested, seats) is emitted for self-hosted usage
+caps and future billing. SaaS billing is not a v1 concern.
 
 ## Consequences
 
 - **Positive:** Isolation cannot be bypassed by a forgetful API handler —
   the store makes cross-tenant reads impossible by construction.
-- **Positive:** The same codebase serves self-hosted and SaaS; only the
-  deployment differs.
-- **Negative:** Cross-tenant admin views (e.g. SaaS operator dashboards)
-  require a separate privileged path, not the tenant-scoped store methods.
+- **Positive:** The same codebase can serve self-hosted now and SaaS later;
+  only the deployment differs.
+- **Positive:** No premature SaaS billing infrastructure for a v1 buyer
+  that self-hosts.
+- **Negative:** Cross-tenant admin views (e.g. future SaaS operator
+  dashboards) require a separate privileged path, not the tenant-scoped
+  store methods.
+- **Negative:** Postgres RLS is not available in v1; isolation relies on
+  application-layer enforcement.
 
 ## Verification
 

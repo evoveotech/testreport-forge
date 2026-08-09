@@ -5,7 +5,7 @@ import * as path from 'path';
 import * as http from 'http';
 import { FileStore } from '../store';
 import { Aggregator } from '../aggregator';
-import { DashboardApi, DevAuthProvider, StorageSettingsApi, StoreResolver, ConnectorSettingsApi } from '../dashboard';
+import { DashboardApi, DevAuthProvider, StorageSettingsApi, StoreResolver, ConnectorSettingsApi, SyncHealthApi } from '../dashboard';
 import type { AuthProvider } from '../dashboard';
 import { OidcAuthProvider, SamlAuthProvider, FileUsageMeter, NullUsageMeter } from '../dashboard';
 import { ConnectorService } from '../connectors';
@@ -105,6 +105,7 @@ async function main(): Promise<void> {
   const storeResolver = new StoreResolver(fileStore, storageSettings);
   const connectorService = new ConnectorService(opts.dataDir);
   const connectorSettings = new ConnectorSettingsApi(connectorService);
+  const syncHealthApi = new SyncHealthApi(opts.dataDir);
   const authProvider = createAuthProvider(opts);
   const meter: UsageMeter = opts.meteringDir ? new FileUsageMeter(opts.meteringDir) : new NullUsageMeter();
   const api = new DashboardApi(storeResolver, authProvider, connectorService);
@@ -150,6 +151,14 @@ async function main(): Promise<void> {
         const session = await authProvider.resolveSession(req);
         if (!session) { res.writeHead(401); res.end(JSON.stringify({ error: 'unauthorized' })); return; }
         const handled = await connectorSettings.handle(req, res, session);
+        if (handled) return;
+      }
+
+      // Sync health (any authenticated user — leaders need to see freshness).
+      if (url.startsWith('/api/sync/')) {
+        const session = await authProvider.resolveSession(req);
+        if (!session) { res.writeHead(401); res.end(JSON.stringify({ error: 'unauthorized' })); return; }
+        const handled = await syncHealthApi.handle(req, res);
         if (handled) return;
       }
 

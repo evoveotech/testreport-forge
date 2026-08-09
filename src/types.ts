@@ -221,6 +221,7 @@ export interface CIInfo {
   branch?: string;
   commit?: string;
   buildId?: string;
+  ciRunUrl?: string;  // link back to the CI pipeline run
 }
 
 // ============================================================================
@@ -535,7 +536,7 @@ export interface LiveCounters {
 // ============================================================================
 
 export interface DigestOptions {
-  period: 'daily' | 'weekly' | 'monthly';
+  period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'all';
   historyFile: string;
   output?: string;
   ai?: boolean;
@@ -545,7 +546,7 @@ export interface DigestOptions {
 // ============================================================================
 // Leadership Test Intelligence Platform
 // Multi-tenant aggregation layer for enterprise-wide test status.
-// See: tasks/plan.md, docs/ideas/leadership-dashboard.md
+// See: tasks/plan.md, docs/leadership-platform.md
 // ============================================================================
 
 /**
@@ -657,6 +658,8 @@ export interface TeamContribution {
   flakinessOwned: number; // count of flaky tests owned by this team in the period
   testsAuthored: number;  // commits touching test files (from git connector)
   fixesLanded: number;    // issues closed by the team (from issue-tracker connector)
+  products: string[];     // distinct products this team owns (for card display)
+  stacks: string[];       // distinct stacks this team uses
 }
 
 /**
@@ -688,7 +691,7 @@ export interface TrendPoint {
 export interface EstateRollup {
   asOf: string;           // ISO timestamp the rollup was computed
   tenantId: string;       // tenant scope (or '*' for cross-tenant admin views)
-  period: 'daily' | 'weekly' | 'monthly';
+  period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'all';
   totalRuns: number;
   passRate: number;       // 0-100
   flakyRate: number;      // 0-100
@@ -708,7 +711,7 @@ export interface EstateRollup {
  */
 export interface TeamDrillDown {
   team: string;
-  period: 'daily' | 'weekly' | 'monthly';
+  period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'all';
   totalRuns: number;
   passRate: number;
   flakyRate: number;
@@ -769,6 +772,19 @@ export interface IngestPayload {
   run?: RunSummary;          // pre-normalized summary (when no raw artifact)
   reportPath?: string;       // optional: path to already-generated HTML report
   rawArtifactPath?: string;
+  /** Override the generated runId (used by pipeline-sources sync for
+   *  composite-key idempotency: ${connectorId}:${ciRunId}). When set, the
+   *  ingest service uses this instead of generating a random runId, so
+   *  re-syncing the same CI run upserts rather than duplicating (ADR-009). */
+  runIdOverride?: string;
+  /** CI metadata (commit, branch, trigger, provider) to enrich the run
+   *  summary. When set, overrides the default ciInfo from summaryFromResults.
+   *  Used by pipeline-sources sync to attach provenance (ADR-009). */
+  ciInfo?: CIInfo;
+  /** When the CI run actually occurred (ISO 8601). When set, overrides the
+   *  default ingestedAt timestamp so trend charts reflect when tests ran,
+   *  not when we ingested them. Used by pipeline-sources sync (ADR-009). */
+  occurredAt?: string;
 }
 
 /**

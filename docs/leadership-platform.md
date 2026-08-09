@@ -80,8 +80,23 @@ open http://localhost:3000
 | Mode | Flag | Use Case |
 |------|------|----------|
 | Dev | `--auth dev` | Local development (trusts headers) |
-| OIDC | `--auth oidc --oidc-url <url>` | Enterprise SSO (Keycloak, Okta, Google) |
-| SAML | `--auth saml` | SAML gateway (mod_auth_mellon, Shibboleth) |
+| OIDC | `--auth oidc --oidc-url <url>` | Enterprise SSO (Keycloak, Okta, Google) — native OIDC flow |
+| SAML | `--auth saml` | SAML via **gateway delegation** (mod_auth_mellon, Shibboleth) |
+
+### SAML — Gateway Delegation (not native assertion parsing)
+
+SAML mode does **not** parse SAML assertions natively. Instead, it trusts
+headers set by an external SAML gateway (Apache `mod_auth_mellon`,
+Shibboleth, or an NGINX auth proxy). The gateway handles the SAML protocol,
+assertion validation, and IdP communication; the dashboard receives the
+authenticated user identity via headers (e.g. `X-Authenticated-User`,
+`X-Tenant-Id`).
+
+This is the standard enterprise pattern for SAML in Node.js applications
+that do not want to depend on the `saml2-js` XMLDSig stack. It is
+pragmatic and secure **when the gateway is configured correctly** — the
+dashboard must be deployed behind the gateway and must never be directly
+reachable from the network without it.
 
 ## Storage Backends
 
@@ -113,8 +128,8 @@ Workspace.
 
 See `docs/adr/` for architecture decision records:
 - ADR-001: Reuse existing normalization layer
-- ADR-002: File store now, Postgres with partitions for production
-- ADR-003: Tenant isolation enforced at the store boundary
+- ADR-002: File store now, Postgres with partitions deferred to production scale
+- ADR-003: Tenant isolation enforced at the store boundary (self-hosted first)
 - ADR-004: Single-run HTML report is the drilldown target
 - ADR-005: Org context stamped at ingest, never inferred
 - ADR-006: All four team-contribution metrics ship in v1

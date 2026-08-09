@@ -7,6 +7,9 @@ import type { IngestedRun, EstateRollup } from '../types';
 import type { AuthProvider, Session } from './auth';
 import type { StoreResolver } from './store-resolver';
 import type { ConnectorService } from '../connectors';
+import { detectAdapter, getAdapter } from '../adapters';
+import type { AdapterContext } from '../adapters/types';
+import type { TestResultData } from '../types';
 
 /**
  * The dashboard REST API. Every route is tenant-scoped from the authenticated
@@ -89,7 +92,7 @@ export class DashboardApi {
       // Fetch connector data (testsAuthored/fixesLanded) if connectors are configured.
       // Uses a 5-minute cache so external APIs aren't hit on every request.
       const now = Date.now();
-      const periodMs = period === 'daily' ? 86400000 : period === 'monthly' ? 30 * 86400000 : 7 * 86400000;
+      const periodMs = period === 'daily' ? 86400000 : period === 'weekly' ? 7 * 86400000 : period === 'monthly' ? 30 * 86400000 : period === 'quarterly' ? 90 * 86400000 : 100 * 365 * 86400000;
       const from = new Date(now - periodMs).toISOString();
       const to = new Date(now).toISOString();
       const connectorData = this.connectorService
@@ -120,7 +123,7 @@ export class DashboardApi {
     if (url.startsWith('/api/contributors') && method === 'GET') {
       const period = parsePeriod(url);
       const now = Date.now();
-      const periodMs = period === 'daily' ? 86400000 : period === 'monthly' ? 30 * 86400000 : 7 * 86400000;
+      const periodMs = period === 'daily' ? 86400000 : period === 'weekly' ? 7 * 86400000 : period === 'monthly' ? 30 * 86400000 : period === 'quarterly' ? 90 * 86400000 : 100 * 365 * 86400000;
       const from = new Date(now - periodMs).toISOString();
       const to = new Date(now).toISOString();
       const connectorData = this.connectorService
@@ -136,6 +139,10 @@ export class DashboardApi {
       const runId = decodeURIComponent(url.split('/api/runs/')[1].split('?')[0]);
       if (runId.endsWith('/report')) {
         await this.serveReport(store, session, runId.replace('/report', ''), res);
+        return;
+      }
+      if (runId.endsWith('/tests')) {
+        await this.serveTestCases(store, session, runId.replace('/tests', ''), res);
         return;
       }
       const run = await store.getRun(session.tenantId, runId);
@@ -194,6 +201,71 @@ export class DashboardApi {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
+
+  /**
+   * Re-parse the raw artifact for a run and return individual test cases.
+   * This gives the dashboard drill-down access to per-test detail (name,
+   * status, duration, error message, suite) without storing every test case
+   * in the JSONL run store. Parsing is <10ms for typical JUnit XML files.
+   */
+  private async serveTestCases(store: { getRun(tenantId: string, runId: string): Promise<IngestedRun | null> }, session: Session, runId: string, res: ServerResponse): Promise<void> {
+    const run = await store.getRun(session.tenantId, runId);
+    if (!run) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'run not found' }));
+      return;
+    }
+    if (!run.rawArtifactPath) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'no raw artifact attached to this run' }));
+      return;
+    }
+    const resolved = path.resolve(run.rawArtifactPath);
+    if (!fs.existsSync(resolved)) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'raw artifact file not found', path: run.rawArtifactPath }));
+      return;
+    }
+    const content = fs.readFileSync(resolved, 'utf-8');
+    // Detect the adapter from the file content + extension
+    const ext = path.extname(resolved).toLowerCase();
+    const formatHint = ext === '.trx' ? 'trx' : ext === '.json' ? 'newman' : 'junit';
+    const adapter = getAdapter(formatHint as any) ?? detectAdapter(content);
+    if (!adapter) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: `no adapter could parse this artifact (ext: ${ext})` }));
+      return;
+    }
+    const ctx: AdapterContext = { outputDir: '.', options: {}, content };
+    try {
+      const ingested = adapter.ingest(ctx);
+      // Return a slimmed-down view of each test case (omit heavy fields like
+      // history, steps, screenshots that aren't needed in the dashboard)
+      const tests = ingested.results.map((r: TestResultData) => ({
+        testId: r.testId,
+        title: r.title,
+        suite: r.suite,
+        suites: r.suites,
+        file: r.file,
+        status: r.status,
+        duration: r.duration,
+        error: r.error,
+        outcome: r.outcome,
+      }));
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        runId: run.runId,
+        total: tests.length,
+        passed: tests.filter(t => t.status === 'passed').length,
+        failed: tests.filter(t => t.status === 'failed' || t.status === 'timedOut' || t.status === 'interrupted').length,
+        skipped: tests.filter(t => t.status === 'skipped').length,
+        tests,
+      }));
+    } catch (e) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: `failed to parse artifact: ${(e as Error).message}` }));
+    }
+  }
 }
 
 function parsePeriod(url: string): EstateRollup['period'] {
@@ -202,7 +274,7 @@ function parsePeriod(url: string): EstateRollup['period'] {
     const [k, v] = pair.split('=');
     if (k === 'period') {
       const val = decodeURIComponent(v);
-      if (val === 'daily' || val === 'weekly' || val === 'monthly') return val;
+      if (val === 'daily' || val === 'weekly' || val === 'monthly' || val === 'quarterly' || val === 'all') return val;
     }
   }
   return 'weekly';

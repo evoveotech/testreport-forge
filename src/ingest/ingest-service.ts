@@ -67,15 +67,22 @@ export class IngestService {
       return { accepted: false, runId: '', errors: ['payload must include either run or rawArtifact+format'] };
     }
 
-    const runId = summary.runId || this.generateRunId();
+    const runId = payload.runIdOverride || summary.runId || this.generateRunId();
     const ingestedAt = new Date().toISOString();
+    // Use the real CI run timestamp (when tests actually ran) if provided by
+    // pipeline-sources sync; otherwise fall back to ingestion time (ADR-009).
+    const timestamp = payload.occurredAt ?? summary.timestamp ?? ingestedAt;
     const run: IngestedRun = {
       ...summary,
       runId,
+      timestamp,
       orgContext: payload.orgContext,
       reportPath: payload.reportPath,
       rawArtifactPath,
       ingestedAt,
+      // Enrich with CI metadata from the payload (pipeline-sources sync) when
+      // provided; otherwise use the summary's default ciInfo (ADR-009).
+      ciInfo: payload.ciInfo ?? summary.ciInfo,
     };
 
     await this.store.insertRun(run);

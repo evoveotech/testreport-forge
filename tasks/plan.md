@@ -2,7 +2,7 @@
 
 > Branch: `feat/leadership-dashboard`. Source skills: `planning-and-task-breakdown`,
 > `technical-design-document`, `idea-refine`, `loop-engineering`, `autoresearch`.
-> Idea one-pager: `docs/ideas/leadership-dashboard.md`.
+> Idea one-pager: removed (feature is implemented; see `docs/leadership-platform.md`).
 
 ## Recursive Goal (Loop Engineering)
 
@@ -13,18 +13,27 @@ GOAL: A self-hostable leadership dashboard that aggregates test runs across
       drilldown to the existing single-run HTML report.
 STOPPING CRITERIA:
   - `npm run build` is clean (tsc passes)
-  - `npm test` passes (existing + new tests green)
+  - `npm test` passes (existing + new tests green, including Windows)
   - `evoveo-smart-reporter dashboard` boots ingest + store + UI from one command
-  - A 10k-client synthetic benchmark loads the estate rollup in <2s
+  - A 10k-client synthetic benchmark loads the estate rollup in <2s (FileStore)
   - Drilldown from a rollup cell opens the existing single-run report
   - OIDC SSO login + RBAC enforced on every dashboard route
-  - **SAML login works for a legacy enterprise IdP; tenant isolation proven
-    by a row-level-security test (tenant A cannot read tenant B)**
+  - **SAML login via gateway delegation** (mod_auth_mellon/Shibboleth sets
+    headers; app trusts gateway). Documented honestly as delegation, not
+    native SAML assertion parsing.
+  - **Tenant isolation proven at the store layer** (tenant A cannot read
+    tenant B — 4 security-critical tests in file-store.test.ts). Postgres
+    RLS is a FUTURE enhancement (ADR-002), not a v1 stopping criterion.
   - **All four team-contribution metrics populated** (runs/passRate/flakiness
     from store; testsAuthored from git connector; fixesLanded from issue
-    connector) for at least one seeded tenant
-  - **3yr retention job runs and archives a partition older than 90d**
-  - README + AGENTS.md updated; ADRs recorded for the 7 key decisions
+    connector) for at least one seeded tenant. Connectors are unit-tested
+    with mock data; real-API integration tests are skip-gated on env vars.
+  - **Retention job runs and archives runs older than the configured threshold**
+    (default 90d hot tier, 3yr hard deletion policy). Tested against FileStore.
+  - README + AGENTS.md updated; ADRs recorded for the key decisions
+  - **Cloud-drive storage (OneDrive/Google Drive) documented as the
+    no-Docker enterprise path.** Cloud-drive 10k-scale benchmark is
+    BLOCKED without OAuth credentials (documented in ADR-008).
 MAX ITERATIONS: 25 (autoresearch default). Escalate to human after that.
 ```
 

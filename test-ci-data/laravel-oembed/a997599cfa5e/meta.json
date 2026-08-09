@@ -1,0 +1,8 @@
+{
+  "commit": "a997599cfa5e85213fa89d57f4ae437fae08722d",
+  "branch": "master",
+  "trigger": "pull_request",
+  "occurredAt": "2024-11-15T18:16:02Z",
+  "ciRunUrl": "https://github.com/webwizardsusa/laravel-oembed/commit/a997599cfa5e85213fa89d57f4ae437fae08722d",
+  "duration": 243
+}

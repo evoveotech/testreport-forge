@@ -1,0 +1,8 @@
+{
+  "commit": "cea6d7303e473e50d385d0b1d93feb74d0e438de",
+  "branch": "develop",
+  "trigger": "pull_request",
+  "occurredAt": "2025-02-26T18:53:55Z",
+  "ciRunUrl": "https://github.com/saxix/django-adminactions/commit/cea6d7303e473e50d385d0b1d93feb74d0e438de",
+  "duration": 55649
+}

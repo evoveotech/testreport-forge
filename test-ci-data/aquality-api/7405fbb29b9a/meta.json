@@ -1,0 +1,8 @@
+{
+  "commit": "7405fbb29b9a6bf2cedc6313ea8f4c1616c6e75b",
+  "branch": "master",
+  "trigger": "pull_request",
+  "occurredAt": "2019-08-05T13:08:08Z",
+  "ciRunUrl": "https://github.com/aquality-automation/aquality-tracking-api/commit/7405fbb29b9a6bf2cedc6313ea8f4c1616c6e75b",
+  "duration": 0
+}

@@ -1,0 +1,8 @@
+{
+  "commit": "fc9a1dce423a0adba38e8519d975d6833ef8ea1b",
+  "branch": "master",
+  "trigger": "pull_request",
+  "occurredAt": "2023-08-01T07:13:02Z",
+  "ciRunUrl": "https://github.com/lukejpreston/xunit-viewer/commit/fc9a1dce423a0adba38e8519d975d6833ef8ea1b",
+  "duration": 1306
+}

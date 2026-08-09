@@ -101,6 +101,8 @@ export class Aggregator {
         flakinessOwned: runs.reduce((sum, r) => sum + r.flaky, 0),
         testsAuthored: connectorData?.[team]?.testsAuthored ?? 0,
         fixesLanded: connectorData?.[team]?.fixesLanded ?? 0,
+        products: [...new Set(runs.map(r => r.orgContext.product))],
+        stacks: [...new Set(runs.map(r => r.orgContext.stack))],
       }))
       .sort((a, b) => b.runsExecuted - a.runsExecuted);
   }
@@ -282,6 +284,8 @@ const PERIOD_MS: Record<EstateRollup['period'], number> = {
   daily: DAY_MS,
   weekly: 7 * DAY_MS,
   monthly: 30 * DAY_MS,
+  quarterly: 90 * DAY_MS,
+  all: 100 * 365 * DAY_MS,  // ~100 years — effectively "all time"
 };
 
 function groupBy(runs: IngestedRun[], keyFn: (r: IngestedRun) => string): Map<string, IngestedRun[]> {

@@ -178,6 +178,41 @@
   .chart-card h3 { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; }
   .trend-svg { width: 100%; height: 180px; }
 
+  /* CHART GRID — multi-chart layouts for executive views */
+  .chart-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+  .chart-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  @media (max-width: 900px) { .chart-grid-2, .chart-grid-3 { grid-template-columns: 1fr; } }
+
+  /* DONUT CHART */
+  .donut-chart { width: 100%; max-width: 320px; height: 240px; }
+  .donut-center { text-anchor: middle; dominant-baseline: central; }
+  .donut-center-value { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 1.8rem; font-weight: 700; fill: var(--text-primary); }
+  .donut-center-label { font-size: 0.7rem; fill: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .donut-legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin-top: 0.75rem; font-size: 0.75rem; }
+  .donut-legend-item { display: flex; align-items: center; gap: 0.4rem; color: var(--text-secondary); }
+  .donut-legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+  /* HORIZONTAL BAR CHART */
+  .hbar-chart { width: 100%; }
+  .hbar-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; font-size: 0.8rem; }
+  .hbar-label { width: 130px; text-align: right; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
+  .hbar-track { flex: 1; height: 22px; background: var(--bg-secondary); border-radius: 4px; position: relative; overflow: hidden; }
+  .hbar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; display: flex; align-items: center; padding-left: 0.5rem; }
+  .hbar-fill.green { background: rgba(0,255,136,0.25); border-left: 3px solid var(--accent-green); }
+  .hbar-fill.yellow { background: rgba(255,204,0,0.25); border-left: 3px solid var(--accent-yellow); }
+  .hbar-fill.red { background: rgba(255,68,102,0.25); border-left: 3px solid var(--accent-red); }
+  .hbar-fill.blue { background: rgba(0,170,255,0.25); border-left: 3px solid var(--accent-blue); }
+  .hbar-fill.purple { background: rgba(170,102,255,0.25); border-left: 3px solid var(--accent-purple); }
+  .hbar-fill.orange { background: rgba(255,136,68,0.25); border-left: 3px solid var(--accent-orange); }
+  .hbar-value { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; }
+  .hbar-value-label { width: 60px; text-align: left; color: var(--text-muted); flex-shrink: 0; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.75rem; }
+
+  /* STAT ROW (inline mini-stats for chart cards) */
+  .stat-row { display: flex; gap: 1.5rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-subtle); }
+  .stat-row-item { display: flex; flex-direction: column; }
+  .stat-row-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat-row-value { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 1.1rem; font-weight: 700; }
+
   /* DATA TABLES */
   .data-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
   .data-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 1.25rem; }
@@ -262,7 +297,7 @@
 <script>
 (function() {
   'use strict';
-  var state = { session: null, rollup: null, runs: [], tab: 'estate', period: 'weekly', theme: 'dark' };
+  var state = { session: null, rollup: null, runs: [], tab: 'estate', period: 'all', theme: 'dark' };
 
   // -- Auth helpers (dev mode: headers) --------------------------------
   function getAuthHeaders() {
@@ -365,6 +400,7 @@
           navItem('teams', 'Team Contribution', r ? r.byTeam.length : 0) +
           navItem('runs', 'Recent Runs', r ? r.totalRuns : 0) +
           navItem('compare', 'Compare', '') +
+          navItem('sync', 'Sync Health', '') +
           navItem('settings', 'Settings', '') +
         '</div>' +
       '</div>' +
@@ -390,11 +426,12 @@
     else if (state.tab === 'teams') renderTeams();
     else if (state.tab === 'runs') renderRuns();
     else if (state.tab === 'compare') renderCompare();
+    else if (state.tab === 'sync') renderSyncHealth();
     else if (state.tab === 'settings') renderSettings();
   }
 
   function navItem(tab, label, badge) {
-    var icons = { estate: '&#9632;', teams: '&#9632;', runs: '&#9632;', compare: '&#8645;', settings: '&#9881;' };
+    var icons = { estate: '&#9632;', teams: '&#9632;', runs: '&#9632;', compare: '&#8645;', sync: '&#8635;', settings: '&#9881;' };
     return '<button class="nav-item ' + (state.tab === tab ? 'active' : '') + '" data-tab="' + tab + '">' +
       '<span class="nav-icon">' + (icons[tab] || '') + '</span>' +
       '<span class="nav-label">' + label + '</span>' +
@@ -500,7 +537,9 @@
       '<select class="period-select" id="period-select">' +
       '<option value="daily"' + (r.period === 'daily' ? ' selected' : '') + '>Daily</option>' +
       '<option value="weekly"' + (r.period === 'weekly' ? ' selected' : '') + '>Weekly</option>' +
-      '<option value="monthly"' + (r.period === 'monthly' ? ' selected' : '') + '>Monthly</option></select></div>';
+      '<option value="monthly"' + (r.period === 'monthly' ? ' selected' : '') + '>Monthly</option>' +
+      '<option value="quarterly"' + (r.period === 'quarterly' ? ' selected' : '') + '>Quarterly</option>' +
+      '<option value="all"' + (r.period === 'all' ? ' selected' : '') + '>All Time</option></select></div>';
 
     // KPI cards
     html += '<div class="kpi-grid">' +
@@ -515,6 +554,25 @@
     // Trend chart
     html += '<div class="chart-card"><h3>Pass Rate Trend (' + r.period + ')</h3>' + trendChart(r.trend) + '</div>';
 
+    // Executive charts: donut + failure bars (2-column)
+    html += '<div class="chart-grid-2">' +
+      '<div class="chart-card"><h3>Run Distribution by Stack</h3>' + donutChart(r.byStack, 'Runs') + '</div>' +
+      '<div class="chart-card"><h3>Products Needing Attention (by failures)</h3><div id="estate-failures-chart"><div class="empty-state"><div class="empty-state-text">Loading...</div></div></div></div>' +
+      '</div>';
+
+    // Stack pass-rate comparison + duration (2-column)
+    html += '<div class="chart-grid-2">' +
+      '<div class="chart-card"><h3>Pass Rate by Stack</h3>' + hbarPassRate(r.byStack, 18) + '</div>' +
+      '<div class="chart-card"><h3>Slowest Products (duration)</h3><div id="estate-duration-chart"><div class="empty-state"><div class="empty-state-text">Loading...</div></div></div></div>' +
+      '</div>';
+
+    // Stack category donut + test volume by stack (2-column)
+    var stackVolData = r.byStack.map(function(s) { return { key: s.key, total: s.totalRuns }; }).sort(function(a, b) { return b.total - a.total; });
+    html += '<div class="chart-grid-2">' +
+      '<div class="chart-card"><h3>Run Distribution by Stack Category</h3>' + donutChart(r.byStackCategory, 'Runs') + '</div>' +
+      '<div class="chart-card"><h3>Test Volume by Stack (runs)</h3>' + hbarTestVolume(stackVolData, 18) + '</div>' +
+      '</div>';
+
     // Breakdown tables
     html += '<div class="data-grid">' +
       sliceTable('By Client', r.byClient) +
@@ -527,6 +585,24 @@
 
     document.getElementById('main').innerHTML = html;
     document.getElementById('period-select').onchange = function() { state.period = this.value; loadEstate(); };
+
+    // Async-load runs for failure + duration charts (real data from /api/runs)
+    var fromParam = '';
+    if (r.period !== 'all') {
+      var periodDays = r.period === 'daily' ? 1 : r.period === 'weekly' ? 7 : r.period === 'monthly' ? 30 : 90;
+      var fromDate = new Date(Date.now() - periodDays * 86400000).toISOString();
+      fromParam = '&from=' + fromDate;
+    }
+    api('/runs?limit=100' + fromParam).then(function(runs) {
+      var failData = runs.map(function(r) { return { key: r.orgContext.product, failed: r.failed, total: r.total }; })
+        .sort(function(a, b) { return b.failed - a.failed; });
+      var durData = runs.map(function(r) { return { key: r.orgContext.product, duration: r.duration }; })
+        .sort(function(a, b) { return b.duration - a.duration; });
+      var failEl = document.getElementById('estate-failures-chart');
+      var durEl = document.getElementById('estate-duration-chart');
+      if (failEl) failEl.innerHTML = hbarFailures(failData, 15);
+      if (durEl) durEl.innerHTML = hbarDuration(durData, 15);
+    }).catch(function() {});
   }
 
   function kpiCard(label, value, color, delta) {
@@ -567,6 +643,132 @@
       dots + labels + '</svg>';
   }
 
+  // -- Executive chart functions (pure SVG, no dependencies) ------------
+
+  var CHART_COLORS = ['#00ff88', '#00aaff', '#aa66ff', '#ff8844', '#ffcc00', '#ff4466',
+    '#00ddaa', '#4488ff', '#cc66ff', '#ffaa00', '#ff6688', '#00ffcc',
+    '#66aaff', '#dd44ff', '#ff6600', '#ffdd44', '#ff2244', '#22ffdd'];
+
+  /**
+   * Donut chart for distribution data (e.g., byStack).
+   * data: [{ key, totalRuns, passRate }, ...]
+   */
+  function donutChart(data, centerLabel) {
+    if (!data || data.length === 0) return '<div class="empty-state"><div class="empty-state-text">No data</div></div>';
+    var total = data.reduce(function(s, d) { return s + d.totalRuns; }, 0);
+    if (total === 0) return '<div class="empty-state"><div class="empty-state-text">No runs</div></div>';
+    var cx = 120, cy = 120, r = 90, ir = 55;
+    var angle = -Math.PI / 2; // start at top
+    var slices = '';
+    var legend = '';
+    for (var i = 0; i < data.length; i++) {
+      var d = data[i];
+      var frac = d.totalRuns / total;
+      var endAngle = angle + frac * 2 * Math.PI;
+      var largeArc = frac > 0.5 ? 1 : 0;
+      var x1 = cx + r * Math.cos(angle), y1 = cy + r * Math.sin(angle);
+      var x2 = cx + r * Math.cos(endAngle), y2 = cy + r * Math.sin(endAngle);
+      var x3 = cx + ir * Math.cos(endAngle), y3 = cy + ir * Math.sin(endAngle);
+      var x4 = cx + ir * Math.cos(angle), y4 = cy + ir * Math.sin(angle);
+      var color = CHART_COLORS[i % CHART_COLORS.length];
+      var path = 'M' + x1 + ' ' + y1 + ' A' + r + ' ' + r + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 +
+        ' L' + x3 + ' ' + y3 + ' A' + ir + ' ' + ir + ' 0 ' + largeArc + ' 0 ' + x4 + ' ' + y4 + ' Z';
+      slices += '<path d="' + path + '" fill="' + color + '" opacity="0.85"><title>' + esc(d.key) + ': ' + d.totalRuns + ' runs (' + (frac * 100).toFixed(1) + '%)</title></path>';
+      legend += '<div class="donut-legend-item"><span class="donut-legend-dot" style="background:' + color + '"></span>' + esc(d.key) + ' <span style="color:var(--text-muted)">' + d.totalRuns + '</span></div>';
+      angle = endAngle;
+    }
+    return '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:1rem">' +
+      '<svg class="donut-chart" viewBox="0 0 240 240">' + slices +
+      '<text class="donut-center donut-center-value" x="120" y="115">' + total + '</text>' +
+      '<text class="donut-center donut-center-label" x="120" y="138">' + esc(centerLabel || 'Total') + '</text>' +
+      '</svg>' +
+      '<div class="donut-legend" style="flex:1;min-width:200px">' + legend + '</div></div>';
+  }
+
+  /**
+   * Horizontal bar chart for pass-rate comparison.
+   * data: [{ key, passRate, totalRuns }, ...]  (already sorted)
+   * maxItems: how many bars to show
+   */
+  function hbarPassRate(data, maxItems) {
+    if (!data || data.length === 0) return '<div class="empty-state"><div class="empty-state-text">No data</div></div>';
+    var items = data.slice(0, maxItems || 15);
+    var rows = items.map(function(d) {
+      var color = rateColor(d.passRate);
+      var width = Math.max(2, d.passRate); // min 2% so it's visible
+      return '<div class="hbar-row">' +
+        '<span class="hbar-label" title="' + esc(d.key) + '">' + esc(d.key) + '</span>' +
+        '<div class="hbar-track"><div class="hbar-fill ' + color + '" style="width:' + width + '%"></div></div>' +
+        '<span class="hbar-value">' + d.passRate + '%</span>' +
+        '<span class="hbar-value-label">' + d.totalRuns + ' run' + (d.totalRuns !== 1 ? 's' : '') + '</span>' +
+        '</div>';
+    }).join('');
+    return '<div class="hbar-chart">' + rows + '</div>';
+  }
+
+  /**
+   * Horizontal bar chart for test volume (total tests, not runs).
+   * data: [{ key, total }, ...]  (already sorted desc)
+   */
+  function hbarTestVolume(data, maxItems) {
+    if (!data || data.length === 0) return '<div class="empty-state"><div class="empty-state-text">No data</div></div>';
+    var items = data.slice(0, maxItems || 15);
+    var maxVal = Math.max.apply(null, items.map(function(d) { return d.total; }));
+    var rows = items.map(function(d) {
+      var width = maxVal > 0 ? (d.total / maxVal * 100) : 0;
+      return '<div class="hbar-row">' +
+        '<span class="hbar-label" title="' + esc(d.key) + '">' + esc(d.key) + '</span>' +
+        '<div class="hbar-track"><div class="hbar-fill blue" style="width:' + width + '%"></div></div>' +
+        '<span class="hbar-value">' + d.total + '</span>' +
+        '<span class="hbar-value-label">tests</span>' +
+        '</div>';
+    }).join('');
+    return '<div class="hbar-chart">' + rows + '</div>';
+  }
+
+  /**
+   * Horizontal bar chart for duration (ms → seconds).
+   * data: [{ key, duration }, ...]  (already sorted desc)
+   */
+  function hbarDuration(data, maxItems) {
+    if (!data || data.length === 0) return '<div class="empty-state"><div class="empty-state-text">No data</div></div>';
+    var items = data.filter(function(d) { return d.duration > 0; }).slice(0, maxItems || 15);
+    if (items.length === 0) return '<div class="empty-state"><div class="empty-state-text">No duration data</div></div>';
+    var maxVal = Math.max.apply(null, items.map(function(d) { return d.duration; }));
+    var rows = items.map(function(d) {
+      var width = maxVal > 0 ? (d.duration / maxVal * 100) : 0;
+      var secs = (d.duration / 1000).toFixed(1);
+      return '<div class="hbar-row">' +
+        '<span class="hbar-label" title="' + esc(d.key) + '">' + esc(d.key) + '</span>' +
+        '<div class="hbar-track"><div class="hbar-fill orange" style="width:' + width + '%"></div></div>' +
+        '<span class="hbar-value">' + secs + 's</span>' +
+        '<span class="hbar-value-label"></span>' +
+        '</div>';
+    }).join('');
+    return '<div class="hbar-chart">' + rows + '</div>';
+  }
+
+  /**
+   * Horizontal bar chart for failure counts.
+   * data: [{ key, failed, total }, ...]  (already sorted desc by failed)
+   */
+  function hbarFailures(data, maxItems) {
+    if (!data || data.length === 0) return '<div class="empty-state"><div class="empty-state-text">No failures</div></div>';
+    var items = data.filter(function(d) { return d.failed > 0; }).slice(0, maxItems || 15);
+    if (items.length === 0) return '<div class="empty-state"><div class="empty-state-text">No failures — all tests passing</div></div>';
+    var maxVal = Math.max.apply(null, items.map(function(d) { return d.failed; }));
+    var rows = items.map(function(d) {
+      var width = maxVal > 0 ? (d.failed / maxVal * 100) : 0;
+      return '<div class="hbar-row">' +
+        '<span class="hbar-label" title="' + esc(d.key) + '">' + esc(d.key) + '</span>' +
+        '<div class="hbar-track"><div class="hbar-fill red" style="width:' + width + '%"></div></div>' +
+        '<span class="hbar-value">' + d.failed + '</span>' +
+        '<span class="hbar-value-label">/' + d.total + '</span>' +
+        '</div>';
+    }).join('');
+    return '<div class="hbar-chart">' + rows + '</div>';
+  }
+
   function sliceTable(title, slices) {
     if (!slices || slices.length === 0) return '';
     var rows = slices.slice(0, 10).map(function(s) {
@@ -587,12 +789,29 @@
     if (!r || !r.byTeam.length) { document.getElementById('main').innerHTML = emptyState('No team data'); return; }
     var html = '<div class="main-header"><div><div class="main-title">Team Contribution</div>' +
       '<div class="main-subtitle">Click a team to drill down into worst runs and flaky tests</div></div></div>';
+
+    // Executive summary charts: team pass-rate comparison + team activity (runs executed)
+    var teamsByPass = r.byTeam.slice().sort(function(a, b) { return a.passRate - b.passRate; });
+    var teamsByRuns = r.byTeam.slice().sort(function(a, b) { return b.runsExecuted - a.runsExecuted; });
+    var teamsByPassData = teamsByPass.map(function(t) { return { key: t.team, passRate: t.passRate, totalRuns: t.runsExecuted }; });
+    var teamsByRunsData = teamsByRuns.map(function(t) { return { key: t.team, totalRuns: t.runsExecuted }; });
+    html += '<div class="chart-grid-2">' +
+      '<div class="chart-card"><h3>Team Pass Rate Comparison (lowest first)</h3>' + hbarPassRate(teamsByPassData, 20) + '</div>' +
+      '<div class="chart-card"><h3>Team Activity (runs executed)</h3>' + hbarTestVolume(teamsByRunsData.map(function(d) { return { key: d.key, total: d.totalRuns }; }), 20) + '</div>' +
+      '</div>';
+
     html += '<div class="team-grid">';
     for (var i = 0; i < r.byTeam.length; i++) {
       var t = r.byTeam[i];
+      var products = (t.products || []).join(', ');
+      var stacks = (t.stacks || []).join(', ');
       html += '<div class="team-card" data-team="' + esc(t.team) + '" style="cursor:pointer">' +
         '<div class="team-header"><div class="team-name">' + esc(t.team) + '</div>' +
         '<span class="badge ' + rateColor(t.passRate) + '">' + t.passRate + '%</span></div>' +
+        '<div class="team-meta" style="padding:0 12px 6px;font-size:0.75rem;color:var(--text-secondary);line-height:1.4">' +
+          '<div><strong>Product:</strong> ' + esc(products || '—') + '</div>' +
+          '<div><strong>Stack:</strong> ' + esc(stacks || '—') + '</div>' +
+        '</div>' +
         '<div class="team-stats">' +
           teamStat('Runs', t.runsExecuted, 'blue') +
           teamStat('Flakiness', t.flakinessOwned, t.flakinessOwned > 5 ? 'red' : 'green') +
@@ -623,6 +842,12 @@
         kpiCard('Total Runs', d.totalRuns, 'blue', null) +
         kpiCard('Pass Rate', d.passRate + '%', rateColor(d.passRate), null) +
         kpiCard('Flaky Rate', d.flakyRate + '%', d.flakyRate < 5 ? 'green' : 'yellow', null) +
+        '</div>';
+      // Executive charts for the team: stack donut + product pass-rate bars
+      var productBarData = d.byProduct.map(function(p) { return { key: p.key, passRate: p.passRate, totalRuns: p.totalRuns }; }).sort(function(a, b) { return a.passRate - b.passRate; });
+      html += '<div class="chart-grid-2">' +
+        '<div class="chart-card"><h3>Stack Distribution</h3>' + donutChart(d.byStack, 'Runs') + '</div>' +
+        '<div class="chart-card"><h3>Product Pass Rates</h3>' + hbarPassRate(productBarData, 15) + '</div>' +
         '</div>';
       html += '<div class="data-grid">' + sliceTable('By Stack', d.byStack) + sliceTable('By Product', d.byProduct) + '</div>';
       if (d.worstRuns.length > 0) {
@@ -687,17 +912,149 @@
   function runsTable(runs) {
     if (!runs.length) return '<div class="empty-state"><div class="empty-state-text">No runs match your filters</div></div>';
     var rows = runs.map(function(r) {
-      return '<tr><td>' + esc(r.runId.substring(0, 20)) + '...</td>' +
+      var ciBadge = r.ciInfo && r.ciInfo.provider
+        ? '<span class="badge" style="background:var(--bg-hover);color:var(--text-secondary)">' + esc(r.ciInfo.provider) + '</span>'
+        : '&mdash;';
+      var commitShort = r.ciInfo && r.ciInfo.commit ? esc(r.ciInfo.commit.substring(0, 7)) : '';
+      var branchInfo = r.ciInfo && r.ciInfo.branch ? esc(r.ciInfo.branch) : '';
+      var ciLink = r.ciInfo && r.ciInfo.ciRunUrl
+        ? '<a href="' + esc(r.ciInfo.ciRunUrl) + '" target="_blank" rel="noopener" style="font-size:0.75rem;color:var(--accent,#4aa3ff);text-decoration:none">view run &#8599;</a>'
+        : '';
+      var ciDetail = commitShort
+        ? ciBadge + '<br><span style="font-size:0.75rem;color:var(--text-secondary)">' + branchInfo + ' @ ' + commitShort + '</span>' + (ciLink ? '<br>' + ciLink : '')
+        : ciBadge + (ciLink ? '<br>' + ciLink : '');
+      return '<tr class="run-row" data-run-id="' + esc(r.runId) + '" style="cursor:pointer" title="Click to see all test cases">' +
+        '<td>' + esc(r.runId.substring(0, 20)) + '...</td>' +
         '<td>' + esc(r.orgContext.client) + '</td>' +
         '<td>' + esc(r.orgContext.product) + '</td>' +
         '<td>' + esc(r.orgContext.team) + '</td>' +
         '<td><span class="badge blue">' + esc(r.orgContext.stack) + '</span></td>' +
         '<td><span class="badge ' + (r.orgContext.runType === 'pr' ? 'green' : r.orgContext.runType === 'nightly' ? 'purple' : 'yellow') + '">' + r.orgContext.runType + '</span></td>' +
+        '<td>' + ciDetail + '</td>' +
         '<td>' + r.total + '</td>' +
         '<td><span class="badge ' + rateColor(r.passRate) + '">' + r.passRate + '%</span></td>' +
         '<td>' + fmtDate(r.timestamp) + '</td></tr>';
     }).join('');
-    return '<table><tr><th>Run ID</th><th>Client</th><th>Product</th><th>Team</th><th>Stack</th><th>Type</th><th>Total</th><th>Pass</th><th>Date</th></tr>' + rows + '</table>';
+    // Wire up row clicks after render
+    setTimeout(function() {
+      var rowEls = document.querySelectorAll('.run-row[data-run-id]');
+      for (var i = 0; i < rowEls.length; i++) {
+        rowEls[i].onclick = function() { loadRunTests(this.dataset.runId); };
+      }
+    }, 0);
+    return '<table><tr><th>Run ID</th><th>Client</th><th>Product</th><th>Team</th><th>Stack</th><th>Type</th><th>CI Source</th><th>Total</th><th>Pass</th><th>Date</th></tr>' + rows + '</table>';
+  }
+
+  /**
+   * Load and display individual test cases for a specific run.
+   * Calls /api/runs/:runId/tests which re-parses the raw JUnit/TRX artifact
+   * and returns every test case with status, duration, and error messages.
+   */
+  function loadRunTests(runId) {
+    var main = document.getElementById('main');
+    main.innerHTML = '<div class="main-header"><div><div class="main-title">Test Cases</div>' +
+      '<div class="main-subtitle">Individual test results for ' + esc(runId) + '</div></div>' +
+      '<button class="btn btn-ghost" id="back-from-tests">Back</button></div>' +
+      '<div id="tests-content"><div class="empty-state"><div class="empty-state-text">Loading test cases...</div></div></div>';
+    document.getElementById('back-from-tests').onclick = function() { history.back(); state.tab = 'teams'; render(); };
+    api('/runs/' + encodeURIComponent(runId) + '/tests').then(function(data) {
+      renderTestCases(data, runId);
+    }).catch(function(e) {
+      document.getElementById('tests-content').innerHTML = emptyState('Failed to load test cases: ' + e.message);
+    });
+  }
+
+  function renderTestCases(data, runId) {
+    var tests = data.tests || [];
+    // Summary KPIs
+    var html = '<div class="kpi-grid">' +
+      kpiCard('Total Tests', data.total, 'blue', null) +
+      kpiCard('Passed', data.passed, 'green', null) +
+      kpiCard('Failed', data.failed, data.failed > 0 ? 'red' : 'green', null) +
+      kpiCard('Skipped', data.skipped, 'yellow', null) +
+      '</div>';
+
+    // Filter bar
+    html += '<div class="runs-table"><h3>Test Cases</h3>' +
+      '<div class="filter-bar">' +
+      '<input class="filter-input" id="test-search" placeholder="Search tests..." style="flex:1;min-width:200px">' +
+      '<select class="filter-input" id="test-status-filter">' +
+      '<option value="all">All statuses (' + data.total + ')</option>' +
+      '<option value="failed">Failed (' + data.failed + ')</option>' +
+      '<option value="passed">Passed (' + data.passed + ')</option>' +
+      '<option value="skipped">Skipped (' + data.skipped + ')</option>' +
+      '</select></div>' +
+      '<div id="test-cases-list"></div></div>';
+
+    document.getElementById('tests-content').innerHTML = html;
+
+    // Render test cases (initially all)
+    var listEl = document.getElementById('test-cases-list');
+    function renderList() {
+      var searchTerm = (document.getElementById('test-search').value || '').toLowerCase();
+      var statusFilter = document.getElementById('test-status-filter').value;
+      var filtered = tests.filter(function(t) {
+        if (statusFilter !== 'all' && t.status !== statusFilter) return false;
+        if (searchTerm && t.title.toLowerCase().indexOf(searchTerm) === -1 && (t.suite || '').toLowerCase().indexOf(searchTerm) === -1) return false;
+        return true;
+      });
+      listEl.innerHTML = testCaseList(filtered);
+    }
+    renderList();
+    document.getElementById('test-search').oninput = renderList;
+    document.getElementById('test-status-filter').onchange = renderList;
+  }
+
+  function testCaseList(tests) {
+    if (tests.length === 0) return '<div class="empty-state"><div class="empty-state-text">No tests match your filter</div></div>';
+    // Sort: failed first, then skipped, then passed — within each by duration desc
+    var statusOrder = { failed: 0, timedOut: 0, interrupted: 0, skipped: 1, passed: 2 };
+    var sorted = tests.slice().sort(function(a, b) {
+      var so = (statusOrder[a.status] ?? 3) - (statusOrder[b.status] ?? 3);
+      if (so !== 0) return so;
+      return b.duration - a.duration;
+    });
+    var html = '';
+    for (var i = 0; i < sorted.length; i++) {
+      var t = sorted[i];
+      var statusColor = t.status === 'passed' ? 'green' : t.status === 'skipped' ? 'yellow' : 'red';
+      var statusIcon = t.status === 'passed' ? '&#10003;' : t.status === 'skipped' ? '&#9888;' : '&#10007;';
+      var durationStr = t.duration > 0 ? (t.duration >= 1000 ? (t.duration / 1000).toFixed(1) + 's' : t.duration + 'ms') : '';
+      var suiteStr = t.suite ? '<span style="color:var(--text-muted);font-size:0.75rem">' + esc(t.suite) + '</span>' : '';
+      var errorHtml = '';
+      if (t.error) {
+        // Truncate very long errors but show first ~500 chars with expand option
+        var errorText = esc(t.error);
+        var truncated = errorText.length > 500;
+        var shortError = truncated ? errorText.substring(0, 500) + '...' : errorText;
+        errorHtml = '<div class="test-error" style="margin-top:0.5rem;padding:0.75rem;background:var(--bg-secondary);border-radius:6px;font-family:SF Mono,Fira Code,monospace;font-size:0.75rem;color:var(--accent-red);white-space:pre-wrap;word-break:break-word;max-height:' + (truncated ? '120px' : 'none') + ';overflow:auto;cursor:' + (truncated ? 'pointer' : 'default') + '" ' + (truncated ? 'data-full-error="' + errorText.replace(/"/g, '&quot;') + '"' : '') + '>' + shortError + '</div>';
+      }
+      html += '<div class="test-case" style="padding:0.75rem;border-bottom:1px solid var(--border-subtle)' + (t.status === 'failed' ? ';background:rgba(255,68,102,0.04)' : '') + '">' +
+        '<div style="display:flex;align-items:center;gap:0.5rem">' +
+        '<span class="badge ' + statusColor + '">' + statusIcon + ' ' + t.status + '</span>' +
+        '<span style="font-weight:500;flex:1">' + esc(t.title) + '</span>' +
+        '<span style="font-family:SF Mono,Fira Code,monospace;font-size:0.75rem;color:var(--text-muted)">' + durationStr + '</span>' +
+        '</div>' +
+        '<div style="margin-top:0.25rem;font-size:0.8rem">' + suiteStr + '</div>' +
+        errorHtml +
+        '</div>';
+    }
+    // Wire up expandable errors
+    setTimeout(function() {
+      var errorEls = document.querySelectorAll('.test-error[data-full-error]');
+      for (var i = 0; i < errorEls.length; i++) {
+        errorEls[i].onclick = function() {
+          if (this.style.maxHeight === 'none') {
+            this.style.maxHeight = '120px';
+            this.innerHTML = this.getAttribute('data-full-error').substring(0, 500) + '...';
+          } else {
+            this.style.maxHeight = 'none';
+            this.innerHTML = this.getAttribute('data-full-error');
+          }
+        };
+      }
+    }, 0);
+    return html;
   }
 
   // -- Compare tab -----------------------------------------------------
@@ -708,7 +1065,9 @@
       '<select class="period-select" id="compare-period">' +
       '<option value="daily"' + (state.period === 'daily' ? ' selected' : '') + '>Daily</option>' +
       '<option value="weekly"' + (state.period === 'weekly' ? ' selected' : '') + '>Weekly</option>' +
-      '<option value="monthly"' + (state.period === 'monthly' ? ' selected' : '') + '>Monthly</option></select></div>' +
+      '<option value="monthly"' + (state.period === 'monthly' ? ' selected' : '') + '>Monthly</option>' +
+      '<option value="quarterly"' + (state.period === 'quarterly' ? ' selected' : '') + '>Quarterly</option>' +
+      '<option value="all"' + (state.period === 'all' ? ' selected' : '') + '>All Time</option></select></div>' +
       '<div id="compare-content"><div class="empty-state"><div class="empty-state-text">Loading comparison...</div></div></div>';
     document.getElementById('compare-period').onchange = function() { state.period = this.value; renderCompare(); };
     api('/compare?period=' + state.period).then(function(c) {
@@ -784,6 +1143,67 @@
     document.getElementById('save-alerts-btn').onclick = saveAlerts;
     loadStorageStatus();
     loadAlerts();
+  }
+
+  // -- Sync Health tab (ADR-009 — trust layer for CI pipeline sources) ----
+  function renderSyncHealth() {
+    var html = '<div class="main-header"><div><div class="main-title">Sync Health</div>' +
+      '<div class="main-subtitle">CI pipeline connector status — is the dashboard data complete and current?</div></div></div>';
+    html += '<div id="sync-health-content"><p style="color:var(--text-secondary);padding:2rem">Loading sync status...</p></div>';
+    document.getElementById('main').innerHTML = html;
+    loadSyncHealth();
+  }
+
+  function loadSyncHealth() {
+    fetch('/api/sync/health', { headers: getAuthHeaders() })
+      .then(function(r) { if (!r.ok) throw new Error('Failed to load sync health'); return r.json(); })
+      .then(function(summary) {
+        var c = document.getElementById('sync-health-content');
+        if (!summary || summary.connectorCount === 0) {
+          c.innerHTML = '<div class="setting-card"><h3>No CI Connectors Configured</h3>' +
+            '<p>No pipeline-sources connectors have been synced yet. Configure connectors in <code>pipeline-sources.json</code> ' +
+            'and run <code>evoveo-smart-reporter-sync run</code> to start pulling test results from your CI estate.</p>' +
+            '<p style="margin-top:1rem;color:var(--text-secondary)">Supported: Azure DevOps, GitHub Actions, GitLab (coming), AWS CodePipeline (coming).</p></div>';
+          return;
+        }
+        var cards = '<div class="kpi-row">' +
+          kpiCard('Connectors', summary.connectorCount, 'var(--accent-green)') +
+          kpiCard('Healthy', summary.healthyCount, 'var(--accent-green)') +
+          kpiCard('Stale', summary.staleCount, summary.staleCount > 0 ? 'var(--accent-amber)' : 'var(--text-secondary)') +
+          kpiCard('Errors', summary.errorCount, summary.errorCount > 0 ? 'var(--accent-red)' : 'var(--text-secondary)') +
+          '</div>';
+        cards += '<div class="runs-table"><h3>Connector Status</h3><table><thead><tr>' +
+          '<th>Connector</th><th>Last Sync</th><th>Runs Pulled</th><th>Status</th><th>Errors</th></tr></thead><tbody>';
+        for (var i = 0; i < summary.connectors.length; i++) {
+          var conn = summary.connectors[i];
+          var status = conn.stale ? '<span style="color:var(--accent-amber)">&#9888; Stale</span>'
+            : conn.lastError ? '<span style="color:var(--accent-red)">&#10007; Error</span>'
+            : conn.lastSyncAt ? '<span style="color:var(--accent-green)">&#10003; Healthy</span>'
+            : '<span style="color:var(--text-secondary)">&#8212; Never synced</span>';
+          var lastSync = conn.lastSyncAt ? new Date(conn.lastSyncAt).toLocaleString() : 'Never';
+          if (conn.minutesSinceSync !== null) {
+            var hrs = Math.floor(conn.minutesSinceSync / 60);
+            var mins = conn.minutesSinceSync % 60;
+            lastSync += ' (' + (hrs > 0 ? hrs + 'h ' : '') + mins + 'm ago)';
+          }
+          cards += '<tr><td>' + conn.connectorId + '</td><td>' + lastSync + '</td><td>' +
+            conn.lastRunCount + '</td><td>' + status + '</td><td>' +
+            (conn.lastError ? '<span style="color:var(--accent-red)">' + conn.lastError + '</span>' : '&mdash;') +
+            '</td></tr>';
+        }
+        cards += '</tbody></table></div>';
+        c.innerHTML = cards;
+      })
+      .catch(function(e) {
+        document.getElementById('sync-health-content').innerHTML =
+          '<div class="setting-card"><h3>Unable to load sync health</h3><p>' + e.message + '</p></div>';
+      });
+  }
+
+  function kpiCard(label, value, color) {
+    return '<div class="mini-stat" style="border-left:3px solid ' + color + '">' +
+      '<div class="mini-stat-value">' + value + '</div>' +
+      '<div class="mini-stat-label">' + label + '</div></div>';
   }
 
   function loadAlerts() {

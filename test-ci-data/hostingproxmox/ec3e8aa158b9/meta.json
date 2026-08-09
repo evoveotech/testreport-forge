@@ -1,0 +1,8 @@
+{
+  "commit": "ec3e8aa158b93a3759676ed87c09145b4b4583ab",
+  "branch": "master",
+  "trigger": "pull_request",
+  "occurredAt": "2024-09-20T14:13:36Z",
+  "ciRunUrl": "https://github.com/minet/hostingproxmox/commit/ec3e8aa158b93a3759676ed87c09145b4b4583ab",
+  "duration": 254696
+}

@@ -90,9 +90,9 @@ describe('NotificationManager', () => {
     it('minFailures: notifies when failures meet threshold', async () => {
       const { SlackNotifier } = await import('./slack-notifier');
       const mockSendMessage = vi.fn().mockResolvedValue(undefined);
-      vi.mocked(SlackNotifier).mockImplementationOnce(() => ({
+      vi.mocked(SlackNotifier).mockImplementationOnce(function () { return {
         sendMessage: mockSendMessage,
-      } as any));
+      } as any; })
 
       const config: NotificationConfig = {
         channel: 'slack',
@@ -134,9 +134,9 @@ describe('NotificationManager', () => {
     it('tags: only notifies when tagged tests fail', async () => {
       const { SlackNotifier } = await import('./slack-notifier');
       const mockSendMessage = vi.fn().mockResolvedValue(undefined);
-      vi.mocked(SlackNotifier).mockImplementationOnce(() => ({
+      vi.mocked(SlackNotifier).mockImplementationOnce(function () { return {
         sendMessage: mockSendMessage,
-      } as any));
+      } as any; })
 
       const config: NotificationConfig = {
         channel: 'slack',
@@ -186,9 +186,9 @@ describe('NotificationManager', () => {
     it('notifies when stability grade has dropped', async () => {
       const { SlackNotifier } = await import('./slack-notifier');
       const mockSendMessage = vi.fn().mockResolvedValue(undefined);
-      vi.mocked(SlackNotifier).mockImplementationOnce(() => ({
+      vi.mocked(SlackNotifier).mockImplementationOnce(function () { return {
         sendMessage: mockSendMessage,
-      } as any));
+      } as any; })
 
       const config: NotificationConfig = {
         channel: 'slack',
@@ -266,9 +266,9 @@ describe('NotificationManager', () => {
     it('renders template with all variables', async () => {
       const sendMessageSpy = vi.fn().mockResolvedValue(undefined);
       const { SlackNotifier } = await import('./slack-notifier');
-      vi.mocked(SlackNotifier).mockImplementationOnce(() => ({
+      vi.mocked(SlackNotifier).mockImplementationOnce(function () { return {
         sendMessage: sendMessageSpy,
-      } as any));
+      } as any; })
 
       const config: NotificationConfig = {
         channel: 'slack',
@@ -300,9 +300,9 @@ describe('NotificationManager', () => {
     it('dispatches to slack', async () => {
       const { SlackNotifier } = await import('./slack-notifier');
       const mockSendMessage = vi.fn().mockResolvedValue(undefined);
-      vi.mocked(SlackNotifier).mockImplementationOnce(() => ({
+      vi.mocked(SlackNotifier).mockImplementationOnce(function () { return {
         sendMessage: mockSendMessage,
-      } as any));
+      } as any; })
 
       const config: NotificationConfig = {
         channel: 'slack',
@@ -318,7 +318,7 @@ describe('NotificationManager', () => {
     it('dispatches to teams', async () => {
       const { TeamsNotifier } = await import('./teams-notifier');
       const mockSendMessage = vi.fn().mockResolvedValue(undefined);
-      vi.mocked(TeamsNotifier).mockImplementationOnce(() => ({ sendMessage: mockSendMessage } as any));
+      vi.mocked(TeamsNotifier).mockImplementationOnce(function () { return { sendMessage: mockSendMessage } as any; })
 
       const config: NotificationConfig = {
         channel: 'teams',
@@ -334,7 +334,7 @@ describe('NotificationManager', () => {
     it('dispatches to pagerduty', async () => {
       const { PagerDutyNotifier } = await import('./pagerduty-notifier');
       const mockTrigger = vi.fn().mockResolvedValue(undefined);
-      vi.mocked(PagerDutyNotifier).mockImplementationOnce(() => ({ trigger: mockTrigger } as any));
+      vi.mocked(PagerDutyNotifier).mockImplementationOnce(function () { return { trigger: mockTrigger } as any; })
 
       const config: NotificationConfig = {
         channel: 'pagerduty',
@@ -350,7 +350,7 @@ describe('NotificationManager', () => {
     it('dispatches to email', async () => {
       const { EmailNotifier } = await import('./email-notifier');
       const mockSend = vi.fn().mockResolvedValue(undefined);
-      vi.mocked(EmailNotifier).mockImplementationOnce(() => ({ send: mockSend } as any));
+      vi.mocked(EmailNotifier).mockImplementationOnce(function () { return { send: mockSend } as any; })
 
       const config: NotificationConfig = {
         channel: 'email',
@@ -366,7 +366,7 @@ describe('NotificationManager', () => {
     it('dispatches to custom webhook', async () => {
       const { CustomWebhookNotifier } = await import('./custom-webhook-notifier');
       const mockSend = vi.fn().mockResolvedValue(undefined);
-      vi.mocked(CustomWebhookNotifier).mockImplementationOnce(() => ({ send: mockSend } as any));
+      vi.mocked(CustomWebhookNotifier).mockImplementationOnce(function () { return { send: mockSend } as any; })
 
       const config: NotificationConfig = {
         channel: 'webhook',
@@ -386,9 +386,9 @@ describe('NotificationManager', () => {
       const { TeamsNotifier } = await import('./teams-notifier');
 
       // Make slack throw
-      vi.mocked(SlackNotifier).mockImplementationOnce(() => ({
+      vi.mocked(SlackNotifier).mockImplementationOnce(function () { return {
         sendMessage: vi.fn().mockRejectedValue(new Error('Slack error')),
-      } as any));
+      } as any; })
 
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 

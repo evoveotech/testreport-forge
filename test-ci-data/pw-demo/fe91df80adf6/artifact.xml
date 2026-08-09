@@ -1,0 +1,25 @@
+<testsuites id="" name="" tests="3" failures="0" skipped="0" errors="0" time="6.764598">
+<testsuite name="reportersD37.spec.ts" timestamp="2025-05-26T13:27:50.104Z" hostname="chromium" tests="3" failures="0" skipped="0" time="12.79" errors="0">
+<testcase name="logo test" classname="reportersD37.spec.ts" time="4.188">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\reportersD37-logo-test-chromium\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="title test" classname="reportersD37.spec.ts" time="3.975">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\reportersD37-title-test-chromium\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="search test" classname="reportersD37.spec.ts" time="4.627">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\reportersD37-search-test-chromium\trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

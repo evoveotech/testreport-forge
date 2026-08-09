@@ -1,0 +1,8 @@
+{
+  "commit": "9283f1a31bd525695d06f18bd817662ebfd14f1f",
+  "branch": "master",
+  "trigger": "pull_request",
+  "occurredAt": "2025-10-20T08:17:11Z",
+  "ciRunUrl": "https://github.com/Nejcc/php-datatypes/commit/9283f1a31bd525695d06f18bd817662ebfd14f1f",
+  "duration": 55
+}

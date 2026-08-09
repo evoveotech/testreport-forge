@@ -1,0 +1,8 @@
+{
+  "commit": "f8938834f2bcdfbb8f36fee4e7fa0b2900316a20",
+  "branch": "master",
+  "trigger": "pull_request",
+  "occurredAt": "2023-11-19T16:39:37Z",
+  "ciRunUrl": "https://github.com/mohirio/jupyterlab-horizon-theme/commit/f8938834f2bcdfbb8f36fee4e7fa0b2900316a20",
+  "duration": 1905
+}

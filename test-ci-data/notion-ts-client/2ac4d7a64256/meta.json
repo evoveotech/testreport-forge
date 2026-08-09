@@ -1,0 +1,8 @@
+{
+  "commit": "2ac4d7a64256adfab27372ca69789d2a64021c8c",
+  "branch": "main",
+  "trigger": "pull_request",
+  "occurredAt": "2024-06-06T14:52:13Z",
+  "ciRunUrl": "https://github.com/velsa/notion-ts-client/commit/2ac4d7a64256adfab27372ca69789d2a64021c8c",
+  "duration": 5075
+}

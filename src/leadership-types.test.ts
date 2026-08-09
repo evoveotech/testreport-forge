@@ -80,6 +80,7 @@ describe('Leadership platform types', () => {
       const tc: TeamContribution = {
         team: 'payments-qa', runsExecuted: 120, passRate: 94,
         flakinessOwned: 3, testsAuthored: 18, fixesLanded: 7,
+        products: ['payments-gateway'], stacks: ['dotnet'],
       };
       expect(tc.testsAuthored).toBe(18);
       expect(tc.fixesLanded).toBe(7);
