@@ -15,8 +15,11 @@ import type { TestResultData, TestHistory, CIInfo, SmartReporterOptions } from '
  * - `newman`: Postman/Newman JSON report
  * - `json`: generic JSON in smart-report-data.json schema
  * - `playwright`: live Playwright reporter (default, backwards compatible)
+ * - `xctest`: Apple XCTest JUnit XML (xcodebuild test)
+ * - `espresso`: Android Espresso JUnit XML (Android test orchestrator)
+ * - `appium`: Appium JUnit XML
  */
-export type InputFormat = 'auto' | 'junit' | 'trx' | 'newman' | 'json' | 'playwright';
+export type InputFormat = 'auto' | 'junit' | 'trx' | 'newman' | 'json' | 'playwright' | 'xctest' | 'espresso' | 'appium';
 
 /**
  * Metadata about the source automation framework, surfaced in the report.

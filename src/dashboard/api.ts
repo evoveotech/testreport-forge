@@ -19,11 +19,15 @@ import type { ConnectorService } from '../connectors';
  * to a shared folder.
  *
  * Routes:
- *   GET  /api/estate?period=weekly        estate rollup
- *   GET  /api/runs?client=&product=...    filtered run list (tenant-scoped)
- *   GET  /api/runs/:runId                 single run detail
- *   GET  /api/runs/:runId/report          single-run HTML report (ADR-004)
- *   GET  /api/me                          current session
+ *   GET  /api/estate?period=weekly              estate rollup (with byStackCategory)
+ *   GET  /api/trend?period=weekly               standalone trend series
+ *   GET  /api/estate/drilldown?team=X&period=   team drill-down (worst/flaky runs)
+ *   GET  /api/compare?period=weekly             period-over-period comparison
+ *   GET  /api/contributors?period=weekly        individual contributor metrics
+ *   GET  /api/runs?client=&product=...          filtered run list (tenant-scoped)
+ *   GET  /api/runs/:runId                        single run detail
+ *   GET  /api/runs/:runId/report                 single-run HTML report (ADR-004)
+ *   GET  /api/me                                 current session
  */
 export class DashboardApi {
   constructor(
@@ -66,6 +70,20 @@ export class DashboardApi {
     const store = await this.storeResolver.resolve(session);
     const aggregator = new Aggregator(store);
 
+    if (url.startsWith('/api/estate/drilldown') && method === 'GET') {
+      const period = parsePeriod(url);
+      const team = parseParam(url, 'team');
+      if (!team) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'missing team parameter' }));
+        return;
+      }
+      const drillDown = await aggregator.teamDrillDown(session.tenantId, team, period);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(drillDown));
+      return;
+    }
+
     if (url.startsWith('/api/estate') && method === 'GET') {
       const period = parsePeriod(url);
       // Fetch connector data (testsAuthored/fixesLanded) if connectors are configured.
@@ -80,6 +98,37 @@ export class DashboardApi {
       const rollup: EstateRollup = await aggregator.estateRollup(session.tenantId, period, connectorData);
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(rollup));
+      return;
+    }
+
+    if (url.startsWith('/api/trend') && method === 'GET') {
+      const period = parsePeriod(url);
+      const trend = await aggregator.trendSeries(session.tenantId, period);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(trend));
+      return;
+    }
+
+    if (url.startsWith('/api/compare') && method === 'GET') {
+      const period = parsePeriod(url);
+      const comparison = await aggregator.compare(session.tenantId, period);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(comparison));
+      return;
+    }
+
+    if (url.startsWith('/api/contributors') && method === 'GET') {
+      const period = parsePeriod(url);
+      const now = Date.now();
+      const periodMs = period === 'daily' ? 86400000 : period === 'monthly' ? 30 * 86400000 : 7 * 86400000;
+      const from = new Date(now - periodMs).toISOString();
+      const to = new Date(now).toISOString();
+      const connectorData = this.connectorService
+        ? await this.connectorService.fetchConnectorData(from, to)
+        : undefined;
+      const contributors = await aggregator.individualContributions(session.tenantId, period, connectorData);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(contributors));
       return;
     }
 
@@ -157,4 +206,13 @@ function parsePeriod(url: string): EstateRollup['period'] {
     }
   }
   return 'weekly';
+}
+
+function parseParam(url: string, name: string): string | undefined {
+  const qs = url.split('?')[1] ?? '';
+  for (const pair of qs.split('&')) {
+    const [k, v] = pair.split('=');
+    if (k === name) return decodeURIComponent(v);
+  }
+  return undefined;
 }

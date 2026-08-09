@@ -560,8 +560,64 @@ export interface OrgContext {
   product: string;        // product name (e.g. "payments-gateway")
   team: string;           // owning team (e.g. "payments-qa")
   stack: string;          // technology (e.g. "dotnet" | "playwright" | "newman")
+  stackCategory?: StackCategory; // high-level grouping (mobile/backend/web/legacy/bff/microservices)
   runType: 'pr' | 'nightly' | 'daily' | 'scheduled' | 'manual';
   environment: string;    // e.g. "prod" | "staging" | "dev"
+}
+
+/**
+ * High-level technology stack categories for cross-cutting analysis.
+ * Maps individual stacks (playwright, xctest, espresso, etc.) to the
+ * categories leadership cares about: mobile, backend, web, legacy, BFF,
+ * microservices.
+ */
+export type StackCategory = 'mobile' | 'backend' | 'web' | 'legacy' | 'bff' | 'microservices';
+
+/**
+ * Known stack-to-category mappings. Stacks not in this map default to
+ * 'web' for web UI frameworks, 'mobile' for mobile frameworks, 'backend'
+ * for service/API frameworks. The map is used by the aggregator to add
+ * a byStackCategory slice to the estate rollup.
+ */
+export const STACK_CATEGORIES: Record<string, StackCategory> = {
+  // Mobile
+  xctest: 'mobile',
+  espresso: 'mobile',
+  appium: 'mobile',
+  'xamarin-uitest': 'mobile',
+  'detox': 'mobile',
+  // Backend
+  junit: 'backend',
+  trx: 'backend',
+  'dotnet-trx': 'backend',
+  pytest: 'backend',
+  mocha: 'backend',
+  'spring-boot': 'backend',
+  // Web
+  playwright: 'web',
+  cypress: 'web',
+  selenium: 'web',
+  puppeteer: 'web',
+  'webdriver-io': 'web',
+  // BFF
+  'bff-newman': 'bff',
+  'bff-contract': 'bff',
+  // Microservices
+  'contract-test': 'microservices',
+  'pact': 'microservices',
+  'spring-cloud-contract': 'microservices',
+  // Legacy
+  'selenium-rc': 'legacy',
+  'junit3': 'legacy',
+  'nunit2': 'legacy',
+};
+
+/**
+ * Resolve a stack name to its category. Falls back to 'web' for unknown
+ * stacks (most test automation is web-facing).
+ */
+export function resolveStackCategory(stack: string): StackCategory {
+  return STACK_CATEGORIES[stack.toLowerCase()] ?? 'web';
 }
 
 /**
@@ -640,9 +696,64 @@ export interface EstateRollup {
   byProduct: RollupSlice[];
   byTeam: TeamContribution[];
   byStack: RollupSlice[];
+  byStackCategory: RollupSlice[];  // mobile/backend/web/legacy/bff/microservices
   byRunType: RollupSlice[];
   byEnvironment: RollupSlice[];
   trend: TrendPoint[];    // last N days of estate-wide pass rate
+}
+
+/**
+ * Drill-down view for a specific team: shows the worst-performing runs
+ * and flaky tests owned by that team in the period.
+ */
+export interface TeamDrillDown {
+  team: string;
+  period: 'daily' | 'weekly' | 'monthly';
+  totalRuns: number;
+  passRate: number;
+  flakyRate: number;
+  worstRuns: IngestedRun[];      // bottom 20 runs by pass rate
+  flakyRuns: IngestedRun[];      // runs with flaky > 0, sorted by flaky count
+  byStack: RollupSlice[];        // team's stacks breakdown
+  byProduct: RollupSlice[];      // team's products breakdown
+}
+
+/**
+ * Individual contributor metrics within a team. Derived from connector
+ * data (git commits touching test files, issues closed) plus run
+ * attribution when the run's orgContext includes a userId.
+ */
+export interface IndividualContribution {
+  userId: string;
+  team: string;
+  runsExecuted: number;
+  testsAuthored: number;
+  fixesLanded: number;
+  passRate: number;       // pass rate of runs attributed to this user
+}
+
+/**
+ * Period-over-period comparison view. Shows how each dimension changed
+ * between two periods (e.g. this week vs last week).
+ */
+export interface PeriodComparison {
+  period1: { label: string; from: string; to: string; };
+  period2: { label: string; from: string; to: string; };
+  totalRunsDelta: number;
+  passRateDelta: number;
+  flakyRateDelta: number;
+  byClient: ComparisonSlice[];
+  byTeam: ComparisonSlice[];
+  byStack: ComparisonSlice[];
+}
+
+export interface ComparisonSlice {
+  key: string;
+  period1Runs: number;
+  period2Runs: number;
+  period1PassRate: number;
+  period2PassRate: number;
+  passRateDelta: number;
 }
 
 /**
@@ -653,7 +764,7 @@ export interface EstateRollup {
  */
 export interface IngestPayload {
   orgContext: OrgContext;
-  format?: 'auto' | 'junit' | 'trx' | 'newman' | 'json' | 'playwright';
+  format?: 'auto' | 'junit' | 'trx' | 'newman' | 'json' | 'playwright' | 'xctest' | 'espresso' | 'appium';
   rawArtifact?: string;      // raw test result content (when format is set)
   run?: RunSummary;          // pre-normalized summary (when no raw artifact)
   reportPath?: string;       // optional: path to already-generated HTML report

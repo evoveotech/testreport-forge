@@ -5,7 +5,12 @@ import type {
   TeamContribution,
   TrendPoint,
   ConnectorData,
+  TeamDrillDown,
+  PeriodComparison,
+  ComparisonSlice,
+  IndividualContribution,
 } from '../types';
+import { resolveStackCategory } from '../types';
 import type { Store, RunQuery } from '../store';
 
 /**
@@ -48,6 +53,7 @@ export class Aggregator {
       byClient: this.sliceBy(current, previous, r => r.orgContext.client),
       byProduct: this.sliceBy(current, previous, r => r.orgContext.product),
       byStack: this.sliceBy(current, previous, r => r.orgContext.stack),
+      byStackCategory: this.sliceBy(current, previous, r => resolveStackCategory(r.orgContext.stack)),
       byRunType: this.sliceBy(current, previous, r => r.orgContext.runType),
       byEnvironment: this.sliceBy(current, previous, r => r.orgContext.environment),
       byTeam: this.teamContribution(current, previous, connectorData),
@@ -120,6 +126,154 @@ export class Aggregator {
       passRate: avgPassRate(dayRuns),
       totalRuns: dayRuns.length,
     }));
+  }
+
+  /**
+   * Standalone trend endpoint — returns the trend series for a given
+   * period without the full rollup. Useful for chart-only views.
+   */
+  async trendSeries(
+    tenantId: string,
+    period: EstateRollup['period'] = 'weekly',
+  ): Promise<TrendPoint[]> {
+    const periodMs = PERIOD_MS[period];
+    const from = new Date(Date.now() - periodMs).toISOString();
+    const to = new Date().toISOString();
+    const runs = await this.store.queryRuns({ tenantId, from, to, limit: 100000 });
+    return this.trend(runs, periodMs);
+  }
+
+  /**
+   * Drill-down into a specific team: worst runs, flaky runs, and
+   * per-stack/per-product breakdowns for that team.
+   */
+  async teamDrillDown(
+    tenantId: string,
+    team: string,
+    period: EstateRollup['period'] = 'weekly',
+  ): Promise<TeamDrillDown> {
+    const periodMs = PERIOD_MS[period];
+    const from = new Date(Date.now() - periodMs).toISOString();
+    const to = new Date().toISOString();
+    const allRuns = await this.store.queryRuns({ tenantId, from, to, limit: 100000, team });
+    const teamRuns = allRuns.filter(r => r.orgContext.team === team);
+    const worstRuns = [...teamRuns].sort((a, b) => a.passRate - b.passRate).slice(0, 20);
+    const flakyRuns = [...teamRuns]
+      .filter(r => r.flaky > 0)
+      .sort((a, b) => b.flaky - a.flaky)
+      .slice(0, 20);
+    return {
+      team,
+      period,
+      totalRuns: teamRuns.length,
+      passRate: avgPassRate(teamRuns),
+      flakyRate: flakyRate(teamRuns),
+      worstRuns,
+      flakyRuns,
+      byStack: this.sliceBy(teamRuns, [], r => r.orgContext.stack),
+      byProduct: this.sliceBy(teamRuns, [], r => r.orgContext.product),
+    };
+  }
+
+  /**
+   * Period-over-period comparison. Compares the current period against
+   * the previous period across client, team, and stack dimensions.
+   */
+  async compare(
+    tenantId: string,
+    period: EstateRollup['period'] = 'weekly',
+  ): Promise<PeriodComparison> {
+    const periodMs = PERIOD_MS[period];
+    const now = Date.now();
+    const p1From = new Date(now - 2 * periodMs).toISOString();
+    const p1To = new Date(now - periodMs).toISOString();
+    const p2From = p1To;
+    const p2To = new Date(now).toISOString();
+    const p1Runs = await this.store.queryRuns({ tenantId, from: p1From, to: p1To, limit: 100000 });
+    const p2Runs = await this.store.queryRuns({ tenantId, from: p2From, to: p2To, limit: 100000 });
+
+    return {
+      period1: { label: 'previous ' + period, from: p1From, to: p1To },
+      period2: { label: 'current ' + period, from: p2From, to: p2To },
+      totalRunsDelta: p2Runs.length - p1Runs.length,
+      passRateDelta: Math.round((avgPassRate(p2Runs) - avgPassRate(p1Runs)) * 10) / 10,
+      flakyRateDelta: Math.round((flakyRate(p2Runs) - flakyRate(p1Runs)) * 10) / 10,
+      byClient: this.compareSlice(p1Runs, p2Runs, r => r.orgContext.client),
+      byTeam: this.compareSlice(p1Runs, p2Runs, r => r.orgContext.team),
+      byStack: this.compareSlice(p1Runs, p2Runs, r => r.orgContext.stack),
+    };
+  }
+
+  private compareSlice(
+    p1: IngestedRun[],
+    p2: IngestedRun[],
+    keyFn: (r: IngestedRun) => string,
+  ): ComparisonSlice[] {
+    const g1 = groupBy(p1, keyFn);
+    const g2 = groupBy(p2, keyFn);
+    const keys = new Set([...g1.keys(), ...g2.keys()]);
+    return [...keys].map(key => {
+      const r1 = g1.get(key) ?? [];
+      const r2 = g2.get(key) ?? [];
+      const pr1 = avgPassRate(r1);
+      const pr2 = avgPassRate(r2);
+      return {
+        key,
+        period1Runs: r1.length,
+        period2Runs: r2.length,
+        period1PassRate: pr1,
+        period2PassRate: pr2,
+        passRateDelta: Math.round((pr2 - pr1) * 10) / 10,
+      };
+    }).sort((a, b) => b.period2Runs - a.period2Runs);
+  }
+
+  /**
+   * Individual contributor metrics. Derives per-user attribution from
+   * connector data (testsAuthored, fixesLanded) and run attribution
+   * (runsExecuted, passRate) when runs carry a userId in orgContext.
+   */
+  async individualContributions(
+    tenantId: string,
+    period: EstateRollup['period'] = 'weekly',
+    connectorData?: ConnectorData,
+  ): Promise<IndividualContribution[]> {
+    const periodMs = PERIOD_MS[period];
+    const from = new Date(Date.now() - periodMs).toISOString();
+    const to = new Date().toISOString();
+    const runs = await this.store.queryRuns({ tenantId, from, to, limit: 100000 });
+
+    // Group runs by (userId, team) when userId is present.
+    const byUser = new Map<string, { userId: string; team: string; runs: IngestedRun[] }>();
+    for (const r of runs) {
+      const userId = (r.orgContext as { userId?: string }).userId;
+      if (!userId) continue;
+      const key = userId + '|' + r.orgContext.team;
+      let entry = byUser.get(key);
+      if (!entry) { entry = { userId, team: r.orgContext.team, runs: [] }; byUser.set(key, entry); }
+      entry.runs.push(r);
+    }
+
+    const result: IndividualContribution[] = [];
+    for (const { userId, team, runs } of byUser.values()) {
+      result.push({
+        userId,
+        team,
+        runsExecuted: runs.length,
+        testsAuthored: connectorData?.[team]?.testsAuthored ?? 0,
+        fixesLanded: connectorData?.[team]?.fixesLanded ?? 0,
+        passRate: avgPassRate(runs),
+      });
+    }
+    // If no per-user attribution in runs, synthesize from connector data.
+    if (result.length === 0 && connectorData) {
+      for (const [team, data] of Object.entries(connectorData)) {
+        if (data.testsAuthored > 0 || data.fixesLanded > 0) {
+          result.push({ userId: 'team-aggregate', team, runsExecuted: 0, testsAuthored: data.testsAuthored, fixesLanded: data.fixesLanded, passRate: 0 });
+        }
+      }
+    }
+    return result.sort((a, b) => b.testsAuthored + b.fixesLanded - a.testsAuthored - a.fixesLanded);
   }
 }
 

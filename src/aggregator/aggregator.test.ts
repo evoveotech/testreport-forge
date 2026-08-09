@@ -178,4 +178,127 @@ describe('Aggregator', () => {
     expect(b.testsAuthored).toBe(0);
     expect(b.fixesLanded).toBe(0);
   });
+
+  describe('byStackCategory', () => {
+    it('groups stacks into mobile/backend/web categories', async () => {
+      const dir = tmpDir();
+      const store = new FileStore(dir);
+      await store.open();
+      const agg = new Aggregator(store);
+      await store.insertRun(run('acme', 'r1', 90, 0, 0, { stack: 'xctest' }));
+      await store.insertRun(run('acme', 'r2', 80, 0, 0, { stack: 'espresso' }));
+      await store.insertRun(run('acme', 'r3', 95, 0, 0, { stack: 'junit' }));
+      await store.insertRun(run('acme', 'r4', 85, 0, 0, { stack: 'playwright' }));
+      const rollup = await agg.estateRollup('acme', 'weekly');
+      const mobile = rollup.byStackCategory.find(s => s.key === 'mobile');
+      const backend = rollup.byStackCategory.find(s => s.key === 'backend');
+      const web = rollup.byStackCategory.find(s => s.key === 'web');
+      expect(mobile).toBeDefined();
+      expect(mobile!.totalRuns).toBe(2);
+      expect(backend).toBeDefined();
+      expect(backend!.totalRuns).toBe(1);
+      expect(web).toBeDefined();
+      expect(web!.totalRuns).toBe(1);
+      await store.close();
+    });
+  });
+
+  describe('trendSeries', () => {
+    it('returns trend points without the full rollup', async () => {
+      const dir = tmpDir();
+      const store = new FileStore(dir);
+      await store.open();
+      const agg = new Aggregator(store);
+      await store.insertRun(run('acme', 'r1', 90, 0, 0));
+      await store.insertRun(run('acme', 'r2', 80, 0, 1));
+      const trend = await agg.trendSeries('acme', 'weekly');
+      expect(trend.length).toBeGreaterThan(0);
+      expect(trend[0]).toHaveProperty('date');
+      expect(trend[0]).toHaveProperty('passRate');
+      expect(trend[0]).toHaveProperty('totalRuns');
+      await store.close();
+    });
+  });
+
+  describe('teamDrillDown', () => {
+    it('returns worst runs and flaky runs for a team', async () => {
+      const dir = tmpDir();
+      const store = new FileStore(dir);
+      await store.open();
+      const agg = new Aggregator(store);
+      for (let i = 0; i < 25; i++) {
+        await store.insertRun(run('acme', 'r' + i, 100 - i * 3, i % 3, 0, { team: 'qa-payments' }));
+      }
+      await store.insertRun(run('acme', 'other', 90, 0, 0, { team: 'qa-banking' }));
+      const dd = await agg.teamDrillDown('acme', 'qa-payments', 'weekly');
+      expect(dd.team).toBe('qa-payments');
+      expect(dd.totalRuns).toBe(25);
+      expect(dd.worstRuns.length).toBe(20);
+      expect(dd.worstRuns[0].passRate).toBeLessThanOrEqual(dd.worstRuns[1].passRate);
+      expect(dd.flakyRuns.length).toBeGreaterThan(0);
+      expect(dd.flakyRuns[0].flaky).toBeGreaterThanOrEqual(dd.flakyRuns[1].flaky);
+      await store.close();
+    });
+  });
+
+  describe('compare', () => {
+    it('compares current period vs previous period', async () => {
+      const dir = tmpDir();
+      const store = new FileStore(dir);
+      await store.open();
+      const agg = new Aggregator(store);
+      // Previous period runs
+      await store.insertRun(run('acme', 'p1', 80, 0, 10, { client: 'c1' }));
+      await store.insertRun(run('acme', 'p2', 90, 0, 10, { client: 'c2' }));
+      // Current period runs
+      await store.insertRun(run('acme', 'c1', 85, 0, 0, { client: 'c1' }));
+      await store.insertRun(run('acme', 'c2', 95, 0, 0, { client: 'c2' }));
+      const cmp = await agg.compare('acme', 'weekly');
+      expect(cmp.totalRunsDelta).toBe(0);
+      expect(cmp.passRateDelta).toBeGreaterThan(0);
+      expect(cmp.byClient.length).toBe(2);
+      const c1 = cmp.byClient.find(s => s.key === 'c1');
+      expect(c1!.period1PassRate).toBe(80);
+      expect(c1!.period2PassRate).toBe(85);
+      await store.close();
+    });
+  });
+
+  describe('individualContributions', () => {
+    it('returns per-user metrics when runs have userId', async () => {
+      const dir = tmpDir();
+      const store = new FileStore(dir);
+      await store.open();
+      const agg = new Aggregator(store);
+      // Insert runs with userId in orgContext
+      await store.insertRun({ ...run('acme', 'u1r1', 90, 0, 0, { team: 'qa-payments' }), orgContext: { ...ctx({ team: 'qa-payments' }), userId: 'alice' } as never });
+      await store.insertRun({ ...run('acme', 'u1r2', 80, 0, 0, { team: 'qa-payments' }), orgContext: { ...ctx({ team: 'qa-payments' }), userId: 'alice' } as never });
+      await store.insertRun({ ...run('acme', 'u2r1', 95, 0, 0, { team: 'qa-banking' }), orgContext: { ...ctx({ team: 'qa-banking' }), userId: 'bob' } as never });
+      const contribs = await agg.individualContributions('acme', 'weekly', {
+        'qa-payments': { testsAuthored: 10, fixesLanded: 5 },
+        'qa-banking': { testsAuthored: 8, fixesLanded: 3 },
+      });
+      expect(contribs.length).toBe(2);
+      const alice = contribs.find(c => c.userId === 'alice');
+      expect(alice!.team).toBe('qa-payments');
+      expect(alice!.runsExecuted).toBe(2);
+      expect(alice!.testsAuthored).toBe(10);
+      await store.close();
+    });
+
+    it('falls back to team-aggregate from connector data when no userId', async () => {
+      const dir = tmpDir();
+      const store = new FileStore(dir);
+      await store.open();
+      const agg = new Aggregator(store);
+      await store.insertRun(run('acme', 'r1', 90, 0, 0, { team: 'qa-payments' }));
+      const contribs = await agg.individualContributions('acme', 'weekly', {
+        'qa-payments': { testsAuthored: 15, fixesLanded: 7 },
+      });
+      expect(contribs.length).toBe(1);
+      expect(contribs[0].userId).toBe('team-aggregate');
+      expect(contribs[0].testsAuthored).toBe(15);
+      await store.close();
+    });
+  });
 });

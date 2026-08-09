@@ -36,6 +36,9 @@ export interface ConnectorConfig {
   };
   /** Maps external identities to internal team names + test/fix patterns. */
   teamMapping: TeamMapping;
+  /** Mock data for demos — when present, fetchConnectorData returns this
+   * instead of calling external APIs. */
+  mockData?: ConnectorData;
 }
 
 /**
@@ -81,6 +84,12 @@ export class ConnectorService {
 
     const config = this.loadConfig();
     if (!config) return {};
+
+    // Mock mode: return seeded data without calling external APIs.
+    if (config.mockData) {
+      this.cache = { data: config.mockData, expiresAt: Date.now() + this.cacheTtlMs };
+      return config.mockData;
+    }
 
     const data: ConnectorData = {};
 

@@ -364,6 +364,7 @@
           navItem('estate', 'Estate Overview', r ? r.totalRuns : 0) +
           navItem('teams', 'Team Contribution', r ? r.byTeam.length : 0) +
           navItem('runs', 'Recent Runs', r ? r.totalRuns : 0) +
+          navItem('compare', 'Compare', '') +
           navItem('settings', 'Settings', '') +
         '</div>' +
       '</div>' +
@@ -388,11 +389,12 @@
     if (state.tab === 'estate') renderEstate();
     else if (state.tab === 'teams') renderTeams();
     else if (state.tab === 'runs') renderRuns();
+    else if (state.tab === 'compare') renderCompare();
     else if (state.tab === 'settings') renderSettings();
   }
 
   function navItem(tab, label, badge) {
-    var icons = { estate: '&#9632;', teams: '&#9632;', runs: '&#9632;', settings: '&#9881;' };
+    var icons = { estate: '&#9632;', teams: '&#9632;', runs: '&#9632;', compare: '&#8645;', settings: '&#9881;' };
     return '<button class="nav-item ' + (state.tab === tab ? 'active' : '') + '" data-tab="' + tab + '">' +
       '<span class="nav-icon">' + (icons[tab] || '') + '</span>' +
       '<span class="nav-label">' + label + '</span>' +
@@ -518,6 +520,7 @@
       sliceTable('By Client', r.byClient) +
       sliceTable('By Product', r.byProduct) +
       sliceTable('By Stack', r.byStack) +
+      sliceTable('By Stack Category', r.byStackCategory) +
       sliceTable('By Run Type', r.byRunType) +
       sliceTable('By Environment', r.byEnvironment) +
       '</div>';
@@ -583,11 +586,11 @@
     var r = state.rollup;
     if (!r || !r.byTeam.length) { document.getElementById('main').innerHTML = emptyState('No team data'); return; }
     var html = '<div class="main-header"><div><div class="main-title">Team Contribution</div>' +
-      '<div class="main-subtitle">Runs executed, pass rate, flakiness owned, tests authored, fixes landed</div></div></div>';
+      '<div class="main-subtitle">Click a team to drill down into worst runs and flaky tests</div></div></div>';
     html += '<div class="team-grid">';
     for (var i = 0; i < r.byTeam.length; i++) {
       var t = r.byTeam[i];
-      html += '<div class="team-card">' +
+      html += '<div class="team-card" data-team="' + esc(t.team) + '" style="cursor:pointer">' +
         '<div class="team-header"><div class="team-name">' + esc(t.team) + '</div>' +
         '<span class="badge ' + rateColor(t.passRate) + '">' + t.passRate + '%</span></div>' +
         '<div class="team-stats">' +
@@ -598,7 +601,56 @@
         '</div></div>';
     }
     html += '</div>';
+    // Individual contributors section
+    html += '<div class="chart-card" id="contributors-section"><h3>Individual Contributors</h3><div class="empty-state"><div class="empty-state-text">Loading...</div></div></div>';
     document.getElementById('main').innerHTML = html;
+    var cards = document.querySelectorAll('.team-card[data-team]');
+    for (var j = 0; j < cards.length; j++) {
+      cards[j].onclick = function() { loadTeamDrillDown(this.dataset.team); };
+    }
+    loadContributors();
+  }
+
+  function loadTeamDrillDown(team) {
+    var main = document.getElementById('main');
+    main.innerHTML = '<div class="main-header"><div><div class="main-title">' + esc(team) + ' &mdash; Drill Down</div>' +
+      '<div class="main-subtitle">Worst runs and flaky tests for this team</div></div>' +
+      '<button class="btn btn-ghost" id="back-to-teams">Back to Teams</button></div>' +
+      '<div id="drilldown-content"><div class="empty-state"><div class="empty-state-text">Loading...</div></div></div>';
+    document.getElementById('back-to-teams').onclick = function() { state.tab = 'teams'; render(); };
+    api('/estate/drilldown?team=' + encodeURIComponent(team) + '&period=' + state.period).then(function(d) {
+      var html = '<div class="kpi-grid">' +
+        kpiCard('Total Runs', d.totalRuns, 'blue', null) +
+        kpiCard('Pass Rate', d.passRate + '%', rateColor(d.passRate), null) +
+        kpiCard('Flaky Rate', d.flakyRate + '%', d.flakyRate < 5 ? 'green' : 'yellow', null) +
+        '</div>';
+      html += '<div class="data-grid">' + sliceTable('By Stack', d.byStack) + sliceTable('By Product', d.byProduct) + '</div>';
+      if (d.worstRuns.length > 0) {
+        html += '<div class="runs-table"><h3>Worst Runs (bottom 20)</h3>' + runsTable(d.worstRuns) + '</div>';
+      }
+      if (d.flakyRuns.length > 0) {
+        html += '<div class="runs-table"><h3>Flaky Runs (most flaky)</h3>' + runsTable(d.flakyRuns) + '</div>';
+      }
+      document.getElementById('drilldown-content').innerHTML = html;
+    }).catch(function(e) { document.getElementById('drilldown-content').innerHTML = emptyState('Failed to load: ' + e.message); });
+  }
+
+  function loadContributors() {
+    api('/contributors?period=' + state.period).then(function(contributors) {
+      var el = document.getElementById('contributors-section');
+      if (!el) return;
+      if (!contributors.length) { el.innerHTML = '<h3>Individual Contributors</h3><div class="empty-state"><div class="empty-state-text">No individual contributor data. Configure connectors in Settings.</div></div>'; return; }
+      var html = '<h3>Individual Contributors</h3><table><tr><th>User</th><th>Team</th><th>Runs</th><th>Tests Authored</th><th>Fixes Landed</th><th>Pass Rate</th></tr>';
+      for (var i = 0; i < contributors.length; i++) {
+        var c = contributors[i];
+        html += '<tr><td>' + esc(c.userId) + '</td><td>' + esc(c.team) + '</td><td>' + c.runsExecuted + '</td>' +
+          '<td><span class="badge green">' + c.testsAuthored + '</span></td>' +
+          '<td><span class="badge purple">' + c.fixesLanded + '</span></td>' +
+          '<td><span class="badge ' + rateColor(c.passRate) + '">' + c.passRate + '%</span></td></tr>';
+      }
+      html += '</table>';
+      el.innerHTML = html;
+    }).catch(function() { /* optional */ });
   }
 
   function teamStat(label, value, color) {
@@ -648,6 +700,48 @@
     return '<table><tr><th>Run ID</th><th>Client</th><th>Product</th><th>Team</th><th>Stack</th><th>Type</th><th>Total</th><th>Pass</th><th>Date</th></tr>' + rows + '</table>';
   }
 
+  // -- Compare tab -----------------------------------------------------
+  function renderCompare() {
+    document.getElementById('main').innerHTML =
+      '<div class="main-header"><div><div class="main-title">Period Comparison</div>' +
+      '<div class="main-subtitle">Current period vs previous period</div></div>' +
+      '<select class="period-select" id="compare-period">' +
+      '<option value="daily"' + (state.period === 'daily' ? ' selected' : '') + '>Daily</option>' +
+      '<option value="weekly"' + (state.period === 'weekly' ? ' selected' : '') + '>Weekly</option>' +
+      '<option value="monthly"' + (state.period === 'monthly' ? ' selected' : '') + '>Monthly</option></select></div>' +
+      '<div id="compare-content"><div class="empty-state"><div class="empty-state-text">Loading comparison...</div></div></div>';
+    document.getElementById('compare-period').onchange = function() { state.period = this.value; renderCompare(); };
+    api('/compare?period=' + state.period).then(function(c) {
+      var deltaColor = c.passRateDelta >= 0 ? 'green' : 'red';
+      var html = '<div class="kpi-grid">' +
+        kpiCard('Runs Delta', (c.totalRunsDelta >= 0 ? '+' : '') + c.totalRunsDelta, c.totalRunsDelta >= 0 ? 'green' : 'red', null) +
+        kpiCard('Pass Rate Delta', (c.passRateDelta >= 0 ? '+' : '') + c.passRateDelta + '%', deltaColor, null) +
+        kpiCard('Flaky Rate Delta', (c.flakyRateDelta >= 0 ? '+' : '') + c.flakyRateDelta + '%', c.flakyRateDelta <= 0 ? 'green' : 'red', null) +
+        '</div>';
+      html += '<div class="data-grid">' +
+        compareTable('By Client', c.byClient) +
+        compareTable('By Team', c.byTeam) +
+        compareTable('By Stack', c.byStack) +
+        '</div>';
+      document.getElementById('compare-content').innerHTML = html;
+    }).catch(function(e) { document.getElementById('compare-content').innerHTML = emptyState('Failed to load: ' + e.message); });
+  }
+
+  function compareTable(title, slices) {
+    if (!slices || slices.length === 0) return '';
+    var rows = slices.slice(0, 15).map(function(s) {
+      var deltaColor = s.passRateDelta >= 0 ? 'green' : 'red';
+      return '<tr><td>' + esc(s.key) + '</td>' +
+        '<td>' + s.period1Runs + '</td><td>' + s.period2Runs + '</td>' +
+        '<td><span class="badge ' + rateColor(s.period1PassRate) + '">' + s.period1PassRate + '%</span></td>' +
+        '<td><span class="badge ' + rateColor(s.period2PassRate) + '">' + s.period2PassRate + '%</span></td>' +
+        '<td><span class="badge ' + deltaColor + '">' + (s.passRateDelta >= 0 ? '+' : '') + s.passRateDelta + '%</span></td></tr>';
+    }).join('');
+    return '<div class="data-card"><h3>' + title + '</h3><table>' +
+      '<tr><th>Name</th><th>Prev Runs</th><th>Curr Runs</th><th>Prev Pass</th><th>Curr Pass</th><th>Delta</th></tr>' +
+      rows + '</table></div>';
+  }
+
   // -- Settings tab ----------------------------------------------------
   function renderSettings() {
     var html = '<div class="main-header"><div><div class="main-title">Settings</div>' +
@@ -666,6 +760,16 @@
       '<div class="form-group"><label class="form-label">Folder Path</label><input class="form-input" id="folder-path" placeholder="e.g. TestIntelligencePlatform/acme"></div>' +
       '<button class="btn btn-primary" id="connect-btn">Connect</button></div>' +
       '<div class="setting-card" id="team-configs" style="display:none"></div>' +
+      '<div class="setting-card"><h3>Alert Thresholds</h3>' +
+      '<p>Get notified when test quality drops below your thresholds. Alerts appear in the dashboard and can trigger webhooks.</p>' +
+      '<div class="form-group"><label class="form-label">Pass Rate Alert (below this %)</label>' +
+      '<input class="form-input" id="alert-pass-rate" type="number" min="0" max="100" value="85" placeholder="85"></div>' +
+      '<div class="form-group"><label class="form-label">Flaky Rate Alert (above this %)</label>' +
+      '<input class="form-input" id="alert-flaky-rate" type="number" min="0" max="100" value="15" placeholder="15"></div>' +
+      '<div class="form-group"><label class="form-label">Webhook URL (optional)</label>' +
+      '<input class="form-input" id="alert-webhook" placeholder="https://hooks.slack.com/services/..."></div>' +
+      '<button class="btn btn-primary" id="save-alerts-btn">Save Alerts</button>' +
+      '<div id="alert-status" style="margin-top:0.75rem"></div></div>' +
       '<div class="setting-card"><h3>How Sharing Works</h3>' +
       '<p><strong>For Directors / VPs (admin):</strong><br>' +
       '1. Connect your cloud drive above.<br>2. Data is stored in YOUR cloud drive folder.<br>3. Share that folder with your team via M365/Google native sharing.<br><br>' +
@@ -677,7 +781,50 @@
       '</div>';
     document.getElementById('main').innerHTML = html;
     document.getElementById('connect-btn').onclick = connectStorage;
+    document.getElementById('save-alerts-btn').onclick = saveAlerts;
     loadStorageStatus();
+    loadAlerts();
+  }
+
+  function loadAlerts() {
+    try {
+      var saved = localStorage.getItem('tip-alerts');
+      if (saved) {
+        var alerts = JSON.parse(saved);
+        if (alerts.passRate) document.getElementById('alert-pass-rate').value = alerts.passRate;
+        if (alerts.flakyRate) document.getElementById('alert-flaky-rate').value = alerts.flakyRate;
+        if (alerts.webhook) document.getElementById('alert-webhook').value = alerts.webhook;
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  function saveAlerts() {
+    var alerts = {
+      passRate: document.getElementById('alert-pass-rate').value,
+      flakyRate: document.getElementById('alert-flaky-rate').value,
+      webhook: document.getElementById('alert-webhook').value,
+    };
+    localStorage.setItem('tip-alerts', JSON.stringify(alerts));
+    var status = document.getElementById('alert-status');
+    status.innerHTML = '<span class="badge green">Saved</span> Alerts will trigger when pass rate drops below ' + alerts.passRate + '% or flaky rate exceeds ' + alerts.flakyRate + '%.';
+    checkAlerts(alerts);
+  }
+
+  function checkAlerts(alerts) {
+    var r = state.rollup;
+    if (!r) return;
+    var passThreshold = parseFloat(alerts.passRate) || 0;
+    var flakyThreshold = parseFloat(alerts.flakyRate) || 100;
+    var violations = [];
+    if (r.passRate < passThreshold) violations.push('Pass rate ' + r.passRate + '% is below threshold ' + passThreshold + '%');
+    if (r.flakyRate > flakyThreshold) violations.push('Flaky rate ' + r.flakyRate + '% exceeds threshold ' + flakyThreshold + '%');
+    if (violations.length > 0) {
+      var status = document.getElementById('alert-status');
+      if (status) {
+        status.innerHTML += '<div style="margin-top:0.5rem;padding:0.5rem 0.75rem;background:rgba(255,68,102,0.1);border:1px solid var(--accent-red);border-radius:8px;color:var(--accent-red);font-size:0.8rem">' +
+          '<strong>&#9888; Active Alerts:</strong><br>' + violations.join('<br>') + '</div>';
+      }
+    }
   }
 
   function loadStorageStatus() {

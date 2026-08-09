@@ -8,7 +8,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import { FileStore } from '../store';
-import type { IngestedRun, OrgContext } from '../types';
+import type { IngestedRun, OrgContext, ConnectorData } from '../types';
 
 interface SeedOpts { dataDir: string; tenantId: string; }
 
@@ -98,6 +98,26 @@ async function main(): Promise<void> {
   console.log(`Seeded ${runs.length} runs for tenant "${opts.tenantId}" in ${opts.dataDir}`);
   console.log(`  Clients: ${CLIENTS.length}, Teams: ${TEAMS.length}, Stacks: ${STACKS.length}`);
   console.log(`  Date range: last 30 days`);
+
+  // Write mock connector data so testsAuthored/fixesLanded are non-zero in demo.
+  const mockConnectorData: ConnectorData = {};
+  for (const team of TEAMS) {
+    mockConnectorData[team] = {
+      testsAuthored: randomInt(5, 40),
+      fixesLanded: randomInt(2, 25),
+    };
+  }
+  const connectorsConfig = {
+    teamMapping: { teams: TEAMS.map(t => ({ name: t, patterns: [t] })) },
+    mockData: mockConnectorData,
+  };
+  fs.writeFileSync(
+    path.join(opts.dataDir, 'connectors.json'),
+    JSON.stringify(connectorsConfig, null, 2),
+    'utf-8',
+  );
+  console.log(`  Connector data: mock (testsAuthored + fixesLanded per team)`);
+
   await store.close();
 }
 

@@ -12,19 +12,28 @@ export * from './junit-adapter';
 export * from './trx-adapter';
 export * from './newman-adapter';
 export * from './json-adapter';
+export * from './xctest-adapter';
+export * from './espresso-adapter';
+export * from './appium-adapter';
 
 import type { InputFormat, TestRunAdapter } from './types';
 import { JUnitAdapter } from './junit-adapter';
 import { TrxAdapter } from './trx-adapter';
 import { NewmanAdapter } from './newman-adapter';
 import { JsonAdapter } from './json-adapter';
+import { XCTestAdapter } from './xctest-adapter';
+import { EspressoAdapter } from './espresso-adapter';
+import { AppiumAdapter } from './appium-adapter';
 
 /** Ordered registry — first match wins for auto-detection. */
 const ADAPTERS: TestRunAdapter[] = [
-  new TrxAdapter(),    // .trx is unambiguous, check first
-  new JUnitAdapter(),  // <testsuites> / <testsuite>
-  new NewmanAdapter(), // Postman JSON with run.executions
-  new JsonAdapter(),   // generic JSON (smart-report-data.json or bare array)
+  new TrxAdapter(),        // .trx is unambiguous, check first
+  new XCTestAdapter(),     // XCTest JUnit XML (xcodebuild markers)
+  new EspressoAdapter(),   // Espresso JUnit XML (com.android markers)
+  new AppiumAdapter(),     // Appium JUnit XML (Appium markers)
+  new JUnitAdapter(),      // <testsuites> / <testsuite>
+  new NewmanAdapter(),     // Postman JSON with run.executions
+  new JsonAdapter(),       // generic JSON (smart-report-data.json or bare array)
 ];
 
 /** Lookup by explicit format id. */

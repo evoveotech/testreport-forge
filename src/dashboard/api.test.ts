@@ -173,4 +173,62 @@ describe('DashboardApi', () => {
     const res = await req(server, 'GET', '/api/nope', ACME);
     expect(res.status).toBe(404);
   });
+
+  describe('trend endpoint', () => {
+    it('GET /api/trend returns trend series', async () => {
+      await store.insertRun(run('acme', 'r1', 90, 1));
+      await store.insertRun(run('acme', 'r2', 85, 2));
+      const res = await req(server, 'GET', '/api/trend?period=weekly', ACME);
+      expect(res.status).toBe(200);
+      const trend = JSON.parse(res.body);
+      expect(Array.isArray(trend)).toBe(true);
+      expect(trend.length).toBeGreaterThan(0);
+      expect(trend[0]).toHaveProperty('date');
+      expect(trend[0]).toHaveProperty('passRate');
+    });
+  });
+
+  describe('compare endpoint', () => {
+    it('GET /api/compare returns period comparison', async () => {
+      await store.insertRun(run('acme', 'p1', 80, 10, { client: 'c1' }));
+      await store.insertRun(run('acme', 'c1', 90, 0, { client: 'c1' }));
+      const res = await req(server, 'GET', '/api/compare?period=weekly', ACME);
+      expect(res.status).toBe(200);
+      const cmp = JSON.parse(res.body);
+      expect(cmp).toHaveProperty('period1');
+      expect(cmp).toHaveProperty('period2');
+      expect(cmp).toHaveProperty('byClient');
+      expect(cmp).toHaveProperty('byTeam');
+      expect(cmp).toHaveProperty('byStack');
+    });
+  });
+
+  describe('contributors endpoint', () => {
+    it('GET /api/contributors returns individual contributions', async () => {
+      await store.insertRun(run('acme', 'r1', 90, 0));
+      const res = await req(server, 'GET', '/api/contributors?period=weekly', ACME);
+      expect(res.status).toBe(200);
+      const contribs = JSON.parse(res.body);
+      expect(Array.isArray(contribs)).toBe(true);
+    });
+  });
+
+  describe('team drill-down endpoint', () => {
+    it('GET /api/estate/drilldown returns team drill-down', async () => {
+      await store.insertRun(run('acme', 'r1', 50, 5, { team: 'qa-payments' }));
+      await store.insertRun(run('acme', 'r2', 90, 0, { team: 'qa-payments' }));
+      const res = await req(server, 'GET', '/api/estate/drilldown?team=qa-payments&period=weekly', ACME);
+      expect(res.status).toBe(200);
+      const dd = JSON.parse(res.body);
+      expect(dd.team).toBe('qa-payments');
+      expect(dd).toHaveProperty('worstRuns');
+      expect(dd).toHaveProperty('flakyRuns');
+      expect(dd).toHaveProperty('byStack');
+    });
+
+    it('returns 400 when team is missing', async () => {
+      const res = await req(server, 'GET', '/api/estate/drilldown?period=weekly', ACME);
+      expect(res.status).toBe(400);
+    });
+  });
 });
